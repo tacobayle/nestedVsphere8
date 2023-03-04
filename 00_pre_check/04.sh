@@ -15,5 +15,9 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   networks=$(jq -c -r '.networks' $localJsonFile)
   nsx_json=$(echo $nsx_json | jq '. += {"networks": '$(echo $networks)'}')
   #
+  echo "   +++ Adding vds_version..."
+  vds_version=$(jq -c -r '.networks.vds.version' /nestedVsphere8/03_nested_vsphere/variables.json)
+  nsx_json=$(echo $nsx_json | jq '. += {"vds_version": "'$(echo $vds_version)'"}')
+  #
   echo $nsx_json | jq . | tee /root/nsx1.json > /dev/null
 fi
