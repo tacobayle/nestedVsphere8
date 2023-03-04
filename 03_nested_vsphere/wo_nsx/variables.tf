@@ -13,5 +13,5 @@ variable "nested_esxi_root_password" {}
 variable "vsphere_underlay_username" {}
 variable "vsphere_underlay_password" {}
 variable "vsphere_nested_password" {}
-
+variable "date_index" {}
 

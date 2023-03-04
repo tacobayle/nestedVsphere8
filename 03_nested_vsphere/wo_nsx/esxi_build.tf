@@ -31,7 +31,7 @@ resource "vsphere_file" "iso_upload" {
   datacenter       = var.vcenter_underlay.dc
   datastore        = var.vcenter_underlay.datastore
   source_file      = "${var.iso_location}${count.index}.iso"
-  destination_file = "isos/${basename(var.iso_location)}${count.index}.iso"
+  destination_file = "isos/${basename(var.iso_location)}-${var.date_index}-${count.index}.iso"
 }
 
 resource "null_resource" "iso_destroy" {
