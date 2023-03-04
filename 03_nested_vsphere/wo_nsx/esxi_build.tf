@@ -82,7 +82,7 @@ resource "vsphere_virtual_machine" "esxi_host" {
 
   cdrom {
     datastore_id = data.vsphere_datastore.datastore.id
-    path         = "isos/${basename(var.iso_location)}${count.index}.iso"
+    path         = "isos/${basename(var.iso_location)}-${var.date_index}-${count.index}.iso"
   }
 }
 
