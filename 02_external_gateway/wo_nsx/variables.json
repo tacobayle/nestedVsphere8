@@ -1,0 +1,4 @@
+{
+  "ubuntu_ova_url": "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.ova",
+  "ubuntu_ova_path": "/root/focal-server-cloudimg-amd64.ova"
+}

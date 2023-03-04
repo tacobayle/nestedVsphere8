@@ -1,0 +1,41 @@
+{
+  "iso_source_location": "/root/esxi.iso",
+  "boot_cfg_location": "efi/boot/boot.cfg",
+  "iso_location": "/tmp/esxi",
+  "vcenter_iso_path": "/root/vcenter.iso",
+  "boot_cfg_lines": ["kernelopt=runweasel ks=cdrom:/KS_CUST.CFG"],
+  "bios": "efi",
+  "guest_id": "vmkernel65Guest",
+  "keyboard_type": "US Default",
+  "wait_for_guest_net_timeout": 0,
+  "nested_hv_enabled": "true",
+  "cache_disk": "mpx.vmhba0:C0:T1:L0",
+  "capacity_disk": "mpx.vmhba0:C0:T2:L0",
+  "enable_vsan_esa": false,
+  "thin_disk_mode": true,
+  "deployment_option": "small",
+  "ssh_enable": true,
+  "ceip_enabled": false,
+  "json_config_file": "vcsa-cli-installer/templates/install/vCSA_with_cluster_on_ESXi.json",
+  "networks": {
+    "vds" : {
+      "mtu": 1500,
+      "discovery_protocol": "lldp",
+      "version": "7.0.2"
+    },
+    "vsphere": {
+      "management": {
+        "vds_name" : "vds-0",
+        "port_group_name": "management"
+      },
+      "VMotion": {
+        "vds_name" : "vds-1-VMotion",
+        "port_group_name": "VMotion"
+      },
+      "VSAN": {
+        "vds_name" : "vds-2-VSAN",
+        "port_group_name": "VSAN"
+      }
+    }
+  }
+}

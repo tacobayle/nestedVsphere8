@@ -1,0 +1,28 @@
+{
+  "uplink_profiles": [
+    {
+      "name": "uplink-profile-default",
+      "mtu": 1700,
+      "transport_vlan": 0,
+      "teaming": {
+        "policy": "FAILOVER_ORDER",
+        "active_list": [
+          {
+            "uplink_name": "uplink-1",
+            "uplink_type": "PNIC"
+          }
+        ]
+      }
+    }
+  ],
+  "transport_zones": [
+    {
+      "name": "tz_overlay",
+      "type": "OVERLAY"
+    },
+    {
+      "name": "tz_vlan",
+      "type": "VLAN"
+    }
+  ]
+}

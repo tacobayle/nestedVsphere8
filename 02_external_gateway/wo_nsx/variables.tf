@@ -1,0 +1,11 @@
+variable "vcenter_underlay" {}
+variable "vsphere_underlay_username" {}
+variable "vsphere_underlay_password" {}
+variable "external_gw" {}
+variable "date_index" {}
+variable "vcenter" {}
+variable "ubuntu_password" {}
+variable "bind_password" {}
+variable "ubuntu_ova_path" {}
+variable "ansible_version" {}
+variable "avi_sdk_version" {}
