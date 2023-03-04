@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 jsonFile="/etc/config/variables.json"
-localJsonFile="/nestedVsphere8/02_external_gateway/variables.json"
 #
 IFS=$'\n'
 #
@@ -12,7 +11,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   nsx_json=$(jq -c -r . $jsonFile | jq .)
   #
   echo "   +++ Adding networks..."
-  networks=$(jq -c -r '.networks' $localJsonFile)
+  networks=$(jq -c -r '.networks' /nestedVsphere8/02_external_gateway/variables.json)
   nsx_json=$(echo $nsx_json | jq '. += {"networks": '$(echo $networks)'}')
   #
   echo "   +++ Adding vds_version..."
