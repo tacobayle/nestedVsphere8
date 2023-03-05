@@ -5,7 +5,7 @@ data "vsphere_datacenter" "dc_nested" {
 
 data "vsphere_host" "host_nested" {
   count = length(var.vcenter_underlay.networks.vsphere.management.esxi_ips)
-  name          = "${var.vcenter.esxi.basename}${count.index + 1}"
+  name          = "${var.vcenter.esxi.basename}${count.index + 1}.${var.external_gw.bind.domain}"
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
 }
 
