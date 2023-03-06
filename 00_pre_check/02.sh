@@ -75,13 +75,20 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.external += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for NSX overlay network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.nsx.overlay.netmask' $jsonFile) "   ++++++")
+  prefix=$(jq -c -r '.nsx.config.ip_pools[0].cidr' $jsonFile | cut -d"/" -f2)
   external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.overlay += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for NSX overlay Edge network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.nsx.overlay_edge.netmask' $jsonFile) "   ++++++")
+  prefix=$(jq -c -r '.nsx.config.ip_pools[1].cidr' $jsonFile | cut -d"/" -f2)
   external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
   #
+  echo "   +++ Adding external_gw_ip for NSX overlay network..."
+  external_gw_ip=$(jq -c -r '.nsx.config.ip_pools[0].gateway' $jsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.overlay += {"external_gw_ip": "'$(echo $external_gw_ip)'"}')
+  #
+  echo "   +++ Adding external_gw_ip for NSX overlay Edge network..."
+  external_gw_ip=$(jq -c -r '.nsx.config.ip_pools[1].gateway' $jsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.overlay_edge += {"external_gw_ip": "'$(echo $external_gw_ip)'"}')
 fi
 #
 echo "   +++ Adding reverse DNS zone..."

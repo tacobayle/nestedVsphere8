@@ -13,7 +13,7 @@ data "vsphere_datastore" "datastore" {
 }
 
 data "vsphere_resource_pool" "pool" {
-  name          = var.vcenter_underlay.resource_pool
+  name          = "${var.vcenter_underlay.cluster}/Resources"
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 

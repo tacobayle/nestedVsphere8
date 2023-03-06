@@ -40,6 +40,9 @@ resource "nsxt_policy_ip_pool_static_subnet" "static_subnet" {
 
 }
 
+#### restart here
+
+
 data "nsxt_policy_transport_zone" "transport_zone_vlan" {
   depends_on = [null_resource.register_compute_manager]
   count = length(var.nsx.config.segments)

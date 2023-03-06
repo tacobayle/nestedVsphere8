@@ -26,7 +26,6 @@ echo "==> Checking vSphere Underlay Variables"
 test_if_json_variable_is_defined .vcenter_underlay.dc $jsonFile "   "
 test_if_json_variable_is_defined .vcenter_underlay.cluster $jsonFile "   "
 test_if_json_variable_is_defined .vcenter_underlay.datastore $jsonFile "   "
-test_if_json_variable_is_defined .vcenter_underlay.resource_pool $jsonFile "   "
 test_if_json_variable_is_defined .vcenter_underlay.folder $jsonFile "   "
 test_if_json_variable_is_defined .vcenter_underlay.server $jsonFile "   "
 test_if_json_variable_is_defined .vcenter_underlay.networks.vsphere.management.name $jsonFile "   "
@@ -75,13 +74,13 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   done
   test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.external.external_gw_ip $jsonFile) "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay.name $jsonFile "   "
-  test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay.netmask $jsonFile "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.network_prefix $jsonFile)" "   "
-  test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay.external_gw_ip $jsonFile) "   "
+  #test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay.netmask $jsonFile "   "
+  #test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.network_prefix $jsonFile)" "   "
+  #test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay.external_gw_ip $jsonFile) "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.name $jsonFile "   "
-  test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.netmask $jsonFile "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.network_prefix $jsonFile)" "   "
-  test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.external_gw_ip $jsonFile) "   "
+  #test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.netmask $jsonFile "   "
+  #test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.network_prefix $jsonFile)" "   "
+  #test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.external_gw_ip $jsonFile) "   "
 fi
 #
 #
@@ -125,9 +124,12 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   if [[ $(jq -c -r '.nsx.config.ip_pools | length' $jsonFile) -ne 2 ]] ; then echo "   +++ 2 NSX ip_pools must be configured" ; exut 255 ; fi
   for item in $(jq -c -r .nsx.config.ip_pools[] $jsonFile)
   do
+    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.ip_pools[] have a name defined"
+    test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .cidr)" "   "
+    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .gateway)" "   "
     test_if_variable_is_valid_ip "$(echo $item | jq -c -r .start)" "   "
     test_if_variable_is_valid_ip "$(echo $item | jq -c -r .end)" "   "
-    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.ip_pools[] have a name defined"
+
   done
   test_if_json_variable_is_defined .nsx.config.segments_overlay $jsonFile "   "
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
