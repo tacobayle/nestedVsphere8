@@ -34,20 +34,20 @@ vcenter_networks=$(echo $response_body)
 data_network_ids=[]
 for item in $(echo $vcenter_networks | jq -c -r .[])
 do
-  if [[ $(echo $item | jq -r .name) == $(jq -r .vcenter.vds.portgroup.management.name $jsonFile) ]] ; then
+  if [[ $(echo $item | jq -r .name) == $(jq -r .vsphere_networks.vsphere.management.port_group_name $jsonFile) ]] ; then
     management_network_id=$(echo $item | jq -r .network)
   fi
 done
 for item in $(echo $vcenter_networks | jq -c -r .[])
 do
-  if [[ $(echo $item | jq -r .name) == $(jq -r .vcenter.vds.portgroup.nsx_overlay_edge.name $jsonFile)-pg ]] ; then
+  if [[ $(echo $item | jq -r .name) == $(jq -r .nsx_networks.nsx.nsx_overlay_edge.pg_name $jsonFile)-pg ]] ; then
     data_network_id=$(echo $item | jq -r .network)
     data_network_ids=$(echo $data_network_ids | jq '. += ["'$data_network_id'"]')
   fi
 done
 for item in $(echo $vcenter_networks | jq -c -r .[])
 do
-  if [[ $(echo $item | jq -r .name) == $(jq -r .vcenter.vds.portgroup.nsx_external.name $jsonFile)-pg ]] ; then
+  if [[ $(echo $item | jq -r .name) == $(jq -r .nsx_networks.nsx.nsx_external.pg_name $jsonFile)-pg ]] ; then
     data_network_id=$(echo $item | jq -r .network)
     data_network_ids=$(echo $data_network_ids | jq '. += ["'$data_network_id'"]')
   fi
@@ -61,7 +61,7 @@ do
   fi
 done
 edge_ids="[]"
-for edge_index in $(seq 1 $(jq -r '.vcenter.vds.portgroup.management.nsx_edge | length' $jsonFile ))
+for edge_index in $(seq 1 $(jq -r '.vcenter_underlay.networks.vsphere.management.nsx_edge | length' $jsonFile ))
 do
   edge_count=$((edge_index-1)) # starts at 0
   name=$(jq -r .nsx.config.edge_node.basename $jsonFile)$edge_index
@@ -69,9 +69,9 @@ do
   cpu=$(jq -r .nsx.config.edge_node.cpu $jsonFile)
   memory=$(jq -r .nsx.config.edge_node.memory $jsonFile)
   disk=$(jq -r .nsx.config.edge_node.disk $jsonFile)
-  gateway=$(jq -r .vcenter.vds.portgroup.management.gateway $jsonFile)
-  prefix_length=$(jq -r .vcenter.vds.portgroup.management.prefix $jsonFile)
-  ip=$(jq -r .vcenter.vds.portgroup.management.nsx_edge[$edge_count] $jsonFile)
+  gateway=$(jq -r .vcenter_underlay.networks.vsphere.management.gateway $jsonFile)
+  prefix_length=$(jq -r .vcenter_underlay.networks.vsphere.management.prefix $jsonFile)
+  ip=$(jq -r .vcenter_underlay.networks.vsphere.management.nsx_edge[$edge_count] $jsonFile)
   host_switch_count=0
   new_json="{\"host_switch_spec\": {\"host_switches\": [], \"resource_type\": \"StandardHostSwitchSpec\"}}"
   for host_switch in $(jq -c -r .nsx.config.edge_node.host_switch_spec.host_switches[] $jsonFile)

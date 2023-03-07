@@ -11,6 +11,22 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   rm -f /root/nsx3.json
   nsx_json=$(jq -c -r . $jsonFile | jq .)
   #
+  echo "   +++ Adding prefix for management network..."
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
+  nsx_json=$(echo $nsx_json | jq '.vcenter_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
+  #
+  echo "   +++ Adding prefix for NSX external network..."
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.nsx.external.netmask' $jsonFile) "   ++++++")
+  nsx_json=$(echo $nsx_json | jq '.vcenter_underlay.networks.nsx.external += {"prefix": "'$(echo $prefix)'"}')
+  #
+  echo "   +++ Adding nsx networks..."
+  networks=$(jq -c -r '.networks' /nestedVsphere8/02_external_gateway/variables.json)
+  nsx_json=$(echo $nsx_json | jq '. += {"nsx_networks": '$(echo $networks)'}')
+  #
+  echo "   +++ Adding vsphere networks..."
+  networks=$(jq -c -r '.networks' /nestedVsphere8/03_nested_vsphere/variables.json)
+  nsx_json=$(echo $nsx_json | jq '. += {"vsphere_networks": '$(echo $networks)'}')
+  #
   echo "   +++ Adding ip_pools details..."
   ip_pools=[]
   ip_pool_0=$(jq -c -r '.ip_pools[0]' $localJsonFile)

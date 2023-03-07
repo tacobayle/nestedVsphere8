@@ -7,15 +7,18 @@
     "nsx": {
       "nsx_external": {
         "max_mtu": 1700,
-        "name": "nsx_external"
+        "name": "nsx_external",
+        "pg_name": "nsx_external-pg"
       },
       "nsx_overlay_edge": {
         "max_mtu": 1700,
-        "name": "nsx_overlay_edge"
+        "name": "nsx_overlay_edge",
+        "pg_name": "nsx_overlay_edge-pg"
       },
       "nsx_overlay": {
         "max_mtu": 1700,
-        "name": "nsx_overlay"
+        "name": "nsx_overlay",
+        "pg_name": "nsx_overlay"
       }
     }
   }

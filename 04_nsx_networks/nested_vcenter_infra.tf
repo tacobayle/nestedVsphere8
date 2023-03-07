@@ -27,7 +27,7 @@ resource "vsphere_distributed_virtual_switch" "network_nsx_external" {
 
 resource "vsphere_distributed_port_group" "pg_nsx_external" {
   count = 1
-  name                            = "${var.networks.nsx.nsx_external.name}-pg"
+  name                            = var.networks.nsx.nsx_external.pg_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.network_nsx_external[0].id
   vlan_id = 0
 }
@@ -50,7 +50,7 @@ resource "vsphere_distributed_virtual_switch" "network_nsx_overlay" {
 
 resource "vsphere_distributed_port_group" "pg_nsx_overlay" {
   count = 1
-  name                            = "${var.networks.nsx.nsx_overlay.name}-pg"
+  name                            = var.networks.nsx.nsx_overlay.pg_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.network_nsx_overlay[0].id
   vlan_id = 0
 }
@@ -73,7 +73,7 @@ resource "vsphere_distributed_virtual_switch" "network_nsx_overlay_edge" {
 
 resource "vsphere_distributed_port_group" "pg_nsx_overlay_edge" {
   count = 1
-  name                            = "${var.networks.nsx.nsx_overlay_edge.name}-pg"
+  name                            = var.networks.nsx.nsx_overlay_edge.pg_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.network_nsx_overlay_edge[0].id
   vlan_id = 0
 }
