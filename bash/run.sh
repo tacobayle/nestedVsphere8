@@ -16,3 +16,9 @@ kubectl exec -it test-pod2 -- /bin/bash
 
 /bin/bash nestedVsphere8/apply.sh
 /bin/bash /nestedVsphere8/00_pre_check/00.sh
+/bin/bash /nestedVsphere8/00_pre_check/01.sh
+/bin/bash /nestedVsphere8/00_pre_check/02.sh
+/bin/bash /nestedVsphere8/00_pre_check/03.sh
+/bin/bash /nestedVsphere8/00_pre_check/04.sh
+/bin/bash /nestedVsphere8/00_pre_check/05.sh
+/bin/bash /nestedVsphere8/00_pre_check/06.sh

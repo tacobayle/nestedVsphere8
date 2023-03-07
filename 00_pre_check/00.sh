@@ -66,6 +66,15 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   done
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.external.name $jsonFile "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.external.netmask $jsonFile "   "
+  test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.external.tier0_ips $jsonFile "   "
+  for ip in $(jq -c -r .vcenter_underlay.networks.nsx.external.tier0_ips[] $jsonFile)
+  do
+    test_if_variable_is_valid_ip $ip "   "
+  done
+  if [[ $(jq -c -r '.vcenter_underlay.networks.nsx.external.tier0_ips | length' $jsonFile) -lt $(jq -c -r '.nsx.config.tier0s | length' $jsonFile) ]] ; then
+    echo "   +++ not enough IP defined in .vcenter_underlay.networks.nsx.external.tier0_ips for the amount of tier0s defined in .nsx.config.tier0s"
+    exit 255
+  fi
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.external.tier0_vips $jsonFile "   "
   for ip in $(jq -c -r .vcenter_underlay.networks.nsx.external.tier0_vips[] $jsonFile)
   do
