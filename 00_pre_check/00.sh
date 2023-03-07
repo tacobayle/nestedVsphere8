@@ -123,6 +123,8 @@ test_if_json_variable_is_defined .external_gw.ntp $jsonFile "   "
 echo ""
 echo "==> Checking vCenter Variables"
 test_if_json_variable_is_defined .vcenter.name $jsonFile "   "
+test_if_json_variable_is_defined .vcenter.iso_url $jsonFile "   "
+test_if_json_variable_is_defined .vcenter.esxi.iso_url $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.datacenter $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.cluster $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.timezone $jsonFile "   "
@@ -226,6 +228,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
 #    done
 #  done
 ##
+  test_if_json_variable_is_defined .nsx.ova_url "   "
   edge_list=[]
   echo "   +++ testing if there is enough IP for edge node defined in .nsx.config.edge_clusters[].member_name[]"
   edge_amount=$(jq -c -r '.vcenter_underlay.networks.vsphere.management.nsx_edge | length' $jsonFile)
@@ -300,9 +303,10 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
 
   #
   #
-  if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
+  if [[ $(jq -c -r .nsx.avi $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX ALB Variables"
+  test_if_json_variable_is_defined .nsx.avi.ova_url "   "
   test_if_json_variable_is_defined .nsx.avi.config.cloud.networks_data $jsonFile "   "
   for item in $(jq -c -r .nsx.avi.config.cloud.networks_data[] $jsonFile)
   do

@@ -37,7 +37,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   ip_pool_0=$(echo $ip_pool_0 | jq '. += {"end": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.end $jsonFile)'"}')
   ip_pool_0=$(echo $ip_pool_0 | jq '. += {"cidr": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.cidr $jsonFile)'"}')
   ip_pools=$(echo $ip_pools | jq '. += ['$(echo $ip_pool_0)']')
-  ip_pool_1=$(jq -c -r '.ip_pools[0]' $localJsonFile)
+  ip_pool_1=$(jq -c -r '.ip_pools[1]' $localJsonFile)
   ip_pool_1=$(echo $ip_pool_1 | jq '. += {"gateway": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.gateway $jsonFile)'"}')
   ip_pool_1=$(echo $ip_pool_1 | jq '. += {"start": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)'"}')
   ip_pool_1=$(echo $ip_pool_1 | jq '. += {"end": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)'"}')
