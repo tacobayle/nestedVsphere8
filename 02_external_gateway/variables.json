@@ -18,7 +18,7 @@
       "nsx_overlay": {
         "max_mtu": 1700,
         "name": "nsx_overlay",
-        "port_group_name": "nsx_overlay"
+        "port_group_name": "nsx_overlay-pg"
       }
     }
   }
