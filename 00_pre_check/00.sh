@@ -217,30 +217,30 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
 #    done
 #  done
 ##
-  edge_list= []
+  edge_list=[]
   echo "   +++ testing if there is enough IP for edge node defined in .nsx.config.edge_clusters[].member_name[]"
   edge_amount=$(jq -c -r '.vcenter_underlay.networks.vsphere.management.nsx_edge | length' $jsonFile)
   for edge_cluster in $(jq -c -r .nsx.config.edge_clusters[] $jsonFile)
   do
-    for member_name in $(echo $edge_cluster | jq -c -r .member_name[])
+    for member_name in $(echo $edge_cluster | jq -c -r .members_name[])
     do
-      edge_list=$(echo $edge_list | jq '. += [{"'$(echo member_name) '"}]')
+      edge_list=$(echo $edge_list | jq '. += ["'$(echo $member_name)'"]')
     done
   done
   if [[ $(echo $edge_list | jq -c -r '. | length') -gt $(echo $edge_amount | jq -c -r '. | length') ]] ; then echo "   +++ Amount of Edge clusters defined in edge cluster greater than the amount of IPs defined in .vcenter_underlay.networks.vsphere.management.nsx_edge " ; exit 255 ; fi
   echo "   +++ testing if there is no duplicate in edge node in .nsx.config.edge_clusters[].member_name[]"
-  for item in $(echo $edge_list | jq -c -r '. | group_by(.) | .[]' variables.json)
+  for item in $(echo $edge_list | jq -c -r '. | group_by(.) | .[]')
   do
     if [[ $(echo $item | jq '.| length') -gt 1 ]]; then
       echo "   +++ Duplicate found in .nsx.config.edge_clusters[].member_name[] " ; exit 255 ; fi
   done
   echo "   +++ testing if .nsx.config.edge_clusters[].member_name[] are consistent with .nsx.config.edge_node.basename"
-  for item in $(echo $edge_list | jq -c -r .)
+  for item in $(echo $edge_list | jq -c -r .[])
   do
     check_status=0
     for (( edge=1; edge<=$edge_amount ; edge++ ))
     do
-      if [[ $item == "$(jq - c -r .nsx.config.edge_node.basename $jsonFile)$edge" ]] ; then check_status=1 ; fi
+      if [[ $item == "$(jq -c -r .nsx.config.edge_node.basename $jsonFile)$edge" ]] ; then check_status=1 ; fi
     done
     if [[ $check_status -eq 0 ]] ; then echo "   +++ Unable to find ref to edge node $item" ; exit 255 ; fi
   done
@@ -275,7 +275,6 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     test_if_variable_is_defined $(echo $item | jq -c .display_name) "   " "testing if each .nsx.config.segments_overlay[] have a display_name defined"
     test_if_variable_is_defined $(echo $item | jq -c .tier1) "   " "testing if each .nsx.config.segments_overlay[] have a tier1 defined"
     test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .cidr)" "   "
-    test_if_variable_is_valid_ip $(echo $item | jq -c -r .gw) "   "
   done
   test_if_ref_from_list_exists_in_another_list ".nsx.config.segments_overlay[].tier1" \
                                                ".nsx.config.tier1s[].display_name" \

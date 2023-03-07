@@ -15,3 +15,4 @@ sleep 2
 kubectl exec -it test-pod2 -- /bin/bash
 
 /bin/bash nestedVsphere8/apply.sh
+/bin/bash /nestedVsphere8/00_pre_check/00.sh
