@@ -64,7 +64,6 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   do
     test_if_variable_is_valid_ip $ip "   "
   done
-  test_if_json_variable_is_defined .vcenter_underlay.networks.vsphere.management.nsx_ip $jsonFile "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.external.name $jsonFile "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.external.netmask $jsonFile "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.external.tier0_vips $jsonFile "   "
@@ -72,12 +71,24 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   do
     test_if_variable_is_valid_ip $ip "   "
   done
+  if [[ $(jq -c -r '.vcenter_underlay.networks.nsx.external.tier0_vips | length' $jsonFile) -ge $(jq -c -r '.nsx.config.edge_clusters | length' $jsonFile) ]] ; then
+    echo "   +++ not enough IP defined in .vcenter_underlay.networks.nsx.external.tier0_vips for the amount of edge_cluster defined in .nsx.config.edge_clusters"
+    exit 255
+  fi
   test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.external.external_gw_ip $jsonFile) "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay.name $jsonFile "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.cidr)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.gateway)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.start)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.end)" "   "
   #test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay.netmask $jsonFile "   "
   #test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.network_prefix $jsonFile)" "   "
   #test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay.external_gw_ip $jsonFile) "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.name $jsonFile "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.cidr)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.gateway)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.start)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.end)" "   "
   #test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.netmask $jsonFile "   "
   #test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.network_prefix $jsonFile)" "   "
   #test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.external_gw_ip $jsonFile) "   "
@@ -111,41 +122,145 @@ test_if_json_variable_is_defined .vcenter.esxi.basename $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.esxi.cpu $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.esxi.memory $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.esxi.disks $jsonFile "   "
-if [[ $(jq -c -r '.vcenter.esxi.disks | length' $jsonFile) -ne 3 ]] ; then echo "   +++ 3 ESXi host's disks must be configured" ; exut 255 ; fi
+if [[ $(jq -c -r '.vcenter.esxi.disks | length' $jsonFile) -ne 3 ]] ; then echo "   +++ 3 ESXi host's disks must be configured" ; exit 255 ; fi
 #
 #
 #
 if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX Variables"
-  test_if_json_variable_is_defined .nsx.config.uplink_profiles $jsonFile "   "
-  test_if_json_variable_is_defined .nsx.config.transport_zones $jsonFile "   "
-  test_if_json_variable_is_defined .nsx.config.ip_pools $jsonFile "   "
-  if [[ $(jq -c -r '.nsx.config.ip_pools | length' $jsonFile) -ne 2 ]] ; then echo "   +++ 2 NSX ip_pools must be configured" ; exut 255 ; fi
-  for item in $(jq -c -r .nsx.config.ip_pools[] $jsonFile)
+  # .nsx.config.ip_pools
+#  test_if_json_variable_is_defined .nsx.config.ip_pools $jsonFile "   "
+#  if [[ $(jq -c -r '.nsx.config.ip_pools | length' $jsonFile) -ne 2 ]] ; then echo "   +++ 2 NSX ip_pools must be configured" ; exit 255 ; fi
+#  for item in $(jq -c -r .nsx.config.ip_pools[] $jsonFile)
+#  do
+#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.ip_pools[] have a name defined"
+#    test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .cidr)" "   "
+#    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .gateway)" "   "
+#    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .start)" "   "
+#    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .end)" "   "
+#  done
+#  # .nsx.config.uplink_profiles
+#  test_if_json_variable_is_defined .nsx.config.uplink_profiles $jsonFile "   "
+#  for item in $(jq -c -r .nsx.config.uplink_profiles[] $jsonFile)
+#  do
+#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.uplink_profiles[] have a name defined"
+#    test_if_variable_is_defined $(echo $item | jq -c .mtu) "   " "testing if each .nsx.config.uplink_profiles[] have a mtu defined"
+#    test_if_variable_is_defined $(echo $item | jq -c .transport_vlan) "   " "testing if each .nsx.config.uplink_profiles[] have a transport_vlan defined"
+#    test_if_variable_is_defined $(echo $item | jq -c .teaming.policy) "   " "testing if each .nsx.config.uplink_profiles[] have a .teaming.policy defined"
+#    if [[ $(echo $item | jq -c .teaming.policy) != "FAILOVER_ORDER" ]]; then echo "   +++ teaming,policy $(echo $item | jq -c .teaming.policy) is not supported" ; exit 255 ; fi
+#    if [[ $(echo $item | jq -c '.teaming.active_list | length') -ne 1 ]] ; then echo "   +++ Only 1 active_list in .nsx.config.uplink_profiles[].teaming.active_list is supported" ; exit 255 ; fi
+#    if [[ $(echo $item | jq -c .teaming.active_list[0].uplink_name) != "uplink-1" ]]; then echo "   +++ uplink_name $(echo $item | jq -c .teaming.active_list[0].uplink_name) is not supported" ; exit 255 ; fi
+#    if [[ $(echo $item | jq -c .teaming.active_list[0].uplink_type) != "PNIC" ]]; then echo "   +++ uplink_name $(echo $item | jq -c .teaming.active_list[0].uplink_type) is not supported" ; exit 255 ; fi
+#  done
+#  # .nsx.config.transport_zones
+#  test_if_json_variable_is_defined .nsx.config.transport_zones $jsonFile "   "
+#  for item in $(jq -c -r .nsx.config.transport_zones[] $jsonFile)
+#  do
+#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.transport_zones[] have a name defined"
+#    test_if_variable_is_defined $(echo $item | jq -c .type) "   " "testing if each .nsx.config.transport_zones[] have a type defined"
+#  done
+#  # .nsx.config.segments
+#  test_if_json_variable_is_defined .nsx.config.segments $jsonFile "   "
+#  for item in $(jq -c -r .nsx.config.segments[] $jsonFile)
+#  do
+#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.segments[] have a name defined"
+#    test_if_variable_is_defined $(echo $item | jq -c .vlan) "   " "testing if each .nsx.config.segments[] have a vlan defined"
+#    test_if_variable_is_defined $(echo $item | jq -c .description) "   " "testing if each .nsx.config.segments[] have a description defined"
+#  done
+#  test_if_ref_from_list_exists_in_another_list ".nsx.config.segments[].transport_zone" \
+#                                               ".nsx.config.transport_zones[].name" \
+#                                               "$jsonFile" \
+#                                               "   +++ Checking transport_zone in nsx.config.segments" \
+#                                               "   ++++++ transport_zone " \
+#                                               "   ++++++ERROR++++++ transport_zone not found: "
+#  # .nsx.config.transport_node_profiles
+#  test_if_json_variable_is_defined .nsx.config.transport_node_profiles $jsonFile "   "
+#  for item in $(jq -c -r .nsx.config.transport_node_profiles[] $jsonFile)
+#  do
+#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.transport_node_profiles[] have a name defined"
+#    test_if_variable_is_defined $(echo $item | jq -c .description) "   " "testing if each .nsx.config.transport_node_profiles[] have a description defined"
+#    for switch in $(echo $item | jq -c -r .switches[])
+#    do
+#      test_if_variable_is_defined $(echo $switch | jq -c .name) "   " "testing if each .nsx.config.transport_node_profiles[].switches[] have a name defined"
+#      if [[ $($switch | jq -c .mode) != "STANDARD" ]]; then echo "   +++ switch mode  $($switch | jq -c .mode) is not supported" ; exit 255 ; fi
+#      if [[ $($switch | jq -c .type) != "VDS" ]]; then echo "   +++ switch type  $($switch | jq -c .type) is not supported" ; exit 255 ; fi
+#      test_if_ref_from_a_nested_list_exists_in_another_list ".nsx.config.transport_node_profiles[]" \
+#                                                            ".switches[]" \
+#                                                            ".uplink_profile_name" \
+#                                                            ".nsx.config.uplink_profiles[].name" \
+#                                                            "$jsonFile" \
+#                                                            "   +++ Checking .nsx.config.transport_node_profiles[].switches[].uplink_profile_name exists in .nsx.config.uplink_profiles[].name" \
+#                                                            "   ++++++ transport_node_profile" \
+#                                                            "   ++++++ERROR++++++ transport_node_profile not found: "
+#      test_if_ref_from_a_nested_list_exists_in_another_list ".nsx.config.transport_node_profiles[]" \
+#                                                            ".switches[]" \
+#                                                            ".ip_pool_name" \
+#                                                            ".nsx.config.ip_pools[].name" \
+#                                                            "$jsonFile" \
+#                                                            "   +++ Checking .nsx.config.transport_node_profiles[].switches[].ip_pool_name exists in .ip_pool_name[].name" \
+#                                                            "   ++++++ ip_pool_name" \
+#                                                            "   ++++++ERROR++++++ ip_pool_name not found: "
+#      if [[ $(echo $switch | jq -c '.uplinks | length') -ne 1 ]] ; then echo "   +++ Only 1 uplinks in nsx.config.transport_node_profiles[].switches[].uplinks is supported" ; exit 255 ; fi
+#      if [[ $($switch | jq -c .uplinks[0].uplink_name) != "uplink-1" ]]; then echo "   +++ uplink_name  $($switch | jq -c .uplinks[0].uplink_name) is not supported" ; exit 255 ; fi
+#      if [[ $($switch | jq -c .uplinks[0].vds_uplink_name) != "uplink1" ]]; then echo "   +++ vds_uplink_name  $($switch | jq -c .uplinks[0].vds_uplink_name) is not supported" ; exit 255 ; fi
+#      if [[ $(echo $switch | jq -c -r '.transport_zones | length' ) -ne 1 ]] ; then echo "   +++ Only 1 transport_zone in nsx.config.transport_node_profiles[].switches[].transport_zones is supported" ; exit 255 ; fi
+#      test_if_ref_from_a_nested_of_nested_list_exists_in_another_list ".nsx.config.transport_node_profiles[]" \
+#                                                                      ".switches[]" \
+#                                                                      ".transport_zones[]" \
+#                                                                      ".transport_zone_name" \
+#                                                                      ".nsx.config.transport_zones[].name" \
+#                                                                      "$jsonFile" \
+#                                                                      "   +++ Checking  .nsx.config.transport_node_profiles[].switches[].transport_zones[].transport_zone_name.name exists in .nsx.config.transport_zones[].name" \
+#                                                                      "   ++++++ transport_zone" \
+#                                                                      "   ++++++ERROR++++++ transport_zone not found: "
+#    done
+#  done
+##
+  edge_list= []
+  echo "   +++ testing if there is enough IP for edge node defined in .nsx.config.edge_clusters[].member_name[]"
+  edge_amount=$(jq -c -r '.vcenter_underlay.networks.vsphere.management.nsx_edge | length' $jsonFile)
+  for edge_cluster in $(jq -c -r .nsx.config.edge_clusters[] $jsonFile)
   do
-    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.ip_pools[] have a name defined"
-    test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .cidr)" "   "
-    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .gateway)" "   "
-    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .start)" "   "
-    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .end)" "   "
-
+    for member_name in $(echo $edge_cluster | jq -c -r .member_name[])
+    do
+      edge_list=$(echo $edge_list | jq '. += [{"'$(echo member_name) '"}]')
+    done
   done
-  test_if_json_variable_is_defined .nsx.config.segments_overlay $jsonFile "   "
-  for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+  if [[ $(echo $edge_list | jq -c -r '. | length') -gt $(echo $edge_amount | jq -c -r '. | length') ]] ; then echo "   +++ Amount of Edge clusters defined in edge cluster greater than the amount of IPs defined in .vcenter_underlay.networks.vsphere.management.nsx_edge " ; exit 255 ; fi
+  echo "   +++ testing if there is no duplicate in edge node in .nsx.config.edge_clusters[].member_name[]"
+  for item in $(echo $edge_list | jq -c -r '. | group_by(.) | .[]' variables.json)
   do
-    test_if_variable_is_defined $(echo $item | jq -c .tier1) "   " "testing if each .nsx.config.segments_overlay[] have a tier1 defined"
+    if [[ $(echo $item | jq '.| length') -gt 1 ]]; then
+      echo "   +++ Duplicate found in .nsx.config.edge_clusters[].member_name[] " ; exit 255 ; fi
   done
+  echo "   +++ testing if .nsx.config.edge_clusters[].member_name[] are consistent with .nsx.config.edge_node.basename"
+  for item in $(echo $edge_list | jq -c -r .)
+  do
+    check_status=0
+    for (( edge=1; edge<=$edge_amount ; edge++ ))
+    do
+      if [[ $item == "$(jq - c -r .nsx.config.edge_node.basename $jsonFile)$edge" ]] ; then check_status=1 ; fi
+    done
+    if [[ $check_status -eq 0 ]] ; then echo "   +++ Unable to find ref to edge node $item" ; exit 255 ; fi
+  done
+  # .nsx.config.tier0s
+  for item in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
+  do
+    test_if_variable_is_defined $(echo $item | jq -c .display_name) "   " "testing if each .nsx.config.tier0s[] have a display_name defined"
+    test_if_ref_from_list_exists_in_another_list ".nsx.config.tier0s[].edge_cluster_name" \
+                                                 ".nsx.config.edge_clusters[].display_name" \
+                                                 "$jsonFile" \
+                                                 "   +++ Checking edge_cluster_name in tiers 0" \
+                                                 "   ++++++  edge_cluster_name" \
+                                                 "   ++++++ERROR++++++ edge_cluster_name not found: "
+  done
+  # .nsx.config.tier1s
   test_if_json_variable_is_defined .nsx.config.tier1s $jsonFile "   "
   for item in $(jq -c -r .nsx.config.tier1s[] $jsonFile)
   do
     test_if_variable_is_defined $(echo $item | jq -c .display_name) "   " "testing if each .nsx.config.tier1s[] have a display_name defined"
     test_if_variable_is_defined $(echo $item | jq -c .tier0) "   " "testing if each .nsx.config.tier1s[] have a tier0 defined"
-  done
-  test_if_json_variable_is_defined .nsx.config.tier0s $jsonFile "   "
-  for item in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
-  do
-    test_if_variable_is_defined "$(echo $item | jq -c .display_name)" "   " "testing if each .nsx.config.tier0s[] have a display_name defined"
   done
   test_if_ref_from_list_exists_in_another_list ".nsx.config.tier1s[].tier0" \
                                                ".nsx.config.tier0s[].display_name" \
@@ -153,12 +268,28 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
                                                "   +++ Checking Tiers 0 in tiers 1" \
                                                "   ++++++ Tier0 " \
                                                "   ++++++ERROR++++++ Tier0 not found: "
+  # .nsx.config.segments_overlay
+  test_if_json_variable_is_defined .nsx.config.segments_overlay $jsonFile "   "
+  for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+  do
+    test_if_variable_is_defined $(echo $item | jq -c .display_name) "   " "testing if each .nsx.config.segments_overlay[] have a display_name defined"
+    test_if_variable_is_defined $(echo $item | jq -c .tier1) "   " "testing if each .nsx.config.segments_overlay[] have a tier1 defined"
+    test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .cidr)" "   "
+    test_if_variable_is_valid_ip $(echo $item | jq -c -r .gw) "   "
+  done
   test_if_ref_from_list_exists_in_another_list ".nsx.config.segments_overlay[].tier1" \
                                                ".nsx.config.tier1s[].display_name" \
                                                "$jsonFile" \
                                                "   +++ Checking Tiers 1 in segments_overlay" \
                                                "   ++++++ Tier1 " \
                                                "   ++++++ERROR++++++ Tier1 not found: "
+
+  test_if_json_variable_is_defined .nsx.config.tier0s $jsonFile "   "
+  for item in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
+  do
+    test_if_variable_is_defined "$(echo $item | jq -c .display_name)" "   " "testing if each .nsx.config.tier0s[] have a display_name defined"
+  done
+
   #
   #
   if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then

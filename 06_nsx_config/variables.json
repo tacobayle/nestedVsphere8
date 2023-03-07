@@ -1,4 +1,12 @@
 {
+  "ip_pools": [
+    {
+      "name": "ip_pool_tep_tn"
+    },
+    {
+      "name": "ip_pool_tep_edge"
+    }
+  ],
   "uplink_profiles": [
     {
       "name": "uplink-profile-default",
@@ -24,5 +32,91 @@
       "name": "tz_vlan",
       "type": "VLAN"
     }
-  ]
+  ],
+  "segments": [
+    {
+      "name": "segment-external",
+      "vlan": "0",
+      "transport_zone": "tz_vlan",
+      "description": "Segment configured for tier0 external connectivity"
+    }
+  ],
+  "transport_node_profiles": [
+    {
+      "name": "tnp-cluster",
+      "description": "descr1",
+      "switches": [
+        {
+          "name": "nsx-overlay-vds",
+          "mode": "STANDARD",
+          "type": "VDS",
+          "uplink_profile_name": "uplink-profile-default",
+          "ip_pool_name": "ip_pool_tep_tn",
+          "uplinks": [
+            {
+              "uplink_name": "uplink-1",
+              "vds_uplink_name": "uplink1"
+            }
+          ],
+          "transport_zones": [
+            {
+              "transport_zone_name": "tz_overlay"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "edge_node": {
+    "data_network": "segment2",
+    "host_switch_spec": {
+      "host_switches": [
+        {
+          "host_switch_name": "nsxHostSwitch_overlay",
+          "host_switch_type": "NVDS",
+          "host_switch_mode": "STANDARD",
+          "host_switch_profile_names": [
+            "uplink-profile-default"
+          ],
+          "pnics": [
+            {
+              "device_name": "fp-eth0",
+              "uplink_name": "uplink-1"
+            }
+          ],
+          "ip_pool_name": "ip_pool_tep_edge",
+          "transport_zone_names": [
+            "tz_overlay"
+          ]
+        },
+        {
+          "host_switch_name": "nsxHostSwitch_external",
+          "host_switch_type": "NVDS",
+          "host_switch_mode": "STANDARD",
+          "host_switch_profile_names": [
+            "uplink-profile-default"
+          ],
+          "pnics": [
+            {
+              "device_name": "fp-eth1",
+              "uplink_name": "uplink-1"
+            }
+          ],
+          "transport_zone_names": [
+            "tz_vlan"
+          ]
+        }
+      ]
+    }
+  },
+  "tier0s" : {
+    "ha_mode" : "ACTIVE_STANDBY"
+  },
+  "tier1s" : {
+    "route_advertisement_types": [
+      "TIER1_STATIC_ROUTES",
+      "TIER1_CONNECTED",
+      "TIER1_LB_VIP"
+    ]
+  }
 }

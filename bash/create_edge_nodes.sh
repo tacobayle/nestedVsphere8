@@ -1,85 +1,20 @@
 #!/bin/bash
 #
-if [ -f "../../variables.json" ]; then
-  jsonFile="../../variables.json"
-else
-  echo "ERROR: no json file found"
-  exit 1
-fi
+#
+source /nestedVsphere8/nsx_api.sh
+source /nestedVsphere8/bash/vcenter_api.sh
+#
+jsonFile="/root/nsx3.json"
+#
 nsx_ip=$(jq -r .vcenter_underlay.networks.vsphere.management.nsx_ip $jsonFile)
 vcenter_username=administrator
 vcenter_domain=$(jq -r .vcenter.sso.domain_name $jsonFile)
-vcenter_password=$TF_VAR_vsphere_nested_password
+vsphere_nested_password=$TF_VAR_vsphere_nested_password
 vcenter_fqdn="$(jq -r .vcenter.name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)"
 api_host="$(jq -r .vcenter.name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)"
-cookies_file="bash/create_edge_nodes_cookies.txt"
-headers_file="bash/create_edge_nodes_headers.txt"
+cookies_file="create_edge_nodes_cookies.txt"
+headers_file="create_edge_nodes_headers.txt"
 rm -f $cookies_file $headers_file
-#
-nsx_api () {
-  # $1 is the amount of retry
-  # $2 is the time to pause between each retry
-  # $3 type of HTTP method (GET, POST, PUT, PATCH)
-  # $4 cookie file
-  # $5 http header
-  # $6 http data
-  # $7 NSX IP
-  # $8 API endpoint
-  retry=$1
-  pause=$2
-  attempt=0
-  echo "HTTP $3 API call to https://$7/$8"
-  while true ; do
-    response=$(curl -k -s -X $3 --write-out "\n%{http_code}" -b $4 -H "`grep -i X-XSRF-TOKEN $5 | tr -d '\r\n'`" -H "Content-Type: application/json" -d "$6" https://$7/$8)
-    response_body=$(sed '$ d' <<< "$response")
-    response_code=$(tail -n1 <<< "$response")
-    if [[ $response_code == 2[0-9][0-9] ]] ; then
-      echo "  HTTP $3 API call to https://$7/$8 was successful"
-      break
-    else
-      echo "  Retrying HTTP $3 API call to https://$7/$8, http response code: $response_code, attempt: $attempt"
-    fi
-    if [ $attempt -eq $retry ]; then
-      echo "  FAILED HTTP $3 API call to https://$7/$8, response code was: $response_code"
-      echo "$response_body"
-      exit 255
-    fi
-    sleep $pause
-    ((attempt++))
-  done
-}
-#
-vcenter_api () {
-  # $1 is the amount of retry
-  # $2 is the time to pause between each retry
-  # $3 type of HTTP method (GET, POST, PUT, PATCH)
-  # $4 vCenter token
-  # $5 http data
-  # $6 vCenter FQDN
-  # $7 API endpoint
-  retry=$1
-  pause=$2
-  attempt=0
-  echo "HTTP $3 API call to https://$6/$7"
-  while true ; do
-    response=$(curl -k -s -X $3 --write-out "\n%{http_code}" -H "vmware-api-session-id: $4" -H "Content-Type: application/json" -d "$5" https://$6/$7)
-    response_body=$(sed '$ d' <<< "$response")
-    response_code=$(tail -n1 <<< "$response")
-    if [[ $response_code == 2[0-9][0-9] ]] ; then
-      echo "  HTTP $3 API call to https://$6/$7 was successful"
-      break
-    else
-      echo "  Retrying HTTP $3 API call to https://$6/$7, http response code: $response_code, attempt: $attempt"
-    fi
-    if [ $attempt -eq $retry ]; then
-      echo "  FAILED HTTP $3 API call to https://$6/$7, response code was: $response_code"
-      echo "$response_body"
-      exit 255
-    fi
-    sleep $pause
-    ((attempt++))
-  done
-}
 #
 /bin/bash /nestedVsphere8/bash/create_nsx_api_session.sh admin $TF_VAR_nsx_password $nsx_ip $cookies_file $headers_file
 nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_ip "api/v1/fabric/compute-managers"
@@ -91,7 +26,7 @@ do
     vc_id=$(echo $item | jq -r .id)
   fi
 done
-token=$(/bin/bash ../../nested_vsphere/bash/create_vcenter_api_session.sh $vcenter_username $vcenter_domain $vcenter_password $api_host)
+token=$(/bin/bash /nestedVsphere8/bash/create_vcenter_api_session.sh "$vcenter_username" "$vcenter_domain" "$vsphere_nested_password" "$api_host")
 vcenter_api 6 10 "GET" $token "" $api_host "api/vcenter/datastore"
 storage_id=$(echo $response_body | jq -r .[0].datastore)
 vcenter_api 6 10 "GET" $token "" $api_host "api/vcenter/network"

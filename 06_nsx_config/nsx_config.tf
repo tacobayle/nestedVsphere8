@@ -8,7 +8,7 @@ resource "null_resource" "ansible_init_manager" {
   depends_on = [null_resource.waiting_for_nsx_api]
 
   provisioner "local-exec" {
-    command = "ansible-playbook ansible/ansible_init_manager.yml -e @/root/nsx3.json"
+    command = "ansible-playbook /nestedVsphere8/06_nsx_config/ansible/ansible_init_manager.yml -e @/root/nsx3.json"
   }
 }
 
@@ -40,9 +40,6 @@ resource "nsxt_policy_ip_pool_static_subnet" "static_subnet" {
 
 }
 
-#### restart here
-
-
 data "nsxt_policy_transport_zone" "transport_zone_vlan" {
   depends_on = [null_resource.register_compute_manager]
   count = length(var.nsx.config.segments)
@@ -61,28 +58,28 @@ resource "nsxt_policy_segment" "segments_for_multiple_vds" {
 resource "null_resource" "create_transport_node_profiles" {
   depends_on = [nsxt_policy_ip_pool.pools, nsxt_policy_ip_pool_static_subnet.static_subnet, nsxt_policy_segment.segments_for_multiple_vds]
   provisioner "local-exec" {
-    command = "ansible-playbook ansible/create_transport_node_profiles.yml -e @../../variables.json"
+    command = "ansible-playbook /nestedVsphere8/06_nsx_config/ansible/create_transport_node_profiles.yml -e @/root/nsx3.json"
   }
 }
 
 resource "null_resource" "create_host_transport_nodes" {
   depends_on = [null_resource.create_transport_node_profiles]
   provisioner "local-exec" {
-    command = "/bin/bash bash/create_host_transport_nodes.sh"
+    command = "/bin/bash /nestedVsphere8/bash/create_host_transport_nodes.sh"
   }
 }
 
 resource "null_resource" "create_edge_nodes" {
   depends_on = [null_resource.register_compute_manager]
   provisioner "local-exec" {
-    command = "/bin/bash bash/create_edge_nodes.sh"
+    command = "/bin/bash /nestedVsphere8/bash/create_edge_nodes.sh"
   }
 }
 
 resource "null_resource" "create_edge_clusters" {
   depends_on = [null_resource.create_edge_nodes]
   provisioner "local-exec" {
-    command = "/bin/bash bash/create_edge_clusters.sh"
+    command = "/bin/bash /nestedVsphere8/bash/create_edge_clusters.sh"
   }
 }
 
@@ -130,6 +127,6 @@ resource "nsxt_policy_fixed_segment" "segments" {
   connectivity_path   = data.nsxt_policy_tier1_gateway.tier1s_for_segments_overlay[count.index].path
   transport_zone_path = data.nsxt_policy_transport_zone.tzs_for_segments_overlay[count.index].path
   subnet {
-    cidr        = "${cidrhost(var.nsx.config.segments_overlay[count.index].cidr, var.nsx.config.segments_overlay[count.index].gw)}/${split("/", var.nsx.config.segments_overlay[count.index].cidr)[1]}"
+    cidr        = "${cidrhost(var.nsx.config.segments_overlay[count.index].cidr, "1")}/${split("/", var.nsx.config.segments_overlay[count.index].cidr)[1]}"
   }
 }
