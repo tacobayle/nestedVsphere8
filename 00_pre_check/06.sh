@@ -43,7 +43,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   ip_pool_1=$(echo $ip_pool_1 | jq '. += {"end": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)'"}')
   ip_pool_1=$(echo $ip_pool_1 | jq '. += {"cidr": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.cidr $jsonFile)'"}')
   ip_pools=$(echo $ip_pools | jq '. += ['$(echo $ip_pool_1)']')
-  nsx_json=$(echo $nsx_json | jq '.nsx.config.ip_pools += ['$(echo $ip_pools)']')
+  nsx_json=$(echo $nsx_json | jq '.nsx.config.ip_pools += '$(echo $ip_pools | jq -c -r .)'')
   #
   echo "   +++ Adding uplink_profiles details..."
   uplink_profiles=$(jq -c -r '.uplink_profiles' $localJsonFile)
@@ -58,7 +58,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   nsx_json=$(echo $nsx_json | jq '.nsx.config += {"segments": '$(echo $segments | jq -c -r .)'}')
   #
   echo "   +++ Adding transport_node_profiles details..."
-  transport_node_profiles=$(jq -c -r '.transport_node_profiles' $localJsonFile)
+  transport_node_profiles=$(jq -c -r '.transport_node_profiles' $localJsonFile | jq '.[0].switches[0] += {"name": "'$(jq -c -r .networks.nsx.nsx_overlay.name'"))')
   nsx_json=$(echo $nsx_json | jq '.nsx.config += {"transport_node_profiles": '$(echo $transport_node_profiles | jq -c -r .)'}')
   #
   echo "   +++ Adding edge_node details..."

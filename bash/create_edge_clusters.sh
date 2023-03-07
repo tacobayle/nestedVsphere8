@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #
-source /nestedVsphere8/nsx_api.sh
+source /nestedVsphere8/bash/nsx_api.sh
 #
 jsonFile="/root/nsx3.json"
 #

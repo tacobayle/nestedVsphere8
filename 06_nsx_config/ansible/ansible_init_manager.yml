@@ -46,22 +46,6 @@
         nested_nsx: "{{ item.nested | default(omit) }}"
         resource_type: "TransportZone"
         display_name: "{{ item.name }}"
-        transport_type: "{{ item.type }}"
+        tz_type: "{{ item.type }}"
         state: "present"
       loop: "{{ nsx.config.transport_zones }}"
-      when:
-        - item.type == "OVERLAY"
-
-    - name: Create transport zones for VLAN
-      nsxt_transport_zones:
-        hostname: "{{ vcenter_underlay.networks.vsphere.management.nsx_ip }}"
-        username: "admin"
-        password: "{{ lookup('env', 'TF_VAR_nsx_password') }}"
-        validate_certs: False
-        resource_type: "TransportZone"
-        display_name: "{{ item.name }}"
-        transport_type: "{{ item.type }}"
-        state: "present"
-      loop: "{{ nsx.config.transport_zones }}"
-      when:
-        - item.type == "VLAN"

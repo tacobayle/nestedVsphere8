@@ -26,11 +26,11 @@
   "transport_zones": [
     {
       "name": "tz_overlay",
-      "type": "OVERLAY"
+      "type": "OVERLAY_STANDARD"
     },
     {
       "name": "tz_vlan",
-      "type": "VLAN"
+      "type": "VLAN_BACKED"
     }
   ],
   "segments": [
@@ -47,7 +47,6 @@
       "description": "descr1",
       "switches": [
         {
-          "name": "nsx-overlay-vds",
           "mode": "STANDARD",
           "type": "VDS",
           "uplink_profile_name": "uplink-profile-default",

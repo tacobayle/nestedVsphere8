@@ -303,8 +303,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX ALB Variables"
-  test_if_json_variable_is_defined .avi.config.cloud.networks_data $jsonFile "   "
-  for item in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
+  test_if_json_variable_is_defined .nsx.avi.config.cloud.networks_data $jsonFile "   "
+  for item in $(jq -c -r .nsx.avi.config.cloud.networks_data[] $jsonFile)
   do
     test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .avi_ipam_vip.cidr)" "   "
   done
