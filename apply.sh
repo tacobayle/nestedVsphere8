@@ -24,6 +24,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   # if [ $? -ne 0 ] ; then exit 1 ; fi
   /bin/bash /nestedVsphere8/00_pre_check/05.sh
   # if [ $? -ne 0 ] ; then exit 1 ; fi
+  /bin/bash /nestedVsphere8/00_pre_check/06.sh
+  # if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/apply.sh
 #if [ $? -ne 0 ] ; then exit 1 ; fi

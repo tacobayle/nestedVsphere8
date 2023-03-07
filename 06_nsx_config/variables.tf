@@ -1,12 +1,12 @@
 variable "vcenter_underlay" {}
-variable "vcenter" {}
+#variable "vcenter" {}
 variable "nsx" {}
-variable "avi" {}
-variable "external_gw" {}
+#variable "avi" {}
+#variable "external_gw" {}
 
 
 
-variable "esxi_root_password" {}
-variable "vsphere_nested_password" {}
+#variable "esxi_root_password" {}
+#variable "vsphere_nested_password" {}
 variable "nsx_password" {}
-variable "nsx_license" {}
+#variable "nsx_license" {}

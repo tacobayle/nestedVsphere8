@@ -80,7 +80,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   #
   echo "   +++ Adding prefix for NSX overlay Edge network..."
   prefix=$(jq -c -r '.vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
-  external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.overlay += {"prefix": "'$(echo $prefix)'"}')
+  external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
 fi
 #
 echo "   +++ Adding reverse DNS zone..."
