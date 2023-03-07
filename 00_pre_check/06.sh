@@ -58,7 +58,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   nsx_json=$(echo $nsx_json | jq '.nsx.config += {"segments": '$(echo $segments | jq -c -r .)'}')
   #
   echo "   +++ Adding transport_node_profiles details..."
-  transport_node_profiles=$(jq -c -r '.transport_node_profiles' $localJsonFile | jq '.[0].switches[0] += {"name": "'$(jq -c -r .networks.nsx.nsx_overlay.name'"))')
+  transport_node_profiles=$(jq -c -r '.transport_node_profiles' $localJsonFile | jq '.[0].switches[0] += {"name": "'$(jq -c -r .networks.nsx.nsx_overlay.name)'"}')
   nsx_json=$(echo $nsx_json | jq '.nsx.config += {"transport_node_profiles": '$(echo $transport_node_profiles | jq -c -r .)'}')
   #
   echo "   +++ Adding edge_node details..."
