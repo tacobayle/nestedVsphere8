@@ -140,95 +140,7 @@ if [[ $(jq -c -r '.vcenter.esxi.disks | length' $jsonFile) -ne 3 ]] ; then echo 
 if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX Variables"
-  # .nsx.config.ip_pools
-#  test_if_json_variable_is_defined .nsx.config.ip_pools $jsonFile "   "
-#  if [[ $(jq -c -r '.nsx.config.ip_pools | length' $jsonFile) -ne 2 ]] ; then echo "   +++ 2 NSX ip_pools must be configured" ; exit 255 ; fi
-#  for item in $(jq -c -r .nsx.config.ip_pools[] $jsonFile)
-#  do
-#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.ip_pools[] have a name defined"
-#    test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .cidr)" "   "
-#    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .gateway)" "   "
-#    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .start)" "   "
-#    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .end)" "   "
-#  done
-#  # .nsx.config.uplink_profiles
-#  test_if_json_variable_is_defined .nsx.config.uplink_profiles $jsonFile "   "
-#  for item in $(jq -c -r .nsx.config.uplink_profiles[] $jsonFile)
-#  do
-#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.uplink_profiles[] have a name defined"
-#    test_if_variable_is_defined $(echo $item | jq -c .mtu) "   " "testing if each .nsx.config.uplink_profiles[] have a mtu defined"
-#    test_if_variable_is_defined $(echo $item | jq -c .transport_vlan) "   " "testing if each .nsx.config.uplink_profiles[] have a transport_vlan defined"
-#    test_if_variable_is_defined $(echo $item | jq -c .teaming.policy) "   " "testing if each .nsx.config.uplink_profiles[] have a .teaming.policy defined"
-#    if [[ $(echo $item | jq -c .teaming.policy) != "FAILOVER_ORDER" ]]; then echo "   +++ teaming,policy $(echo $item | jq -c .teaming.policy) is not supported" ; exit 255 ; fi
-#    if [[ $(echo $item | jq -c '.teaming.active_list | length') -ne 1 ]] ; then echo "   +++ Only 1 active_list in .nsx.config.uplink_profiles[].teaming.active_list is supported" ; exit 255 ; fi
-#    if [[ $(echo $item | jq -c .teaming.active_list[0].uplink_name) != "uplink-1" ]]; then echo "   +++ uplink_name $(echo $item | jq -c .teaming.active_list[0].uplink_name) is not supported" ; exit 255 ; fi
-#    if [[ $(echo $item | jq -c .teaming.active_list[0].uplink_type) != "PNIC" ]]; then echo "   +++ uplink_name $(echo $item | jq -c .teaming.active_list[0].uplink_type) is not supported" ; exit 255 ; fi
-#  done
-#  # .nsx.config.transport_zones
-#  test_if_json_variable_is_defined .nsx.config.transport_zones $jsonFile "   "
-#  for item in $(jq -c -r .nsx.config.transport_zones[] $jsonFile)
-#  do
-#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.transport_zones[] have a name defined"
-#    test_if_variable_is_defined $(echo $item | jq -c .type) "   " "testing if each .nsx.config.transport_zones[] have a type defined"
-#  done
-#  # .nsx.config.segments
-#  test_if_json_variable_is_defined .nsx.config.segments $jsonFile "   "
-#  for item in $(jq -c -r .nsx.config.segments[] $jsonFile)
-#  do
-#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.segments[] have a name defined"
-#    test_if_variable_is_defined $(echo $item | jq -c .vlan) "   " "testing if each .nsx.config.segments[] have a vlan defined"
-#    test_if_variable_is_defined $(echo $item | jq -c .description) "   " "testing if each .nsx.config.segments[] have a description defined"
-#  done
-#  test_if_ref_from_list_exists_in_another_list ".nsx.config.segments[].transport_zone" \
-#                                               ".nsx.config.transport_zones[].name" \
-#                                               "$jsonFile" \
-#                                               "   +++ Checking transport_zone in nsx.config.segments" \
-#                                               "   ++++++ transport_zone " \
-#                                               "   ++++++ERROR++++++ transport_zone not found: "
-#  # .nsx.config.transport_node_profiles
-#  test_if_json_variable_is_defined .nsx.config.transport_node_profiles $jsonFile "   "
-#  for item in $(jq -c -r .nsx.config.transport_node_profiles[] $jsonFile)
-#  do
-#    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .nsx.config.transport_node_profiles[] have a name defined"
-#    test_if_variable_is_defined $(echo $item | jq -c .description) "   " "testing if each .nsx.config.transport_node_profiles[] have a description defined"
-#    for switch in $(echo $item | jq -c -r .switches[])
-#    do
-#      test_if_variable_is_defined $(echo $switch | jq -c .name) "   " "testing if each .nsx.config.transport_node_profiles[].switches[] have a name defined"
-#      if [[ $($switch | jq -c .mode) != "STANDARD" ]]; then echo "   +++ switch mode  $($switch | jq -c .mode) is not supported" ; exit 255 ; fi
-#      if [[ $($switch | jq -c .type) != "VDS" ]]; then echo "   +++ switch type  $($switch | jq -c .type) is not supported" ; exit 255 ; fi
-#      test_if_ref_from_a_nested_list_exists_in_another_list ".nsx.config.transport_node_profiles[]" \
-#                                                            ".switches[]" \
-#                                                            ".uplink_profile_name" \
-#                                                            ".nsx.config.uplink_profiles[].name" \
-#                                                            "$jsonFile" \
-#                                                            "   +++ Checking .nsx.config.transport_node_profiles[].switches[].uplink_profile_name exists in .nsx.config.uplink_profiles[].name" \
-#                                                            "   ++++++ transport_node_profile" \
-#                                                            "   ++++++ERROR++++++ transport_node_profile not found: "
-#      test_if_ref_from_a_nested_list_exists_in_another_list ".nsx.config.transport_node_profiles[]" \
-#                                                            ".switches[]" \
-#                                                            ".ip_pool_name" \
-#                                                            ".nsx.config.ip_pools[].name" \
-#                                                            "$jsonFile" \
-#                                                            "   +++ Checking .nsx.config.transport_node_profiles[].switches[].ip_pool_name exists in .ip_pool_name[].name" \
-#                                                            "   ++++++ ip_pool_name" \
-#                                                            "   ++++++ERROR++++++ ip_pool_name not found: "
-#      if [[ $(echo $switch | jq -c '.uplinks | length') -ne 1 ]] ; then echo "   +++ Only 1 uplinks in nsx.config.transport_node_profiles[].switches[].uplinks is supported" ; exit 255 ; fi
-#      if [[ $($switch | jq -c .uplinks[0].uplink_name) != "uplink-1" ]]; then echo "   +++ uplink_name  $($switch | jq -c .uplinks[0].uplink_name) is not supported" ; exit 255 ; fi
-#      if [[ $($switch | jq -c .uplinks[0].vds_uplink_name) != "uplink1" ]]; then echo "   +++ vds_uplink_name  $($switch | jq -c .uplinks[0].vds_uplink_name) is not supported" ; exit 255 ; fi
-#      if [[ $(echo $switch | jq -c -r '.transport_zones | length' ) -ne 1 ]] ; then echo "   +++ Only 1 transport_zone in nsx.config.transport_node_profiles[].switches[].transport_zones is supported" ; exit 255 ; fi
-#      test_if_ref_from_a_nested_of_nested_list_exists_in_another_list ".nsx.config.transport_node_profiles[]" \
-#                                                                      ".switches[]" \
-#                                                                      ".transport_zones[]" \
-#                                                                      ".transport_zone_name" \
-#                                                                      ".nsx.config.transport_zones[].name" \
-#                                                                      "$jsonFile" \
-#                                                                      "   +++ Checking  .nsx.config.transport_node_profiles[].switches[].transport_zones[].transport_zone_name.name exists in .nsx.config.transport_zones[].name" \
-#                                                                      "   ++++++ transport_zone" \
-#                                                                      "   ++++++ERROR++++++ transport_zone not found: "
-#    done
-#  done
-##
-  test_if_json_variable_is_defined .nsx.ova_url "   "
+  test_if_json_variable_is_defined .nsx.ova_url $jsonFile "   "
   edge_list=[]
   echo "   +++ testing if there is enough IP for edge node defined in .nsx.config.edge_clusters[].member_name[]"
   edge_amount=$(jq -c -r '.vcenter_underlay.networks.vsphere.management.nsx_edge | length' $jsonFile)
@@ -306,7 +218,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   if [[ $(jq -c -r .nsx.avi $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX ALB Variables"
-  test_if_json_variable_is_defined .nsx.avi.ova_url "   "
+  test_if_json_variable_is_defined .nsx.avi.ova_url $jsonFile "   "
   test_if_json_variable_is_defined .nsx.avi.config.cloud.networks_data $jsonFile "   "
   for item in $(jq -c -r .nsx.avi.config.cloud.networks_data[] $jsonFile)
   do
