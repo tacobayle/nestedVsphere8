@@ -71,24 +71,24 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   do
     test_if_variable_is_valid_ip $ip "   "
   done
-  if [[ $(jq -c -r '.vcenter_underlay.networks.nsx.external.tier0_vips | length' $jsonFile) -ge $(jq -c -r '.nsx.config.edge_clusters | length' $jsonFile) ]] ; then
+  if [[ $(jq -c -r '.vcenter_underlay.networks.nsx.external.tier0_vips | length' $jsonFile) -lt $(jq -c -r '.nsx.config.edge_clusters | length' $jsonFile) ]] ; then
     echo "   +++ not enough IP defined in .vcenter_underlay.networks.nsx.external.tier0_vips for the amount of edge_cluster defined in .nsx.config.edge_clusters"
     exit 255
   fi
   test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.external.external_gw_ip $jsonFile) "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay.name $jsonFile "   "
-  test_if_variable_is_valid_cidr "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.cidr)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.gateway)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.start)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.end)" "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.cidr $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.gateway $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.start $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.end $jsonFile)" "   "
   #test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay.netmask $jsonFile "   "
   #test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.network_prefix $jsonFile)" "   "
   #test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay.external_gw_ip $jsonFile) "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.name $jsonFile "   "
-  test_if_variable_is_valid_cidr "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.cidr)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.gateway)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.start)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.end)" "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.cidr $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.gateway $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.start$jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.end$jsonFile)" "   "
   #test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.netmask $jsonFile "   "
   #test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.network_prefix $jsonFile)" "   "
   #test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.external_gw_ip $jsonFile) "   "
