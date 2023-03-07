@@ -1,4 +1,4 @@
 {
-  "vcenter_password": "${vcenter_password}",
+  "vsphere_nested_password": "${vsphere_nested_password}",
   "avi_password": "${avi_password}"
 }

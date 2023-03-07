@@ -23,7 +23,7 @@ data "vsphere_resource_pool" "resource_pool_nested" {
 
 data "vsphere_network" "vcenter_network_mgmt_nested" {
   count = 1
-  name = var.avi.controller.network_ref
+  name = var.avi_segment
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
 }
 
@@ -36,8 +36,8 @@ resource "vsphere_content_library" "nested_library_avi" {
 
 resource "vsphere_content_library_item" "nested_library_avi_item" {
   count = 1
-  name        = basename(var.avi.content_library.ova_location)
-  description = basename(var.avi.content_library.ova_location)
+  name        = "avi.ova"
+  description = "avi.ova"
   library_id  = vsphere_content_library.nested_library_avi[0].id
-  file_url = "../${basename(var.avi.content_library.ova_location)}"
+  file_url = "/home/ubuntu/${basename(var.avi_ova_path)}"
 }

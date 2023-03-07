@@ -1,9 +1,10 @@
-variable "esxi" {}
-variable "vcenter_underlay" {}
 variable "vcenter" {}
 variable "nsx" {}
-variable "avi" {}
 variable "external_gw" {}
 
-variable "vcenter_password" {}
+variable "vsphere_nested_password" {}
 variable "avi_password" {}
+variable "avi_segment" {}
+variable "avi_ip" {}
+variable "avi_cidr" {}
+variable "avi_ova_path" {}

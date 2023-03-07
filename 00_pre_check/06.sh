@@ -118,5 +118,15 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   nsx_json=$(echo $nsx_json | jq '. | del (.nsx.config.tier1s)')
   nsx_json=$(echo $nsx_json | jq '.nsx.config += {"tier1s": '$(echo $tier1s | jq -c -r .)'}')
   #
+  echo "   +++ Adding .nsx.config.segments_overlay[].transport_zone..."
+  segments_overlay=[]
+  for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+  do
+    item=$(echo $item | jq '. += {"transport_zone": "'$(jq -c -r '.transport_zones[0].name' $localJsonFile)'"}')
+    segments_overlay=$(echo $segments_overlay | jq '. += ['$(echo $item | jq -c -r .)']')
+  done
+  nsx_json=$(echo $nsx_json | jq '. | del (.nsx.config.segments_overlay)')
+  nsx_json=$(echo $nsx_json | jq '.nsx.config += {"segments_overlay": '$(echo $segments_overlay | jq -c -r .)'}')
+  #
   echo $nsx_json | jq . | tee /root/nsx3.json > /dev/null
 fi

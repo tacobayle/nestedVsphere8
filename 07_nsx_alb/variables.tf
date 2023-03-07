@@ -7,3 +7,5 @@ variable "external_gw" {}
 
 variable "vsphere_nested_password" {}
 variable "avi_password" {}
+
+variable "avi_ova_path" {}

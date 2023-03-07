@@ -1,7 +1,7 @@
 data "template_file" "environment_variables" {
   template = file("templates/environment_variables.json.template")
   vars = {
-    vcenter_password = var.vsphere_nested_password
+    vsphere_nested_password = var.vsphere_nested_password
     avi_password = var.avi_password
   }
 }
@@ -20,13 +20,13 @@ resource "null_resource" "tf_avi_controller" {
   # restart here
 
   provisioner "file" {
-    source = var.avi.content_library.ova_location
-    destination = basename(var.avi.content_library.ova_location)
+    source = var.avi_ova_path
+    destination = "/home/ubuntu/${basename(var.avi_ova_path)}"
   }
 
   provisioner "file" {
-    source = "../../avi.json"
-    destination = "avi.json"
+    source = "/root/avi1.json"
+    destination = "/home/ubuntu/avi1.json"
   }
 
   provisioner "file" {
@@ -36,14 +36,14 @@ resource "null_resource" "tf_avi_controller" {
 
   provisioner "file" {
     content = data.template_file.environment_variables.rendered
-    destination = ".environment_variables.json"
+    destination = "/home/ubuntu/.environment_variables.json"
   }
 
   provisioner "remote-exec" {
     inline = [
       "cd tf_remote_avi_controller",
       "terraform init",
-      "terraform apply -auto-approve -var-file=../avi.json -var-file=../.environment_variables.json"
+      "terraform apply -auto-approve -var-file=/home/ubuntu/avi1.json -var-file=/home/ubuntu/.environment_variables.json"
     ]
   }
 }
