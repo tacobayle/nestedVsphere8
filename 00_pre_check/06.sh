@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+source /nestedVsphere8/bash/ip.sh
+#
 jsonFile="/etc/config/variables.json"
 localJsonFile="/nestedVsphere8/06_nsx_config/variables.json"
 #
