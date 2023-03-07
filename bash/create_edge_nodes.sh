@@ -40,14 +40,14 @@ do
 done
 for item in $(echo $vcenter_networks | jq -c -r .[])
 do
-  if [[ $(echo $item | jq -r .name) == $(jq -r .nsx_networks.nsx.nsx_overlay_edge.pg_name $jsonFile)-pg ]] ; then
+  if [[ $(echo $item | jq -r .name) == $(jq -r .nsx_networks.nsx.nsx_overlay_edge.port_group_name $jsonFile)-pg ]] ; then
     data_network_id=$(echo $item | jq -r .network)
     data_network_ids=$(echo $data_network_ids | jq '. += ["'$data_network_id'"]')
   fi
 done
 for item in $(echo $vcenter_networks | jq -c -r .[])
 do
-  if [[ $(echo $item | jq -r .name) == $(jq -r .nsx_networks.nsx.nsx_external.pg_name $jsonFile)-pg ]] ; then
+  if [[ $(echo $item | jq -r .name) == $(jq -r .nsx_networks.nsx.nsx_external.port_group_name $jsonFile)-pg ]] ; then
     data_network_id=$(echo $item | jq -r .network)
     data_network_ids=$(echo $data_network_ids | jq '. += ["'$data_network_id'"]')
   fi

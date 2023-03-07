@@ -61,7 +61,6 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   #
   echo "   +++ Adding edge_node details..."
   data_network=$(jq -c -r '.edge_node.data_network' $localJsonFile)
-  echo $data_network
   nsx_json=$(echo $nsx_json | jq '.nsx.config.edge_node += {"data_network": "'$(echo $data_network)'"}')
   #
   echo "   +++ Adding edge_node details..."
@@ -112,8 +111,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   for item in $(jq -c -r .nsx.config.tier1s[] $jsonFile)
   do
     item=$(echo $item | jq '. += {"route_advertisement_types": '$(echo $route_advertisement_types | jq -c -r .)'}')
+    tier1s=$(echo $tier1s | jq '. += ['$(echo $item | jq -c -r .)']')
   done
-  tier1s=$(echo $tier1s | jq '. += ['$(echo $item | jq -c -r .)']')
   nsx_json=$(echo $nsx_json | jq '. | del (.nsx.config.tier1s)')
   nsx_json=$(echo $nsx_json | jq '.nsx.config += {"tier1s": '$(echo $tier1s | jq -c -r .)'}')
   #
