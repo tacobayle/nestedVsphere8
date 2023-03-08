@@ -42,5 +42,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   # if [ $? -ne 0 ] ; then exit 1 ; fi
   echo "waiting for 5 minutes to finish the NSX bootstrap..."
   sleep 300
+  /bin/bash /nestedVsphere8/06_nsx_config/apply.sh
+  # if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 while true ; do sleep 3600 ; done

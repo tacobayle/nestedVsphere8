@@ -98,7 +98,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     static_routes=$(echo $static_routes | jq '. += [{"display_name" : "default-route", "network" : "0.0.0.0/0", "next_hops" : [ { "ip_address": "'$(jq -c -r .vcenter_underlay.networks.nsx.external.external_gw_ip $jsonFile)'" } ]}]')
     item=$(echo $item | jq '. += {"ha_mode": "'$(echo $ha_mode)'"}')
     item=$(echo $item | jq '. += {"interfaces": '$(echo $interfaces | jq -c -r .)'}')
-    item=$(echo $item | jq '. += {"static_routes": ['$(echo $static_routes)']}')
+    item=$(echo $item | jq '. += {"static_routes": '$(echo $static_routes)'}')
     ha_vips=[]
     ha_vips=$(echo $ha_vips | jq '. += [{"interfaces": '$(echo $ha_vips_interfaces | jq -c -r .)'}]')
     item=$(echo $item | jq '. += {"ha_vips": '$(echo $ha_vips | jq -c -r .)'}')
