@@ -141,6 +141,16 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX Variables"
   test_if_json_variable_is_defined .nsx.ova_url $jsonFile "   "
+  test_if_json_variable_is_defined .nsx.config.edge_node.size $jsonFile "   "
+  if [[ $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) != "small" \
+        && $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) != "medium" \
+        && $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) != "large" \
+        && $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) != "extra_large" ]] ; then
+          echo "   +++ .nsx.config.edge_node.size should equal to one of the following: 'small, medium, large, extra_large'"
+          echo "   +++ https://docs.vmware.com/en/VMware-NSX/4.1/installation/GUID-22F87CA8-01A9-4F2E-B7DB-9350CA60EA4E.html#GUID-22F87CA8-01A9-4F2E-B7DB-9350CA60EA4E"
+          exit 255
+  fi
+  test_if_json_variable_is_defined .nsx.config.edge_node.basename $jsonFile "   "
   edge_list=[]
   echo "   +++ testing if there is enough IP for edge node defined in .nsx.config.edge_clusters[].member_name[]"
   edge_amount=$(jq -c -r '.vcenter_underlay.networks.vsphere.management.nsx_edge | length' $jsonFile)

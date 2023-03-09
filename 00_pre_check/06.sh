@@ -13,6 +13,22 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   rm -f /root/nsx3.json
   nsx_json=$(jq -c -r . $jsonFile | jq .)
   #
+  echo "   +++ Adding edge sizing information..."
+  if [[ $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) == "small" ]] ;  then
+    nsx_json=$(echo $nsx_json | jq '.nsx.config.edge_node += {"cpu": 2, "memory"; 4, "disk": 200}')
+  fi
+  if [[ $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) == "medium" ]] ;  then
+    nsx_json=$(echo $nsx_json | jq '.nsx.config.edge_node += {"cpu": 4, "memory"; 8, "disk": 200}')
+  fi
+  if [[ $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) == "large" ]] ;  then
+    nsx_json=$(echo $nsx_json | jq '.nsx.config.edge_node += {"cpu": 8, "memory"; 32, "disk": 200}')
+  fi
+  if [[ $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) == "extra_large" ]] ;  then
+    nsx_json=$(echo $nsx_json | jq '.nsx.config.edge_node += {"cpu": 16, "memory"; 64, "disk": 200}')
+  fi
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
+  nsx_json=$(echo $nsx_json | jq '.vcenter_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
+  #
   echo "   +++ Adding prefix for management network..."
   prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
   nsx_json=$(echo $nsx_json | jq '.vcenter_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
