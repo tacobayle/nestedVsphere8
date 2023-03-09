@@ -229,6 +229,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX ALB Variables"
   test_if_json_variable_is_defined .nsx.avi.ova_url $jsonFile "   "
+  # .nsx.config.segments_overlay[].avi_ip
   count=0
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
   do
@@ -239,6 +240,19 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   done
   if [[ $count -eq 0 ]] ; then echo "   +++ .nsx.config.segments_overlay[].avi_ip has to be defined once to locate where the ALB controller will be installed" ; exit 255 ; fi
   if [[ $count -gt 1 ]] ; then echo "   +++ .nsx.config.segments_overlay[].avi_ip can be defined only once" ; exit 255 ; fi
+  # .nsx.config.segments_overlay[].app_ips
+  count=0
+  for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+  do
+    if [[ $(echo $item | jq -c .app_ips) != "null" ]] ; then
+      ((count++))
+      for ip in $(echo $item | jq -c -r)
+      do
+        test_if_variable_is_valid_ip "$ip" "   "
+      done
+    fi
+  done
+  if [[ $count -eq 0 ]] ; then echo "   +++ .nsx.config.segments_overlay[].app_ips has to be defined at least once to locate where the App servers will be installed" ; exit 255 ; fi
   test_if_json_variable_is_defined .nsx.avi.config.cloud.networks_data $jsonFile "   "
   for item in $(jq -c -r .nsx.avi.config.cloud.networks_data[] $jsonFile)
   do
@@ -246,3 +260,4 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   done
   fi
 fi
+

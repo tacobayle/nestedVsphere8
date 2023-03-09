@@ -66,6 +66,10 @@ write_files:
       run_cmd 'pip3 install netaddr; pip3 list | grep netaddr'
       apt install -y language-pack-en python3-pip python3-jmespath sshpass bind9 bind9utils bind9-doc bind9-host
       #
+      # ssh key generation
+      #
+      sudo -u ubuntu ssh-keygen -t rsa -N "" -f /home/ubuntu/.ssh/id_rsa
+      #
       # terraform install
       #
       sudo curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -

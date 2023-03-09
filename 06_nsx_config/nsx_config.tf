@@ -86,7 +86,7 @@ resource "null_resource" "create_edge_clusters" {
 resource "null_resource" "create_tier0s" {
   depends_on = [null_resource.create_edge_clusters]
   provisioner "local-exec" {
-    command = "/bin/bash bash/create_tier0s.sh"
+    command = "/bin/bash /nestedVsphere8/bash/create_tier0s.sh"
   }
 }
 

@@ -3,6 +3,7 @@ data "template_file" "environment_variables" {
   vars = {
     vsphere_nested_password = var.vsphere_nested_password
     avi_password = var.avi_password
+    ubuntu_password = var.ubuntu_password
   }
 }
 
@@ -16,12 +17,14 @@ resource "null_resource" "tf_avi_controller" {
     private_key = file("/root/.ssh/id_rsa")
   }
 
-
-  # restart here
-
   provisioner "file" {
     source = var.avi_ova_path
     destination = "/home/ubuntu/${basename(var.avi_ova_path)}"
+  }
+
+  provisioner "file" {
+    source = var.ubuntu_ova_path
+    destination = "/home/ubuntu/${basename(var.ubuntu_ova_path)}"
   }
 
   provisioner "file" {

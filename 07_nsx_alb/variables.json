@@ -1,3 +1,19 @@
 {
-  "avi_ova_path": "/root/avi.ova"
+  "avi_ova_path": "/root/avi.ova",
+  "app": {
+    "folder": "apps-servers",
+    "basename": "app-0",
+    "cpu": 4,
+    "memory": 8192,
+    "disk": 32,
+    "username": "ubuntu",
+    "netplan_file": "/etc/netplan/50-cloud-init.yaml",
+    "nsxt_vm_tags": "avi-app-tag",
+    "nsxt_group_name": "avi-app-nsx-group",
+    "avi_app_docker_image": "tacobayle/avi_app",
+    "hello_world_app_tcp_port": "80",
+    "avi_app_tcp_port": "8080",
+    "hackazon_docker_image": "mutzel/all-in-one-hackazon:postinstall",
+    "hackazon_tcp_port": "8081"
+  }
 }
