@@ -17,6 +17,10 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   if [ -z "$TF_VAR_nsx_password" ] ; then  echo "   +++ testing if '$TF_VAR_nsx_password' is not empty" ; exit 255 ; fi
   if [ -z "$TF_VAR_nsx_license" ] ; then  echo "   +++ testing if '$TF_VAR_nsx_license' is not empty" ; exit 255 ; fi
 fi
+if [[ $(jq -c -r .nsx.avi $jsonFile) != "null" ]]; then
+  if [ -z "$TF_VAR_avi_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_password' is not empty" ; exit 255 ; fi
+  if [ -z "$TF_VAR_avi_old_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_old_password' is not empty" ; exit 255 ; fi
+fi
 #
 #
 #
@@ -90,17 +94,11 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.gateway $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.start $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.end $jsonFile)" "   "
-  #test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay.netmask $jsonFile "   "
-  #test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.network_prefix $jsonFile)" "   "
-  #test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay.external_gw_ip $jsonFile) "   "
   test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.cidr $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.gateway $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)" "   "
-  #test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.netmask $jsonFile "   "
-  #test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.network_prefix $jsonFile)" "   "
-  #test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.external_gw_ip $jsonFile) "   "
 fi
 #
 #
@@ -127,6 +125,7 @@ test_if_json_variable_is_defined .vcenter.iso_url $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.esxi.iso_url $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.datacenter $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.cluster $jsonFile "   "
+test_if_json_variable_is_defined .vcenter.sso.domain_name $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.timezone $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.esxi.iso_url $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.esxi.basename $jsonFile "   "
@@ -134,6 +133,12 @@ test_if_json_variable_is_defined .vcenter.esxi.cpu $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.esxi.memory $jsonFile "   "
 test_if_json_variable_is_defined .vcenter.esxi.disks $jsonFile "   "
 if [[ $(jq -c -r '.vcenter.esxi.disks | length' $jsonFile) -ne 3 ]] ; then echo "   +++ 3 ESXi host's disks must be configured" ; exit 255 ; fi
+test_if_json_variable_is_defined .vcenter.esxi.disks[0].size $jsonFile "   "
+test_if_json_variable_is_defined .vcenter.esxi.disks[1].size $jsonFile "   "
+test_if_json_variable_is_defined .vcenter.esxi.disks[2].size $jsonFile "   "
+test_if_json_variable_is_defined .vcenter.esxi.disks[0].thin_provisioned $jsonFile "   "
+test_if_json_variable_is_defined .vcenter.esxi.disks[1].thin_provisioned $jsonFile "   "
+test_if_json_variable_is_defined .vcenter.esxi.disks[2].thin_provisioned $jsonFile "   "
 #
 #
 #
@@ -179,6 +184,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     if [[ $check_status -eq 0 ]] ; then echo "   +++ Unable to find ref to edge node $item" ; exit 255 ; fi
   done
   # .nsx.config.tier0s
+  test_if_json_variable_is_defined .nsx.config.tier0s $jsonFile "   "
   for item in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
   do
     test_if_variable_is_defined $(echo $item | jq -c .display_name) "   " "testing if each .nsx.config.tier0s[] have a display_name defined"
@@ -216,19 +222,16 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
                                                "   +++ Checking Tiers 1 in segments_overlay" \
                                                "   ++++++ Tier1 " \
                                                "   ++++++ERROR++++++ Tier1 not found: "
-
-  test_if_json_variable_is_defined .nsx.config.tier0s $jsonFile "   "
-  for item in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
-  do
-    test_if_variable_is_defined "$(echo $item | jq -c .display_name)" "   " "testing if each .nsx.config.tier0s[] have a display_name defined"
-  done
-
   #
   #
   if [[ $(jq -c -r .nsx.avi $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX ALB Variables"
   test_if_json_variable_is_defined .nsx.avi.ova_url $jsonFile "   "
+  test_if_json_variable_is_defined .nsx.avi.cpu $jsonFile "   "
+  test_if_json_variable_is_defined .nsx.avi.memory $jsonFile "   "
+  test_if_json_variable_is_defined .nsx.avi.disk $jsonFile "   "
+  test_if_json_variable_is_defined .nsx.avi.version $jsonFile "   "
   # .nsx.config.segments_overlay[].avi_ip
   count=0
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
