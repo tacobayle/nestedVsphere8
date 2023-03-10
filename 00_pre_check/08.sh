@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 jsonFile="/etc/config/variables.json"
-localJsonFile="/nestedVsphere8/08_app/variables.json"
+localJsonFile="/nestedVsphere8/08_nsx_app/variables.json"
 #
 IFS=$'\n'
 #
@@ -14,6 +14,10 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "nu
   echo "   +++ Adding ubuntu_ova_path..."
   ubuntu_ova_path=$(jq -c -r '.ubuntu_ova_path' /nestedVsphere8/02_external_gateway/variables.json)
   app_json=$(echo $app_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
+  #
+  echo "   +++ Adding app..."
+  app=$(jq -c -r '.app' $localJsonFile)
+  app_json=$(echo $app_json | jq '. += {"app": "'$(echo $app)'"}')
   #
   app_segments=[]
   app_ips=[]

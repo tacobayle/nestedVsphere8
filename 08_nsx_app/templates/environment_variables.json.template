@@ -2,5 +2,6 @@
   "vsphere_nested_password": "${vsphere_nested_password}",
   "ubuntu_password": "${ubuntu_password}",
   "docker_registry_username": ${docker_registry_username},
-  "docker_registry_password": ${docker_registry_password}
+  "docker_registry_password": ${docker_registry_password},
+  "nsx_password": "${nsx_password}"
 }

@@ -252,6 +252,10 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     fi
   done
   if [[ $count -eq 0 ]] ; then echo "   +++ .nsx.config.segments_overlay[].app_ips has to be defined at least once to locate where the App servers will be installed" ; exit 255 ; fi
+  #
+  #
+  #
+  echo "==> Checking ALB with NSX"
   test_if_json_variable_is_defined .avi.config.cloud.networks_data $jsonFile "   "
   for item in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
   do
@@ -270,4 +274,6 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   test_if_json_variable_is_defined .avi.memory $jsonFile "   "
   test_if_json_variable_is_defined .avi.disk $jsonFile "   "
   test_if_json_variable_is_defined .avi.version $jsonFile "   "
+  test_if_json_variable_is_defined .avi.config.cloud.name $jsonFile "   "
+  test_if_json_variable_is_defined .avi.config.cloud.type $jsonFile "   "
 fi
