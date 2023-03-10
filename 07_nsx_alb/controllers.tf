@@ -11,16 +11,15 @@ resource "vsphere_content_library" "nested_library_avi" {
 }
 
 resource "vsphere_content_library_item" "nested_library_avi_item" {
-  count = 1
   name        = "avi.ova"
   description = "avi.ova"
   library_id  = vsphere_content_library.nested_library_avi.id
-  file_url = "/home/ubuntu/${basename(var.avi_ova_path)}"
+  file_url = "/root/${basename(var.avi_ova_path)}"
 }
 
 
 resource "vsphere_virtual_machine" "controller" {
-  count = 1
+  count            = 1
   name             = "avi-controller-${count.index + 1}"
   datastore_id     = data.vsphere_datastore.datastore_nested.id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
@@ -56,7 +55,6 @@ resource "vsphere_virtual_machine" "controller" {
 
 resource "null_resource" "wait_https_controller" {
   depends_on = [vsphere_virtual_machine.controller]
-  count = 1
 
   provisioner "local-exec" {
     command = "until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.avi_nested_ip}); do echo 'Waiting for Avi Controllers to be ready'; sleep 60 ; done"

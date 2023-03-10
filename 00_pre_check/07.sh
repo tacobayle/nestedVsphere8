@@ -16,7 +16,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   avi_json=$(echo $avi_json | jq '. += {"avi_ova_path": "'$(echo $avi_ova_path)'"}')
   #
   echo "   +++ Adding avi_port_group..."
-  avi_port_group=networks=$(jq -c -r '.networks.vsphere.management.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
+  avi_port_group=$(jq -c -r '.networks.vsphere.management.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
   avi_json=$(echo $avi_json | jq '. += {"avi_port_group": "'$(echo $avi_port_group)'"}')
   #
   echo $avi_json | jq . | tee /root/avi.json > /dev/null
