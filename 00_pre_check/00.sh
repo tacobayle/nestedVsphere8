@@ -238,7 +238,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   #
   if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   echo ""
-  echo "==> Checking NSX ALB Variables with NSX"
+  echo "==> Checking NSX Apps with NSX"
   # .nsx.config.segments_overlay[].app_ips
   count=0
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
