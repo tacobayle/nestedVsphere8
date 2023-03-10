@@ -3,7 +3,7 @@
 jsonFile="/root/nested_vsphere.json"
 #
 iso_location=$(jq -r .iso_location $jsonFile)
-count=$(jq -c -r '.vcenter_underlay.networks.vsphere.management.esxi_ips | length' $jsonFile)
+count=$(jq -c -r '.vsphere_underlay.networks.vsphere.management.esxi_ips | length' $jsonFile)
 #
 for esx in $(seq 0 $(expr $count - 1))
 do

@@ -1,5 +1,5 @@
 variable "esxi" {}
-variable "vcenter_underlay" {}
+variable "vsphere_underlay" {}
 variable "vcenter" {}
 variable "nsx" {}
 variable "avi" {}

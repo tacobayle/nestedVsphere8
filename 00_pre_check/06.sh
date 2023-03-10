@@ -26,16 +26,16 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   if [[ $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) == "extra_large" ]] ;  then
     nsx_json=$(echo $nsx_json | jq '.nsx.config.edge_node += {"cpu": 16, "memory": 64, "disk": 200}')
   fi
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-  nsx_json=$(echo $nsx_json | jq '.vcenter_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
+  nsx_json=$(echo $nsx_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for management network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-  nsx_json=$(echo $nsx_json | jq '.vcenter_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
+  nsx_json=$(echo $nsx_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for NSX external network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.nsx.external.netmask' $jsonFile) "   ++++++")
-  nsx_json=$(echo $nsx_json | jq '.vcenter_underlay.networks.nsx.external += {"prefix": "'$(echo $prefix)'"}')
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.nsx.external.netmask' $jsonFile) "   ++++++")
+  nsx_json=$(echo $nsx_json | jq '.vsphere_underlay.networks.nsx.external += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding nsx networks..."
   networks=$(jq -c -r '.networks' /nestedVsphere8/02_external_gateway/variables.json)
@@ -48,16 +48,16 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   echo "   +++ Adding ip_pools details..."
   ip_pools=[]
   ip_pool_0=$(jq -c -r '.ip_pools[0]' $localJsonFile)
-  ip_pool_0=$(echo $ip_pool_0 | jq '. += {"gateway": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.gateway $jsonFile)'"}')
-  ip_pool_0=$(echo $ip_pool_0 | jq '. += {"start": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.start $jsonFile)'"}')
-  ip_pool_0=$(echo $ip_pool_0 | jq '. += {"end": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.end $jsonFile)'"}')
-  ip_pool_0=$(echo $ip_pool_0 | jq '. += {"cidr": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.cidr $jsonFile)'"}')
+  ip_pool_0=$(echo $ip_pool_0 | jq '. += {"gateway": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.gateway $jsonFile)'"}')
+  ip_pool_0=$(echo $ip_pool_0 | jq '. += {"start": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.start $jsonFile)'"}')
+  ip_pool_0=$(echo $ip_pool_0 | jq '. += {"end": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.end $jsonFile)'"}')
+  ip_pool_0=$(echo $ip_pool_0 | jq '. += {"cidr": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.cidr $jsonFile)'"}')
   ip_pools=$(echo $ip_pools | jq '. += ['$(echo $ip_pool_0)']')
   ip_pool_1=$(jq -c -r '.ip_pools[1]' $localJsonFile)
-  ip_pool_1=$(echo $ip_pool_1 | jq '. += {"gateway": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.gateway $jsonFile)'"}')
-  ip_pool_1=$(echo $ip_pool_1 | jq '. += {"start": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)'"}')
-  ip_pool_1=$(echo $ip_pool_1 | jq '. += {"end": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)'"}')
-  ip_pool_1=$(echo $ip_pool_1 | jq '. += {"cidr": "'$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.cidr $jsonFile)'"}')
+  ip_pool_1=$(echo $ip_pool_1 | jq '. += {"gateway": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.gateway $jsonFile)'"}')
+  ip_pool_1=$(echo $ip_pool_1 | jq '. += {"start": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)'"}')
+  ip_pool_1=$(echo $ip_pool_1 | jq '. += {"end": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)'"}')
+  ip_pool_1=$(echo $ip_pool_1 | jq '. += {"cidr": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr $jsonFile)'"}')
   ip_pools=$(echo $ip_pools | jq '. += ['$(echo $ip_pool_1)']')
   nsx_json=$(echo $nsx_json | jq '.nsx.config.ip_pools += '$(echo $ip_pools | jq -c -r .)'')
   #
@@ -111,7 +111,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
       fi
     done
     static_routes=[]
-    static_routes=$(echo $static_routes | jq '. += [{"display_name" : "default-route", "network" : "0.0.0.0/0", "next_hops" : [ { "ip_address": "'$(jq -c -r .vcenter_underlay.networks.nsx.external.external_gw_ip $jsonFile)'" } ]}]')
+    static_routes=$(echo $static_routes | jq '. += [{"display_name" : "default-route", "network" : "0.0.0.0/0", "next_hops" : [ { "ip_address": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.external_gw_ip $jsonFile)'" } ]}]')
     item=$(echo $item | jq '. += {"ha_mode": "'$(echo $ha_mode)'"}')
     item=$(echo $item | jq '. += {"interfaces": '$(echo $interfaces | jq -c -r .)'}')
     item=$(echo $item | jq '. += {"static_routes": '$(echo $static_routes)'}')

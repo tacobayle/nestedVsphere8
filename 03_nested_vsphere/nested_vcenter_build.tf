@@ -11,7 +11,7 @@ resource "null_resource" "wait_vsca" {
   depends_on = [null_resource.vcenter_install]
 
   provisioner "local-exec" {
-    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vcenter_underlay.networks.vsphere.management.vcenter_ip}); do echo \"Attempt $count: Waiting for vCenter to be reachable...\"; sleep 10 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to vCenter\" ; exit 1 ; fi ; done"
+    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip}); do echo \"Attempt $count: Waiting for vCenter to be reachable...\"; sleep 10 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to vCenter\" ; exit 1 ; fi ; done"
   }
 }
 
@@ -33,9 +33,9 @@ resource "null_resource" "vcenter_migrating_vmk_to_vds" {
 
 resource "null_resource" "migrating_vmk0" {
   depends_on = [null_resource.vcenter_migrating_vmk_to_vds]
-  count = length(var.vcenter_underlay.networks.vsphere.management.esxi_ips)
+  count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
   connection {
-    host        = var.vcenter_underlay.networks.vsphere.management.esxi_ips_temp[count.index]
+    host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips_temp[count.index]
     type        = "ssh"
     agent       = false
     user        = "root"
@@ -48,7 +48,7 @@ resource "null_resource" "migrating_vmk0" {
       "esxcli network ip interface remove --interface-name=vmk0",
       "esxcli network ip interface remove --interface-name=vmk4",
       "esxcli network ip interface add --interface-name=vmk0 --dvs-name=${var.networks.vsphere.management.vds_name} --dvport-id=$portid",
-      "esxcli network ip interface ipv4 set --interface-name=vmk0 --ipv4=${var.vcenter_underlay.networks.vsphere.management.esxi_ips[count.index]} --netmask=${var.vcenter_underlay.networks.vsphere.management.netmask} --type=static",
+      "esxcli network ip interface ipv4 set --interface-name=vmk0 --ipv4=${var.vsphere_underlay.networks.vsphere.management.esxi_ips[count.index]} --netmask=${var.vsphere_underlay.networks.vsphere.management.netmask} --type=static",
       "esxcli network ip interface tag add -i vmk0 -t Management",
       "esxcli network ip interface set -m 1500 -i vmk0",
       "esxcli network ip interface set -m ${var.networks.vds.mtu} -i vmk1",
@@ -59,9 +59,9 @@ resource "null_resource" "migrating_vmk0" {
 
 resource "null_resource" "cleaning_vmk3" {
   depends_on = [null_resource.migrating_vmk0]
-  count = length(var.vcenter_underlay.networks.vsphere.management.esxi_ips)
+  count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
   connection {
-    host        = var.vcenter_underlay.networks.vsphere.management.esxi_ips[count.index]
+    host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[count.index]
     type        = "ssh"
     agent       = false
     user        = "root"
@@ -85,9 +85,9 @@ resource "null_resource" "vcenter_configure2" {
 
 resource "null_resource" "dual_uplink_update_multiple_vds" {
   depends_on = [null_resource.vcenter_configure2]
-  count = length(var.vcenter_underlay.networks.vsphere.management.esxi_ips)
+  count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
   connection {
-    host        = var.vcenter_underlay.networks.vsphere.management.esxi_ips[count.index]
+    host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[count.index]
     type        = "ssh"
     agent       = false
     user        = "root"
@@ -113,11 +113,11 @@ data "template_file" "expect_script" {
   template = file("${path.module}/templates/expect_script.sh.template")
   vars = {
     vcenter_username        = "administrator"
-    vcenter_sso_domain = var.vcenter.sso.domain_name
+    vcenter_sso_domain = var.vsphere_nested.sso.domain_name
     vsphere_nested_password = var.vsphere_nested_password
-    vcenter_fqdn = "${var.vcenter.name}.${var.external_gw.bind.domain}"
-    vcenter_dc = var.vcenter.datacenter
-    vcenter_cluster = var.vcenter.cluster
+    vcenter_fqdn = "${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
+    vcenter_dc = var.vsphere_nested.datacenter
+    vcenter_cluster = var.vsphere_nested.cluster
   }
 }
 
@@ -125,7 +125,7 @@ data "template_file" "expect_script" {
 resource "null_resource" "execute_expect_script" {
   depends_on = [null_resource.dual_uplink_update_multiple_vds]
   connection {
-    host        = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     type        = "ssh"
     agent       = false
     user        = "ubuntu"

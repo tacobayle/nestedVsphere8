@@ -17,17 +17,17 @@ data "template_file" "external_gw_userdata" {
   vars = {
     pubkey        = file("/root/.ssh/id_rsa.pub")
     username = "ubuntu"
-    ipCidr  = "${var.vcenter_underlay.networks.vsphere.management.external_gw_ip}/${var.vcenter_underlay.networks.vsphere.management.prefix}"
-    ip = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
-    defaultGw = var.vcenter_underlay.networks.vsphere.management.gateway
+    ipCidr  = "${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}/${var.vsphere_underlay.networks.vsphere.management.prefix}"
+    ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    defaultGw = var.vsphere_underlay.networks.vsphere.management.gateway
     password      = var.ubuntu_password
     hostname = "external-gw-${var.date_index}"
     ansible_version = var.ansible_version
     avi_sdk_version = var.avi_sdk_version
-    ip_vcenter = var.vcenter_underlay.networks.vsphere.management.vcenter_ip
-    vcenter_name = var.vcenter.name
+    ip_vcenter = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
+    vcenter_name = var.vsphere_nested.vcsa_name
     dns_domain = var.external_gw.bind.domain
-//    ip_data_cidr  = "${var.vcenter_underlay.networks.vsphere.management.external_gw_ip}/${var.vcenter_underlay.networks.vsphere.management.prefix}"
+//    ip_data_cidr  = "${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}/${var.vsphere_underlay.networks.vsphere.management.prefix}"
     dns      = join(", ", var.external_gw.bind.forwarders)
     netplanFile = "/etc/netplan/50-cloud-init.yaml"
     privateKey = "/root/.ssh/id_rsa"
@@ -37,9 +37,9 @@ data "template_file" "external_gw_userdata" {
     keyName = "myKeyName"
     secret = base64encode(var.bind_password)
     ntp = var.external_gw.ntp
-    lastOctet = split(".", var.vcenter_underlay.networks.vsphere.management.external_gw_ip)[3]
-    vcenter_ip = var.vcenter_underlay.networks.vsphere.management.vcenter_ip
-    vcenter_name = var.vcenter.name
+    lastOctet = split(".", var.vsphere_underlay.networks.vsphere.management.external_gw_ip)[3]
+    vcsa_nested_ip = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
+    vcenter_name = var.vsphere_nested.vcsa_name
   }
 }
 
@@ -48,22 +48,22 @@ resource "vsphere_virtual_machine" "external_gw" {
   name             = "external-gw-${var.date_index}"
   datastore_id     = data.vsphere_datastore.datastore.id
   resource_pool_id = data.vsphere_resource_pool.pool.id
-  folder           = "/${var.vcenter_underlay.dc}/vm/${var.vcenter_underlay.folder}"
+  folder           = "/${var.vsphere_underlay.datacenter}/vm/${var.vsphere_underlay.folder}"
 
   network_interface {
-    network_id = data.vsphere_network.vcenter_underlay_network_mgmt.id
+    network_id = data.vsphere_network.vsphere_underlay_network_mgmt.id
   }
 
 //  network_interface {
-//    network_id = data.vsphere_network.vcenter_underlay_network_external.id
+//    network_id = data.vsphere_network.vsphere_underlay_network_external.id
 //  }
 
-  num_cpus = var.external_gw.cpu
-  memory = var.external_gw.memory
+  num_cpus = 2
+  memory = 4096
   guest_id = "ubuntu64Guest"
 
   disk {
-    size             = var.external_gw.disk
+    size             = 20
     label            = "external-gw-${var.date_index}.lab_vmdk"
     thin_provisioned = true
   }
@@ -85,7 +85,7 @@ resource "vsphere_virtual_machine" "external_gw" {
   }
 
   connection {
-    host        = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     type        = "ssh"
     agent       = false
     user        = "ubuntu"
@@ -101,7 +101,7 @@ resource "vsphere_virtual_machine" "external_gw" {
 
 resource "null_resource" "clear_ssh_key_external_gw_locally" {
   provisioner "local-exec" {
-    command = "ssh-keygen -f \"/home/ubuntu/.ssh/known_hosts\" -R \"${var.vcenter_underlay.networks.vsphere.management.external_gw_ip}\" || true"
+    command = "ssh-keygen -f \"/home/ubuntu/.ssh/known_hosts\" -R \"${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}\" || true"
   }
 }
 
@@ -112,11 +112,11 @@ resource "null_resource" "add_nic_to_gw_network_nsx_external" {
     command = <<-EOT
       export GOVC_USERNAME=${var.vsphere_underlay_username}
       export GOVC_PASSWORD=${var.vsphere_underlay_password}
-      export GOVC_DATACENTER=${var.vcenter_underlay.dc}
-      export GOVC_URL=${var.vcenter_underlay.server}
-      export GOVC_CLUSTER=${var.vcenter_underlay.cluster}
+      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
+      export GOVC_URL=${var.vsphere_underlay.vcsa}
+      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
-      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vcenter_underlay.networks.nsx.external.name}"
+      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vsphere_underlay.networks.nsx.external.name}"
     EOT
   }
 }
@@ -128,11 +128,11 @@ resource "null_resource" "add_nic_to_gw_network_nsx_overlay" {
     command = <<-EOT
       export GOVC_USERNAME=${var.vsphere_underlay_username}
       export GOVC_PASSWORD=${var.vsphere_underlay_password}
-      export GOVC_DATACENTER=${var.vcenter_underlay.dc}
-      export GOVC_URL=${var.vcenter_underlay.server}
-      export GOVC_CLUSTER=${var.vcenter_underlay.cluster}
+      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
+      export GOVC_URL=${var.vsphere_underlay.vcsa}
+      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
-      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vcenter_underlay.networks.nsx.overlay.name}"
+      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vsphere_underlay.networks.nsx.overlay.name}"
     EOT
   }
 }
@@ -144,11 +144,11 @@ resource "null_resource" "add_nic_to_gw_network_nsx_overlay_edge" {
     command = <<-EOT
       export GOVC_USERNAME=${var.vsphere_underlay_username}
       export GOVC_PASSWORD=${var.vsphere_underlay_password}
-      export GOVC_DATACENTER=${var.vcenter_underlay.dc}
-      export GOVC_URL=${var.vcenter_underlay.server}
-      export GOVC_CLUSTER=${var.vcenter_underlay.cluster}
+      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
+      export GOVC_URL=${var.vsphere_underlay.vcsa}
+      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
-      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vcenter_underlay.networks.nsx.overlay_edge.name}"
+      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vsphere_underlay.networks.nsx.overlay_edge.name}"
     EOT
   }
 }
@@ -158,7 +158,7 @@ resource "null_resource" "adding_ip_to_nsx_external" {
   count = 1
 
   connection {
-    host        = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     type        = "ssh"
     agent       = false
     user        = "ubuntu"
@@ -177,16 +177,16 @@ resource "null_resource" "adding_ip_to_nsx_external" {
       "echo \"    ethernets:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"        $iface:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            dhcp4: false\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
-      "echo \"            addresses: [${var.vcenter_underlay.networks.vsphere.management.external_gw_ip}/${var.vcenter_underlay.networks.vsphere.management.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            addresses: [${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}/${var.vsphere_underlay.networks.vsphere.management.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            match:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"                macaddress: $mac\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            set-name: $iface\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
-      "echo \"            gateway4: ${var.vcenter_underlay.networks.vsphere.management.gateway}\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            gateway4: ${var.vsphere_underlay.networks.vsphere.management.gateway}\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            nameservers:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"              addresses: [${join(", ", var.external_gw.bind.forwarders)}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"        $ifaceSecond:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            dhcp4: false\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
-      "echo \"            addresses: [${var.vcenter_underlay.networks.nsx.external.external_gw_ip}/${var.vcenter_underlay.networks.nsx.external.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            addresses: [${var.vsphere_underlay.networks.nsx.external.external_gw_ip}/${var.vsphere_underlay.networks.nsx.external.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            routes:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
     ]
   }
@@ -213,7 +213,7 @@ resource "null_resource" "update_ip_routes" {
 
 
   connection {
-    host        = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     type        = "ssh"
     agent       = false
     user        = "ubuntu"
@@ -241,7 +241,7 @@ resource "null_resource" "adding_ip_to_nsx_overlay_and_nsx_overlay_edge" {
   count = 1
 
   connection {
-    host        = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     type        = "ssh"
     agent       = false
     user        = "ubuntu"
@@ -262,14 +262,14 @@ resource "null_resource" "adding_ip_to_nsx_overlay_and_nsx_overlay_edge" {
       "echo \"            set-name: $ifaceSecond\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"        $ifaceThird:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            dhcp4: false\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
-      "echo \"            addresses: [${var.vcenter_underlay.networks.nsx.overlay.nsx_pool.gateway}/${var.vcenter_underlay.networks.nsx.overlay.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            addresses: [${var.vsphere_underlay.networks.nsx.overlay.nsx_pool.gateway}/${var.vsphere_underlay.networks.nsx.overlay.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            match:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"                macaddress: $macThird\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            set-name: $ifaceThird\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            mtu: ${var.networks.nsx.nsx_overlay.max_mtu}\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"        $ifaceLastName:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            dhcp4: false\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
-      "echo \"            addresses: [${var.vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.gateway}/${var.vcenter_underlay.networks.nsx.overlay_edge.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            addresses: [${var.vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.gateway}/${var.vsphere_underlay.networks.nsx.overlay_edge.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            match:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"                macaddress: $macLast\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "echo \"            set-name: $ifaceLastName\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",

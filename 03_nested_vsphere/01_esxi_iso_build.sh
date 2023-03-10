@@ -7,7 +7,7 @@ iso_build_location="/tmp/esxi_cdrom"
 iso_source_location=$(jq -r .iso_source_location $jsonFile)
 boot_cfg_location=$(jq -r .boot_cfg_location $jsonFile)
 iso_location=$(jq -r .iso_location $jsonFile)
-count=$(jq -c -r '.vcenter_underlay.networks.vsphere.management.esxi_ips | length' $jsonFile)
+count=$(jq -c -r '.vsphere_underlay.networks.vsphere.management.esxi_ips | length' $jsonFile)
 #
 echo ""
 xorriso -ecma119_map lowercase -osirrox on -indev $iso_source_location -extract / $iso_mount_location

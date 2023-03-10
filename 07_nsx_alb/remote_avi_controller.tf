@@ -10,7 +10,7 @@ data "template_file" "environment_variables" {
 resource "null_resource" "tf_avi_controller" {
 
   connection {
-    host = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
+    host = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     type = "ssh"
     agent = false
     user = "ubuntu"

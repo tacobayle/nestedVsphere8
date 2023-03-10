@@ -6,7 +6,7 @@ jsonFile="/etc/config/variables.json"
 #
 echo ""
 echo "==> Checking vSphere folders for name conflict..."
-api_host="$(jq -r .vcenter_underlay.server $jsonFile)"
+api_host="$(jq -r .vsphere_underlay.vcsa $jsonFile)"
 vcenter_username=$TF_VAR_vsphere_underlay_username
 vcenter_domain=''
 vsphere_password=$TF_VAR_vsphere_underlay_password
@@ -18,8 +18,8 @@ IFS=$'\n'
 for folder_entry in $(echo $response_folder | jq -c -r .value[])
 do
   if [[ $(echo $folder_entry | jq -c -r .type) == "VIRTUAL_MACHINE" ]] ; then
-    if [[ $(echo $folder_entry | jq -c -r .name) == $(jq -c -r .vcenter_underlay.folder $jsonFile) ]] ; then
-      echo "  +++ ERROR +++ folder $(jq -c -r .vcenter_underlay.folder $jsonFile) already exists"
+    if [[ $(echo $folder_entry | jq -c -r .name) == $(jq -c -r .vsphere_underlay.folder $jsonFile) ]] ; then
+      echo "  +++ ERROR +++ folder $(jq -c -r .vsphere_underlay.folder $jsonFile) already exists"
       exit 255
     fi
   fi

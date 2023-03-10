@@ -18,7 +18,7 @@ data "template_file" "avi_app_userdata" {
     ip = var.app_ips[count.index]
     mtu = var.app.mtu
     default_gw = cidrhost(var.app_cidr[count.index], "1")
-    dns = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
+    dns = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     docker_registry_username = var.docker_registry_username
     docker_registry_password = var.docker_registry_password
     avi_app_docker_image = var.app.avi_app_docker_image

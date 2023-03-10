@@ -1,11 +1,11 @@
 data "vsphere_datacenter" "dc_nested" {
   count            = 1
-  name = var.vcenter.datacenter
+  name = var.vsphere_nested.datacenter
 }
 
 data "vsphere_compute_cluster" "compute_cluster_nested" {
   count            = 1
-  name          = var.vcenter.cluster
+  name          = var.vsphere_nested.cluster
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
 }
 
@@ -17,7 +17,7 @@ data "vsphere_datastore" "datastore_nested" {
 
 data "vsphere_resource_pool" "resource_pool_nested" {
   count            = 1
-  name          = "${var.vcenter.cluster}/Resources"
+  name          = "${var.vsphere_nested.cluster}/Resources"
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
 }
 

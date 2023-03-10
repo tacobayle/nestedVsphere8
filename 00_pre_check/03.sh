@@ -89,8 +89,8 @@ networks=$(jq -c -r '.networks' $localJsonFile)
 nested_vsphere_json=$(echo $nested_vsphere_json | jq '. += {"networks": '$(echo $networks)'}')
 #
 echo "   +++ Adding prefix for vSphere management network..."
-prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vcenter_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
+prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
+nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
 #
 echo "   +++ Adding a date_index"
 date_index=$(date '+%Y%m%d%H%M%S')
@@ -99,25 +99,25 @@ nested_vsphere_json=$(echo $nested_vsphere_json | jq '. += {"date_index": '$(ech
 echo "   +++ Adding disk label and disk unit number..."
 count=0
 new_disks="[]"
-for disk in $(jq -c -r .vcenter.esxi.disks[] $jsonFile)
+for disk in $(jq -c -r .vsphere_nested.esxi.disks[] $jsonFile)
 do
   new_disk=$(echo $disk | jq '. += {"label": "'$(echo disk$count)'", "unit_number": "'$(echo $count)'"}')
   new_disks=$(echo $new_disks | jq '. += ['$(echo $new_disk)']')
   ((count++))
 done
-nested_vsphere_json=$(echo $nested_vsphere_json | jq '. | del (.vcenter.esxi.disks)')
-nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vcenter.esxi += {"disks": '$(echo $new_disks)'}')
+nested_vsphere_json=$(echo $nested_vsphere_json | jq '. | del (.vsphere_nested.esxi.disks)')
+nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vsphere_nested.esxi += {"disks": '$(echo $new_disks)'}')
 #
 echo $nested_vsphere_json | jq . | tee /root/nested_vsphere.json > /dev/null
 #
 echo ""
 echo "==> Downloading ESXi ISO file"
-if [ -s "$(jq -c -r .iso_source_location $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .iso_source_location $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .iso_source_location $localJsonFile) $(jq -c -r .vcenter.esxi.iso_url $jsonFile) ; fi
+if [ -s "$(jq -c -r .iso_source_location $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .iso_source_location $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .iso_source_location $localJsonFile) $(jq -c -r .vsphere_nested.esxi.iso_url $jsonFile) ; fi
 if [ -s "$(jq -c -r .iso_source_location $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .iso_source_location $localJsonFile) is not empty" ; else echo "   +++ ESXi iso $(jq -c -r .iso_source_location $localJsonFile) is empty" ; exit 255 ; fi
 #
 echo ""
 echo "==> Downloading vSphere ISO file"
-if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .vcenter_iso_path $localJsonFile) $(jq -c -r .vcenter.iso_url $jsonFile) ; fi
+if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .vcenter_iso_path $localJsonFile) $(jq -c -r .vsphere_nested.iso_url $jsonFile) ; fi
 if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else echo "   +++ vSphere ova $(jq -c -r .vcenter_iso_path $localJsonFile) is empty" ; exit 255 ; fi
 #
 echo ""

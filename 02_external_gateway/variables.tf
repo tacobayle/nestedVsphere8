@@ -1,10 +1,10 @@
-variable "vcenter_underlay" {}
+variable "vsphere_underlay" {}
 variable "vsphere_underlay_username" {}
 variable "vsphere_underlay_password" {}
 variable "external_gw" {}
 variable "date_index" {}
 variable "nsx" {}
-variable "vcenter" {}
+variable "vsphere_nested" {}
 variable "networks" {}
 variable "ubuntu_password" {}
 variable "bind_password" {}

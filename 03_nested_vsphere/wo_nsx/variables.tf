@@ -1,5 +1,5 @@
-variable "vcenter_underlay" {}
-variable "vcenter" {}
+variable "vsphere_underlay" {}
+variable "vsphere_nested" {}
 variable "external_gw" {}
 variable "vcenter_iso_path" {}
 variable "iso_location" {}

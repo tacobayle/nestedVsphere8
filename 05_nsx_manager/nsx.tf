@@ -33,13 +33,13 @@ resource "vsphere_virtual_machine" "nsx_medium" {
       nsx_allowSSHRootLogin = "True"
       nsx_cli_audit_passwd_0 = var.nsx_password
       nsx_cli_passwd_0 = var.nsx_password
-      nsx_dns1_0 = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
-      nsx_gateway_0 = var.vcenter_underlay.networks.vsphere.management.gateway
+      nsx_dns1_0 = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+      nsx_gateway_0 = var.vsphere_underlay.networks.vsphere.management.gateway
       nsx_hostname = "nsx-manager"
-      nsx_ip_0 = var.vcenter_underlay.networks.vsphere.management.nsx_ip
+      nsx_ip_0 = var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip
       nsx_isSSHEnabled = "True"
-      nsx_netmask_0 = var.vcenter_underlay.networks.vsphere.management.netmask
-      nsx_ntp_0 = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
+      nsx_netmask_0 = var.vsphere_underlay.networks.vsphere.management.netmask
+      nsx_ntp_0 = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
       nsx_passwd_0 = var.nsx_password
       nsx_role = "NSX Manager"
       nsx_swIntegrityCheck = "False"
@@ -51,6 +51,6 @@ resource "null_resource" "wait_nsx" {
   depends_on = [vsphere_virtual_machine.nsx_medium]
 
   provisioner "local-exec" {
-    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vcenter_underlay.networks.vsphere.management.nsx_ip}); do echo \"Attempt $count: Waiting for NSX Manager to be reachable...\"; sleep 30 ; count=$((count+1)) ;  if [ \"$count\" = 60 ]; then echo \"ERROR: Unable to connect to NSX Manager\" ; exit 1 ; fi ; done"
+    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip}); do echo \"Attempt $count: Waiting for NSX Manager to be reachable...\"; sleep 30 ; count=$((count+1)) ;  if [ \"$count\" = 60 ]; then echo \"ERROR: Unable to connect to NSX Manager\" ; exit 1 ; fi ; done"
   }
 }

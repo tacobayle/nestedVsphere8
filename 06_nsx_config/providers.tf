@@ -1,5 +1,5 @@
 provider "nsxt" {
-  host                     = var.vcenter_underlay.networks.vsphere.management.nsx_ip
+  host                     = var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip
   username                 = "admin"
   password                 = var.nsx_password
   allow_unverified_ssl     = true

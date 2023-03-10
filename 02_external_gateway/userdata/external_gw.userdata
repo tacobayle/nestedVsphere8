@@ -81,9 +81,9 @@ write_files:
       echo ""
       echo "++++++++++++++++++++++++++++++++"
       echo "updating local /etc/hosts with vCenter and esxi0"
-      contents=$(cat /etc/hosts | grep -v ${vcenter_ip})
+      contents=$(cat /etc/hosts | grep -v ${vcsa_nested_ip})
       echo "$${contents}" | sudo tee /etc/hosts
-      contents="${vcenter_ip} ${vcenter_name}.${domain}"
+      contents="${vcsa_nested_ip} ${vcenter_name}.${domain}"
       echo "$${contents}" | sudo tee -a /etc/hosts
       #
       # NTP config

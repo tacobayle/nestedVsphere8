@@ -1,48 +1,48 @@
 data "vsphere_datacenter" "dc" {
-  name = var.vcenter_underlay.dc
+  name = var.vsphere_underlay.datacenter
 }
 
 data "vsphere_compute_cluster" "compute_cluster" {
-  name          = var.vcenter_underlay.cluster
+  name          = var.vsphere_underlay.cluster
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 data "vsphere_datastore" "datastore" {
-  name = var.vcenter_underlay.datastore
+  name = var.vsphere_underlay.datastore
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 data "vsphere_resource_pool" "pool" {
-  name          = "${var.vcenter_underlay.cluster}/Resources"
+  name          = "${var.vsphere_underlay.cluster}/Resources"
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 data "vsphere_network" "esxi_networks" {
-  count = length(values(var.vcenter_underlay.networks.vsphere))
-  name = values(var.vcenter_underlay.networks.vsphere)[count.index].name
+  count = length(values(var.vsphere_underlay.networks.vsphere))
+  name = values(var.vsphere_underlay.networks.vsphere)[count.index].name
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
-data "vsphere_network" "vcenter_underlay_network_mgmt" {
+data "vsphere_network" "vsphere_underlay_network_mgmt" {
   count = 1
-  name = var.vcenter_underlay.networks.vsphere.management.name
+  name = var.vsphere_underlay.networks.vsphere.management.name
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 data "vsphere_network" "network_nsx_external" {
   count = 1
-  name = var.vcenter_underlay.networks.nsx.external.name
+  name = var.vsphere_underlay.networks.nsx.external.name
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 data "vsphere_network" "network_nsx_overlay" {
   count = 1
-  name = var.vcenter_underlay.networks.nsx.overlay.name
+  name = var.vsphere_underlay.networks.nsx.overlay.name
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 data "vsphere_network" "network_nsx_overlay_edge" {
   count = 1
-  name = var.vcenter_underlay.networks.nsx.overlay_edge.name
+  name = var.vsphere_underlay.networks.nsx.overlay_edge.name
   datacenter_id = data.vsphere_datacenter.dc.id
 }

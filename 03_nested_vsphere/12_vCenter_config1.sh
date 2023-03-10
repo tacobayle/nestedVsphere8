@@ -4,17 +4,17 @@ source /nestedVsphere8/bash/vcenter_api.sh
 #
 jsonFile="/root/nested_vsphere.json"
 #
-api_host="$(jq -r .vcenter.name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)"
+api_host="$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)"
 vsphere_nested_username=administrator
-vcenter_domain=$(jq -r .vcenter.sso.domain_name $jsonFile)
+vcenter_domain=$(jq -r .vsphere_nested.sso.domain_name $jsonFile)
 vsphere_nested_password=$TF_VAR_vsphere_nested_password
 #
 load_govc_env () {
   export GOVC_USERNAME="$vsphere_nested_username@$vcenter_domain"
   export GOVC_PASSWORD=$vsphere_nested_password
-  export GOVC_DATACENTER=$(jq -r .vcenter.datacenter $jsonFile)
+  export GOVC_DATACENTER=$(jq -r .vsphere_nested.datacenter $jsonFile)
   export GOVC_INSECURE=true
-  export GOVC_CLUSTER=$(jq -r .vcenter.cluster $jsonFile)
+  export GOVC_CLUSTER=$(jq -r .vsphere_nested.cluster $jsonFile)
   export GOVC_URL=$api_host
 }
 #
@@ -62,25 +62,25 @@ vcenter_api 6 10 "PUT" $token '{"enabled":true}' $api_host "api/appliance/access
 vcenter_api 6 10 "PUT" $token '{"enabled":true}' $api_host "api/appliance/access/consolecli"
 vcenter_api 6 10 "PUT" $token '{"enabled":true,"timeout":120}' $api_host "api/appliance/access/shell"
 vcenter_api 6 10 "PUT" $token '{"max_days":0,"min_days":0,"warn_days":0}' $api_host "api/appliance/local-accounts/global-policy"
-vcenter_api 6 10 "PUT" $token '{"name":'\"$(jq -r .vcenter.timezone $jsonFile)\"'}' $api_host "api/appliance/system/time/timezone"
+vcenter_api 6 10 "PUT" $token '{"name":'\"$(jq -r .vsphere_nested.timezone $jsonFile)\"'}' $api_host "api/appliance/system/time/timezone"
 
 #curl_put $token '{"enabled":true}' $api_host "appliance/access/ssh"
 #curl_put $token '{"enabled":true}' $api_host "appliance/access/dcui"
 #curl_put $token '{"enabled":true}' $api_host "appliance/access/consolecli"
 #curl_put $token '{"enabled":true,"timeout":120}' $api_host "appliance/access/shell"
 #curl_put $token '{"max_days":0,"min_days":0,"warn_days":0}' $api_host "appliance/local-accounts/global-policy"
-#curl_put $token '{"name":'\"$(jq -r .vcenter.timezone $jsonFile)\"'}' $api_host "appliance/system/time/timezone"
+#curl_put $token '{"name":'\"$(jq -r .vsphere_nested.timezone $jsonFile)\"'}' $api_host "appliance/system/time/timezone"
 ##
 # Add host in the cluster
 #
 IFS=$'\n'
 count=1
-for ip in $(jq -r .vcenter_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
+for ip in $(jq -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
 do
   load_govc_env
   if [[ $count -ne 1 ]] ; then
   echo "Adding host $ip in the cluster"
-  govc cluster.add -hostname "$(jq -r .vcenter.esxi.basename $jsonFile)$count.$(jq -r .external_gw.bind.domain $jsonFile)" -username "root" -password "$TF_VAR_nested_esxi_root_password" -noverify
+  govc cluster.add -hostname "$(jq -r .vsphere_nested.esxi.basename $jsonFile)$count.$(jq -r .external_gw.bind.domain $jsonFile)" -username "root" -password "$TF_VAR_nested_esxi_root_password" -noverify
   fi
   count=$((count+1))
 done
@@ -97,11 +97,11 @@ govc dvs.portgroup.add -dvs "$(jq -r .networks.vsphere.VMotion.vds_name $jsonFil
 govc dvs.portgroup.add -dvs "$(jq -r .networks.vsphere.VSAN.vds_name $jsonFile)" -vlan 0 "$(jq -r .networks.vsphere.VSAN.port_group_name $jsonFile)"
 IFS=$'\n'
 count=1
-for ip in $(jq -r .vcenter_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
+for ip in $(jq -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
 do
-  govc dvs.add -dvs "$(jq -r .networks.vsphere.management.vds_name $jsonFile)" -pnic=vmnic0 "$(jq -r .vcenter.esxi.basename $jsonFile)$count.$(jq -r .external_gw.bind.domain $jsonFile)"
-  govc dvs.add -dvs "$(jq -r .networks.vsphere.VMotion.vds_name $jsonFile)" -pnic=vmnic1 "$(jq -r .vcenter.esxi.basename $jsonFile)$count.$(jq -r .external_gw.bind.domain $jsonFile)"
-  govc dvs.add -dvs "$(jq -r .networks.vsphere.VSAN.vds_name $jsonFile)" -pnic=vmnic2 "$(jq -r .vcenter.esxi.basename $jsonFile)$count.$(jq -r .external_gw.bind.domain $jsonFile)"
+  govc dvs.add -dvs "$(jq -r .networks.vsphere.management.vds_name $jsonFile)" -pnic=vmnic0 "$(jq -r .vsphere_nested.esxi.basename $jsonFile)$count.$(jq -r .external_gw.bind.domain $jsonFile)"
+  govc dvs.add -dvs "$(jq -r .networks.vsphere.VMotion.vds_name $jsonFile)" -pnic=vmnic1 "$(jq -r .vsphere_nested.esxi.basename $jsonFile)$count.$(jq -r .external_gw.bind.domain $jsonFile)"
+  govc dvs.add -dvs "$(jq -r .networks.vsphere.VSAN.vds_name $jsonFile)" -pnic=vmnic2 "$(jq -r .vsphere_nested.esxi.basename $jsonFile)$count.$(jq -r .external_gw.bind.domain $jsonFile)"
   count=$((count+1))
 done
 #
@@ -111,7 +111,7 @@ sleep 5
 echo "++++++++++++++++++++++++++++++++"
 echo "Update vCenter Appliance port group location"
 load_govc_env
-govc vm.network.change -vm $(jq -r .vcenter.name $jsonFile) -net $(jq -r .networks.vsphere.management.port_group_name $jsonFile) ethernet-0 &
+govc vm.network.change -vm $(jq -r .vsphere_nested.vcsa_name $jsonFile) -net $(jq -r .networks.vsphere.management.port_group_name $jsonFile) ethernet-0 &
 govc_pid=$(echo $!)
 echo "Waiting 5 secs to check if vCenter VM is UP"
 sleep 10

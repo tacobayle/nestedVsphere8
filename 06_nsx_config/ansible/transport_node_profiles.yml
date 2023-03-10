@@ -49,7 +49,7 @@
 
 - name: Create transport node profile
   nsxt_transport_node_profiles:
-    hostname: "{{ vcenter_underlay.networks.vsphere.management.nsx_ip }}"
+    hostname: "{{ vsphere_underlay.networks.vsphere.management.nsx_nested_ip }}"
     username: "admin"
     password: "{{ lookup('env', 'TF_VAR_nsx_password') }}"
     validate_certs: no

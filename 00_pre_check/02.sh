@@ -29,8 +29,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
           for tier0 in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
           do
             if [[ $(echo $tier1 | jq -c -r .tier0) == $(echo $tier0 | jq -c -r .display_name) ]] ; then
-              new_routes=$(echo $new_routes | jq '. += [{"to": "'$(echo $segment | jq -c -r .cidr)'", "via": "'$(jq -c -r .vcenter_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
-              echo "   ++++++ Route to $(echo $segment | jq -c -r .cidr) via $(jq -c -r .vcenter_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
+              new_routes=$(echo $new_routes | jq '. += [{"to": "'$(echo $segment | jq -c -r .cidr)'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
+              echo "   ++++++ Route to $(echo $segment | jq -c -r .cidr) via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
             fi
             ((count++))
           done
@@ -53,8 +53,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
               for tier0 in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
               do
                 if [[ $(echo $tier1 | jq -c -r .tier0) == $(echo $tier0 | jq -c -r .display_name) ]] ; then
-                  new_routes=$(echo $new_routes | jq '. += [{"to": "'$(echo $network | jq -c -r .avi_ipam_vip.cidr)'", "via": "'$(jq -c -r .vcenter_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
-                  echo "   ++++++ Route to $(echo $network | jq -c -r .avi_ipam_vip.cidr) via $(jq -c -r .vcenter_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
+                  new_routes=$(echo $new_routes | jq '. += [{"to": "'$(echo $network | jq -c -r .avi_ipam_vip.cidr)'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
+                  echo "   ++++++ Route to $(echo $network | jq -c -r .avi_ipam_vip.cidr) via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
                 fi
                 ((count++))
               done
@@ -71,20 +71,20 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   external_gw_json=$(echo $external_gw_json | jq '. += {"networks": '$(echo $networks_details)'}')
   #
   echo "   +++ Adding prefix for NSX external network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.nsx.external.netmask' $jsonFile) "   ++++++")
-  external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.external += {"prefix": "'$(echo $prefix)'"}')
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.nsx.external.netmask' $jsonFile) "   ++++++")
+  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.external += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for NSX overlay network..."
-  prefix=$(jq -c -r '.vcenter_underlay.networks.nsx.overlay.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
-  external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.overlay += {"prefix": "'$(echo $prefix)'"}')
+  prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
+  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for NSX overlay Edge network..."
-  prefix=$(jq -c -r '.vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
-  external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
+  prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
+  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
 fi
 #
 echo "   +++ Adding reverse DNS zone..."
-ip_external_gw=$(jq -c -r .vcenter_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
+ip_external_gw=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
 octets=""
 addr=""
 IFS="." read -r -a octets <<< "$ip_external_gw"
@@ -95,8 +95,8 @@ echo "   ++++++ Found: $reverse"
 external_gw_json=$(echo $external_gw_json | jq '.external_gw.bind += {"reverse": "'$(echo $reverse)'"}')
 #
 echo "   +++ Adding prefix for management network..."
-prefix=$(ip_prefix_by_netmask $(jq -c -r '.vcenter_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-external_gw_json=$(echo $external_gw_json | jq '.vcenter_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
+prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
+external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
 #
 echo "   +++ Adding a date index"
 date_index=$(date '+%Y%m%d%H%M%S')
@@ -118,7 +118,7 @@ echo $external_gw_json | jq . | tee /root/external_gw.json > /dev/null
 #
 echo ""
 echo "==> Checking vSphere VMs for name conflict..."
-api_host="$(jq -r .vcenter_underlay.server $jsonFile)"
+api_host="$(jq -r .vsphere_underlay.vcsa $jsonFile)"
 vcenter_username=$TF_VAR_vsphere_underlay_username
 vcenter_domain=''
 vsphere_password=$TF_VAR_vsphere_underlay_password

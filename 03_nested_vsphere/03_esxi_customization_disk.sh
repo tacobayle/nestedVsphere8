@@ -13,7 +13,7 @@ IFS=$'\n'
 echo ""
 echo "++++++++++++++++++++++++++++++++"
 echo "Configure ESXi disks as SSD"
-for ip in $(jq -c -r .vcenter_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
+for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
 do
   export GOVC_URL=$ip
   echo "+++++++++++++++++++"

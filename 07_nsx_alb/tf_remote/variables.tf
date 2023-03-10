@@ -17,7 +17,7 @@ variable "ubuntu_password" {}
 variable "app_segments" {}
 variable "app_cidr" {}
 variable "app_ips" {}
-variable "vcenter_underlay" {}
+variable "vsphere_underlay" {}
 
 variable "docker_registry_username" {}
 variable "docker_registry_password" {}

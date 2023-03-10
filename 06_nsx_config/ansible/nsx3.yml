@@ -11,7 +11,7 @@
 
     - name: Store vCenter Session ID for later use
       set_fact:
-        auth_vCenter: "administrator@{{ vcenter.sso.domain_name}}:{{ lookup('env', 'TF_VAR_vsphere_nested_password') }}"
+        auth_vCenter: "administrator@{{ vsphere_nested.sso.domain_name}}:{{ lookup('env', 'TF_VAR_vsphere_nested_password') }}"
 
 #    - name: debug base 64 auth
 #      debug:
@@ -19,7 +19,7 @@
 
     - name: Authenticate to vCenter to obtain a Session ID
       ansible.builtin.uri:
-        url: "https://{{ vcenter.name }}.{{ external_gw.bind.domain }}/api/session"
+        url: "https://{{ vsphere_nested.vcsa_name }}.{{ external_gw.bind.domain }}/api/session"
         method: POST
         validate_certs: no
         timeout: 10
@@ -40,7 +40,7 @@
 
     - name: Get the vSphere Cluster's Object ID (MoREF)
       ansible.builtin.uri:
-        url: "https://{{ vcenter.name }}.{{ external_gw.bind.domain }}/rest/vcenter/cluster?filter.names={{ vcenter.cluster }}"
+        url: "https://{{ vsphere_nested.vcsa_name }}.{{ external_gw.bind.domain }}/rest/vcenter/cluster?filter.names={{ vsphere_nested.cluster }}"
         headers: "{ 'vmware-api-session-id':'{{ vCenter_SessionID }}' }"
         method: GET
         validate_certs: no
@@ -60,7 +60,7 @@
 
     - name: Get ESXi hosts in vSphere Cluster
       ansible.builtin.uri:
-        url: "https://{{ vcenter.name }}.{{ external_gw.bind.domain }}/rest/vcenter/host?filter.clusters={{ Cluster_ID }}"
+        url: "https://{{ vsphere_nested.vcsa_name }}.{{ external_gw.bind.domain }}/rest/vcenter/host?filter.clusters={{ Cluster_ID }}"
         headers: "{ 'vmware-api-session-id':'{{ vCenter_SessionID }}' }"
         method: GET
         validate_certs: no

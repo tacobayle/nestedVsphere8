@@ -2,7 +2,7 @@
   "iso_source_location": "/root/esxi.iso",
   "boot_cfg_location": "efi/boot/boot.cfg",
   "iso_location": "/tmp/esxi",
-  "vcenter_iso_path": "/root/vcenter.iso",
+  "vcenter_iso_path": "/root/vsphere_nested.iso",
   "boot_cfg_lines": ["kernelopt=runweasel ks=cdrom:/KS_CUST.CFG"],
   "bios": "efi",
   "guest_id": "vmkernel65Guest",

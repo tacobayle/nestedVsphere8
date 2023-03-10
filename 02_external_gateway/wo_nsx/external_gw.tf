@@ -17,17 +17,17 @@ data "template_file" "external_gw_userdata" {
   vars = {
     pubkey        = file("/root/.ssh/id_rsa.pub")
     username = "ubuntu"
-    ipCidr  = "${var.vcenter_underlay.networks.vsphere.management.external_gw_ip}/${var.vcenter_underlay.networks.vsphere.management.prefix}"
-    ip = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
-    defaultGw = var.vcenter_underlay.networks.vsphere.management.gateway
+    ipCidr  = "${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}/${var.vsphere_underlay.networks.vsphere.management.prefix}"
+    ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    defaultGw = var.vsphere_underlay.networks.vsphere.management.gateway
     password      = var.ubuntu_password
     hostname = "external-gw-${var.date_index}"
     ansible_version = var.ansible_version
     avi_sdk_version = var.avi_sdk_version
-    ip_vcenter = var.vcenter_underlay.networks.vsphere.management.vcenter_ip
-    vcenter_name = var.vcenter.name
+    ip_vcenter = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
+    vcenter_name = var.vsphere_nested.vcsa_name
     dns_domain = var.external_gw.bind.domain
-//    ip_data_cidr  = "${var.vcenter_underlay.networks.vsphere.management.external_gw_ip}/${var.vcenter_underlay.networks.vsphere.management.prefix}"
+//    ip_data_cidr  = "${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}/${var.vsphere_underlay.networks.vsphere.management.prefix}"
     dns      = join(", ", var.external_gw.bind.forwarders)
     netplanFile = "/etc/netplan/50-cloud-init.yaml"
     privateKey = "/root/.ssh/id_rsa"
@@ -37,9 +37,9 @@ data "template_file" "external_gw_userdata" {
     keyName = "myKeyName"
     secret = base64encode(var.bind_password)
     ntp = var.external_gw.ntp
-    lastOctet = split(".", var.vcenter_underlay.networks.vsphere.management.external_gw_ip)[3]
-    vcenter_ip = var.vcenter_underlay.networks.vsphere.management.vcenter_ip
-    vcenter_name = var.vcenter.name
+    lastOctet = split(".", var.vsphere_underlay.networks.vsphere.management.external_gw_ip)[3]
+    vcsa_nested_ip = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
+    vcenter_name = var.vsphere_nested.vcsa_name
   }
 }
 
@@ -48,22 +48,22 @@ resource "vsphere_virtual_machine" "external_gw" {
   name             = "external-gw-${var.date_index}"
   datastore_id     = data.vsphere_datastore.datastore.id
   resource_pool_id = data.vsphere_resource_pool.pool.id
-  folder           = "/${var.vcenter_underlay.dc}/vm/${var.vcenter_underlay.folder}"
+  folder           = "/${var.vsphere_underlay.datacenter}/vm/${var.vsphere_underlay.folder}"
 
   network_interface {
-    network_id = data.vsphere_network.vcenter_underlay_network_mgmt.id
+    network_id = data.vsphere_network.vsphere_underlay_network_mgmt.id
   }
 
 //  network_interface {
-//    network_id = data.vsphere_network.vcenter_underlay_network_external.id
+//    network_id = data.vsphere_network.vsphere_underlay_network_external.id
 //  }
 
-  num_cpus = var.external_gw.cpu
-  memory = var.external_gw.memory
+  num_cpus = 2
+  memory = 4096
   guest_id = "ubuntu64Guest"
 
   disk {
-    size             = var.external_gw.disk
+    size             = 20
     label            = "external-gw-${var.date_index}.lab_vmdk"
     thin_provisioned = true
   }
@@ -85,7 +85,7 @@ resource "vsphere_virtual_machine" "external_gw" {
   }
 
   connection {
-    host        = var.vcenter_underlay.networks.vsphere.management.external_gw_ip
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     type        = "ssh"
     agent       = false
     user        = "ubuntu"
@@ -101,7 +101,7 @@ resource "vsphere_virtual_machine" "external_gw" {
 
 resource "null_resource" "clear_ssh_key_external_gw_locally" {
   provisioner "local-exec" {
-    command = "ssh-keygen -f \"/home/ubuntu/.ssh/known_hosts\" -R \"${var.vcenter_underlay.networks.vsphere.management.external_gw_ip}\" || true"
+    command = "ssh-keygen -f \"/home/ubuntu/.ssh/known_hosts\" -R \"${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}\" || true"
   }
 }
 

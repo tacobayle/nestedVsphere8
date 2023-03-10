@@ -2,17 +2,17 @@
 #
 jsonFile="/root/nested_vsphere.json"
 #
-api_host="$(jq -r .vcenter.name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)"
+api_host="$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)"
 vsphere_nested_username=administrator
-vcenter_domain=$(jq -r .vcenter.sso.domain_name $jsonFile)
+vcenter_domain=$(jq -r .vsphere_nested.sso.domain_name $jsonFile)
 vsphere_nested_password=$TF_VAR_vsphere_nested_password
 #
 load_govc_env () {
   export GOVC_USERNAME="$vsphere_nested_username@$vcenter_domain"
   export GOVC_PASSWORD=$vsphere_nested_password
-  export GOVC_DATACENTER=$(jq -r .vcenter.datacenter $jsonFile)
+  export GOVC_DATACENTER=$(jq -r .vsphere_nested.datacenter $jsonFile)
   export GOVC_INSECURE=true
-  export GOVC_CLUSTER=$(jq -r .vcenter.cluster $jsonFile)
+  export GOVC_CLUSTER=$(jq -r .vsphere_nested.cluster $jsonFile)
   export GOVC_URL=$api_host
 }
 #
@@ -33,7 +33,7 @@ IFS=$'\n'
 load_govc_esxi
 echo ""
 echo "++++++++++++++++++++++++++++++++"
-for ip in $(cat $jsonFile | jq -c -r .vcenter_underlay.networks.vsphere.management.esxi_ips[])
+for ip in $(cat $jsonFile | jq -c -r .vsphere_underlay.networks.vsphere.management.esxi_ips[])
 do
   export GOVC_URL=$ip
   echo "Deleting port group called VM Network for Host $ip"
@@ -52,10 +52,10 @@ done
 #
 load_govc_env
 echo "Enabling VSAN configuration"
-govc cluster.change -drs-enabled -ha-enabled -vsan-enabled -vsan-autoclaim "$(jq -r .vcenter.cluster $jsonFile)"
+govc cluster.change -drs-enabled -ha-enabled -vsan-enabled -vsan-autoclaim "$(jq -r .vsphere_nested.cluster $jsonFile)"
 IFS=$'\n'
 count=0
-for ip in $(jq -r .vcenter_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
+for ip in $(jq -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
 do
   load_govc_esxi
   if [[ $count -ne 0 ]] ; then
