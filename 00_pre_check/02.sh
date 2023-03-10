@@ -40,8 +40,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   fi
   #
   echo "   +++ Creating External gateway routes to Avi VIP subnets..."
-  if [[ $(jq -c -r '.nsx.avi.config.cloud.networks_data | length' $jsonFile) -gt 0 ]] ; then
-    for network in $(jq -c -r .nsx.avi.config.cloud.networks_data[] $jsonFile)
+  if [[ $(jq -c -r '.avi.config.cloud.networks_data | length' $jsonFile) -gt 0 ]] ; then
+    for network in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
     do
       for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
       do

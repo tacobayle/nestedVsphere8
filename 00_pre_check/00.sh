@@ -17,7 +17,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   if [ -z "$TF_VAR_nsx_password" ] ; then  echo "   +++ testing if '$TF_VAR_nsx_password' is not empty" ; exit 255 ; fi
   if [ -z "$TF_VAR_nsx_license" ] ; then  echo "   +++ testing if '$TF_VAR_nsx_license' is not empty" ; exit 255 ; fi
 fi
-if [[ $(jq -c -r .nsx.avi $jsonFile) != "null" ]]; then
+if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   if [ -z "$TF_VAR_avi_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_password' is not empty" ; exit 255 ; fi
   if [ -z "$TF_VAR_avi_old_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_old_password' is not empty" ; exit 255 ; fi
 fi
@@ -230,14 +230,15 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
                                                "   ++++++ERROR++++++ Tier1 not found: "
   #
   #
-  if [[ $(jq -c -r .nsx.avi $jsonFile) != "null" ]]; then
+  #
+  if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX ALB Variables"
-  test_if_json_variable_is_defined .nsx.avi.ova_url $jsonFile "   "
-  test_if_json_variable_is_defined .nsx.avi.cpu $jsonFile "   "
-  test_if_json_variable_is_defined .nsx.avi.memory $jsonFile "   "
-  test_if_json_variable_is_defined .nsx.avi.disk $jsonFile "   "
-  test_if_json_variable_is_defined .nsx.avi.version $jsonFile "   "
+  test_if_json_variable_is_defined .avi.ova_url $jsonFile "   "
+  test_if_json_variable_is_defined .avi.cpu $jsonFile "   "
+  test_if_json_variable_is_defined .avi.memory $jsonFile "   "
+  test_if_json_variable_is_defined .avi.disk $jsonFile "   "
+  test_if_json_variable_is_defined .avi.version $jsonFile "   "
   # .nsx.config.segments_overlay[].avi_ip
   count=0
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
@@ -262,8 +263,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     fi
   done
   if [[ $count -eq 0 ]] ; then echo "   +++ .nsx.config.segments_overlay[].app_ips has to be defined at least once to locate where the App servers will be installed" ; exit 255 ; fi
-  test_if_json_variable_is_defined .nsx.avi.config.cloud.networks_data $jsonFile "   "
-  for item in $(jq -c -r .nsx.avi.config.cloud.networks_data[] $jsonFile)
+  test_if_json_variable_is_defined .avi.config.cloud.networks_data $jsonFile "   "
+  for item in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
   do
     test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .avi_ipam_vip.cidr)" "   "
   done
