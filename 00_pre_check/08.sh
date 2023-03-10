@@ -35,3 +35,4 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "nu
   app_json=$(echo $app_json | jq '. += {"app_ips": '$(echo $app_ips)'}')
   #
   echo $app_json | jq . | tee /root/app.json > /dev/null
+fi
