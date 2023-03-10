@@ -61,6 +61,7 @@ for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.vsan.esxi_ips[] $jsonFil
 do
   test_if_variable_is_valid_ip $ip "   "
 done
+# NSX
 if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile) "   "
   test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.nsx_edge_nested_ips $jsonFile "   "
@@ -99,6 +100,10 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.gateway $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)" "   "
+fi
+# ALB
+if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
+  test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile) "   "
 fi
 #
 #
@@ -233,12 +238,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   #
   if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   echo ""
-  echo "==> Checking NSX ALB Variables"
-  test_if_json_variable_is_defined .avi.ova_url $jsonFile "   "
-  test_if_json_variable_is_defined .avi.cpu $jsonFile "   "
-  test_if_json_variable_is_defined .avi.memory $jsonFile "   "
-  test_if_json_variable_is_defined .avi.disk $jsonFile "   "
-  test_if_json_variable_is_defined .avi.version $jsonFile "   "
+  echo "==> Checking NSX ALB Variables with NSX"
   # .nsx.config.segments_overlay[].avi_ip
   count=0
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
@@ -270,4 +270,15 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   done
   fi
 fi
-
+#
+#
+#
+if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
+  echo ""
+  echo "==> Checking NSX ALB Variables with or without NSX"
+  test_if_json_variable_is_defined .avi.ova_url $jsonFile "   "
+  test_if_json_variable_is_defined .avi.cpu $jsonFile "   "
+  test_if_json_variable_is_defined .avi.memory $jsonFile "   "
+  test_if_json_variable_is_defined .avi.disk $jsonFile "   "
+  test_if_json_variable_is_defined .avi.version $jsonFile "   "
+fi
