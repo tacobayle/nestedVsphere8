@@ -4,6 +4,17 @@ resource "vsphere_folder" "apps" {
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 
+resource "vsphere_content_library" "nested_library_avi_app" {
+  name            = "avi_app"
+  storage_backing = [data.vsphere_datastore.datastore_nested.id]
+}
+
+resource "vsphere_content_library_item" "nested_library_item_avi_app" {
+  name        = "ubuntu.ova"
+  library_id  = vsphere_content_library.nested_library_avi_app.id
+  file_url = "/hone/ubuntu/${basename(var.ubuntu_ova_path)}"
+}
+
 data "template_file" "avi_app_userdata" {
   count = length(var.app_ips)
   template = file("${path.module}/userdata/avi_app.userdata")
