@@ -85,20 +85,20 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     test_if_variable_is_valid_ip $ip "   "
   done
   if [[ $(jq -c -r '.vsphere_underlay.networks.nsx.external.tier0_vips | length' $jsonFile) -lt $(jq -c -r '.nsx.config.edge_clusters | length' $jsonFile) ]] ; then
-    echo "   +++ not enough IP defined in .vcenter_underlay.networks.nsx.external.tier0_vips for the amount of edge_cluster defined in .nsx.config.edge_clusters"
+    echo "   +++ not enough IP defined in .vsphere_underlay.networks.nsx.external.tier0_vips for the amount of edge_cluster defined in .nsx.config.edge_clusters"
     exit 255
   fi
-  test_if_variable_is_valid_ip $(jq -c -r .vcenter_underlay.networks.nsx.external.external_gw_ip $jsonFile) "   "
-  test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay.name $jsonFile "   "
-  test_if_variable_is_valid_cidr "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.cidr $jsonFile)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.gateway $jsonFile)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.start $jsonFile)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay.nsx_pool.end $jsonFile)" "   "
-  test_if_json_variable_is_defined .vcenter_underlay.networks.nsx.overlay_edge.name $jsonFile "   "
-  test_if_variable_is_valid_cidr "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.cidr $jsonFile)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.gateway $jsonFile)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)" "   "
-  test_if_variable_is_valid_ip "$(jq -c -r .vcenter_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)" "   "
+  test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.nsx.external.external_gw_ip $jsonFile) "   "
+  test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.overlay.name $jsonFile "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.cidr $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.gateway $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.start $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.end $jsonFile)" "   "
+  test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.overlay_edge.name $jsonFile "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.gateway $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)" "   "
 fi
 #
 #
@@ -156,7 +156,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   test_if_json_variable_is_defined .nsx.config.edge_node.basename $jsonFile "   "
   edge_list=[]
   echo "   +++ testing if there is enough IP for edge node defined in .nsx.config.edge_clusters[].member_name[]"
-  edge_amount=$(jq -c -r '.vcenter_underlay.networks.vsphere.management.nsx_edge_nested_ips | length' $jsonFile)
+  edge_amount=$(jq -c -r '.vsphere_underlay.networks.vsphere.management.nsx_edge_nested_ips | length' $jsonFile)
   for edge_cluster in $(jq -c -r .nsx.config.edge_clusters[] $jsonFile)
   do
     for member_name in $(echo $edge_cluster | jq -c -r .members_name[])
@@ -164,7 +164,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
       edge_list=$(echo $edge_list | jq '. += ["'$(echo $member_name)'"]')
     done
   done
-  if [[ $(echo $edge_list | jq -c -r '. | length') -gt $(echo $edge_amount | jq -c -r '. | length') ]] ; then echo "   +++ Amount of Edge clusters defined in edge cluster greater than the amount of IPs defined in .vcenter_underlay.networks.vsphere.management.nsx_edge_nested_ips " ; exit 255 ; fi
+  if [[ $(echo $edge_list | jq -c -r '. | length') -gt $(echo $edge_amount | jq -c -r '. | length') ]] ; then echo "   +++ Amount of Edge clusters defined in edge cluster greater than the amount of IPs defined in .vsphere_underlay.networks.vsphere.management.nsx_edge_nested_ips " ; exit 255 ; fi
   echo "   +++ testing if there is no duplicate in edge node in .nsx.config.edge_clusters[].member_name[]"
   for item in $(echo $edge_list | jq -c -r '. | group_by(.) | .[]')
   do
