@@ -107,7 +107,7 @@ resource "null_resource" "vsphere_underlay_clean_up" {
   depends_on = [null_resource.esxi_customization_disk]
 
   provisioner "local-exec" {
-    command = "/bin/bash 04_vsphere_underlay_clean_up.sh"
+    command = "/bin/bash 04_vcenter_underlay_clean_up.sh"
   }
 }
 
