@@ -16,13 +16,13 @@ resource "vsphere_virtual_machine" "controller" {
     network_id = data.vsphere_network.vcenter_network_mgmt_nested[0].id
   }
 
-  num_cpus = var.nsx.avi.cpu
-  memory = var.nsx.avi.memory
+  num_cpus = var.avi.cpu
+  memory = var.avi.memory
   wait_for_guest_net_timeout = 4
   guest_id = "ubuntu64Guest"
 
   disk {
-    size             = var.nsx.avi.disk
+    size             = var.avi.disk
     label            = "avi-controller-${count.index + 1}.lab_vmdk"
     thin_provisioned = true
   }
