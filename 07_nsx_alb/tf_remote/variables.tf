@@ -1,4 +1,4 @@
-variable "vcenter" {}
+variable "vsphere_nested" {}
 variable "nsx" {}
 variable "external_gw" {}
 
