@@ -245,7 +245,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   do
     if [[ $(echo $item | jq -c .app_ips) != "null" ]] ; then
       ((count++))
-      for ip in $(echo $item | jq -c -r)
+      for ip in $(echo $item | jq .app_ips -c -r)
       do
         test_if_variable_is_valid_ip "$ip" "   "
       done
