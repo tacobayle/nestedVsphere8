@@ -6,6 +6,7 @@ sleep 3
 kubectl exec -it test-pod1 -- /bin/bash
 
 /bin/bash nestedVsphere8/apply.sh
+/bin/bash nestedVsphere8/destroy.sh
 ---
 kubectl delete pod test-pod2
 kubectl delete configmap configmap2
@@ -14,15 +15,16 @@ kubectl apply -f pod2-nested-vpshere-nsx.yml
 sleep 2
 kubectl exec -it test-pod2 -- /bin/bash
 
+/bin/bash nestedVsphere8/apply.sh
+/bin/bash nestedVsphere8/destroy.sh
+
+---
+kubectl delete pod test-pod3
+kubectl delete configmap configmap2
+kubectl apply -f configmap3-nested-vpshere-nsx-avi.yml
+kubectl apply -f pod2-nested-vpshere-nsx.yml
+sleep 2
+kubectl exec -it test-pod2 -- /bin/bash
 
 /bin/bash nestedVsphere8/apply.sh
-
-
-jq . /etc/config/variables.json
-/bin/bash /nestedVsphere8/00_pre_check/00.sh
-/bin/bash /nestedVsphere8/00_pre_check/01.sh
-/bin/bash /nestedVsphere8/00_pre_check/02.sh
-/bin/bash /nestedVsphere8/00_pre_check/03.sh
-/bin/bash /nestedVsphere8/00_pre_check/04.sh
-/bin/bash /nestedVsphere8/00_pre_check/05.sh
-/bin/bash /nestedVsphere8/00_pre_check/06.sh
+/bin/bash nestedVsphere8/destroy.sh

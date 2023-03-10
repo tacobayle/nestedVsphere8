@@ -187,7 +187,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   for item in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
   do
     test_if_variable_is_defined $(echo $item | jq -c .display_name) "   " "testing if each .nsx.config.tier0s[] have a display_name defined"
-    edge_cluster_name_list=$(echo $edge_cluster_name_list | jq '. += ["'$(echo $item | jq -c .edge_cluster_name)'"]')
+    edge_cluster_name_list=$(echo $edge_cluster_name_list | jq '. += ['$(echo $item | jq -c .edge_cluster_name)']')
   done
   echo "   +++ testing if each .nsx.config.tier0s[].edge_cluster_name is unique"
   for item in $(echo $edge_cluster_name_list | jq -c -r '. | group_by(.) | .[]')
