@@ -20,11 +20,11 @@ kubectl exec -it test-pod2 -- /bin/bash
 
 ---
 kubectl delete pod test-pod3
-kubectl delete configmap configmap2
+kubectl delete configmap configmap3
 kubectl apply -f configmap3-nested-vpshere-nsx-avi.yml
 kubectl apply -f pod2-nested-vpshere-nsx.yml
 sleep 2
-kubectl exec -it test-pod2 -- /bin/bash
+kubectl exec -it test-pod3 -- /bin/bash
 
 /bin/bash nestedVsphere8/apply.sh
 /bin/bash nestedVsphere8/destroy.sh

@@ -2,12 +2,13 @@ data "template_file" "environment_variables" {
   template = file("templates/environment_variables.json.template")
   vars = {
     vsphere_nested_password = var.vsphere_nested_password
-    avi_password = var.avi_password
     ubuntu_password = var.ubuntu_password
+    docker_registry_username = var.docker_registry_username
+    docker_registry_password = var.docker_registry_password
   }
 }
 
-resource "null_resource" "tf_avi_controller" {
+resource "null_resource" "tf_app" {
 
   connection {
     host = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
@@ -18,23 +19,18 @@ resource "null_resource" "tf_avi_controller" {
   }
 
   provisioner "file" {
-    source = var.avi_ova_path
-    destination = "/home/ubuntu/${basename(var.avi_ova_path)}"
-  }
-
-  provisioner "file" {
     source = var.ubuntu_ova_path
     destination = "/home/ubuntu/${basename(var.ubuntu_ova_path)}"
   }
 
   provisioner "file" {
-    source = "/root/avi1.json"
-    destination = "/home/ubuntu/avi1.json"
+    source = "/root/app.json"
+    destination = "/home/ubuntu/app.json"
   }
 
   provisioner "file" {
     source = "tf_remote"
-    destination = "tf_remote_avi_controller"
+    destination = "tf_remote"
   }
 
   provisioner "file" {
@@ -44,9 +40,9 @@ resource "null_resource" "tf_avi_controller" {
 
   provisioner "remote-exec" {
     inline = [
-      "cd tf_remote_avi_controller",
+      "cd tf_remote",
       "terraform init",
-      "terraform apply -auto-approve -var-file=/home/ubuntu/avi1.json -var-file=/home/ubuntu/.environment_variables.json"
+      "terraform apply -auto-approve -var-file=/home/ubuntu/app.json -var-file=/home/ubuntu/.environment_variables.json"
     ]
   }
 }

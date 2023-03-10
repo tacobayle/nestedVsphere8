@@ -31,6 +31,10 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/07.sh
   # if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+  /bin/bash /nestedVsphere8/00_pre_check/08.sh
+  # if [ $? -ne 0 ] ; then exit 1 ; fi
+fi
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/apply.sh
 #if [ $? -ne 0 ] ; then exit 1 ; fi
 /bin/bash /nestedVsphere8/02_external_gateway/apply.sh
@@ -49,4 +53,14 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   /bin/bash /nestedVsphere8/06_nsx_config/apply.sh
   # if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
+  /bin/bash /nestedVsphere8/07_nsx_alb/apply.sh
+  # if [ $? -ne 0 ] ; then exit 1 ; fi
+fi
+
+if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+  /bin/bash /nestedVsphere8/08_nsx_app/apply.sh
+  # if [ $? -ne 0 ] ; then exit 1 ; fi
+fi
+
 while true ; do sleep 3600 ; done

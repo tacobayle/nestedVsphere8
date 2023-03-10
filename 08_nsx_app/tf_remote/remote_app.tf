@@ -1,5 +1,4 @@
 resource "vsphere_folder" "apps" {
-  count            = 1
   path          = var.app.folder
   type          = "vm"
   datacenter_id = data.vsphere_datacenter.dc_nested.id
@@ -33,10 +32,10 @@ resource "vsphere_virtual_machine" "avi_app" {
   name             = "${var.app.basename}${count.index + 1}"
   datastore_id     = data.vsphere_datastore.datastore_nested.id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
-  folder           = vsphere_folder.apps[0].path
+  folder           = vsphere_folder.apps.path
 
   network_interface {
-    network_id = data.vsphere_network.networks_app[count.index].id
+    network_id = data.vsphere_network.app[count.index].id
   }
 
   num_cpus = var.app.cpu

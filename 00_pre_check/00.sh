@@ -101,7 +101,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)" "   "
 fi
-# ALB
+# AVI
 if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile) "   "
 fi
@@ -239,17 +239,6 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   echo ""
   echo "==> Checking NSX ALB Variables with NSX"
-  # .nsx.config.segments_overlay[].avi_ip
-  count=0
-  for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
-  do
-    if [[ $(echo $item | jq -c .avi_ip) != "null" ]] ; then
-      ((count++))
-      test_if_variable_is_valid_ip "$(echo $item | jq -c .avi_ip)" "   "
-    fi
-  done
-  if [[ $count -eq 0 ]] ; then echo "   +++ .nsx.config.segments_overlay[].avi_ip has to be defined once to locate where the ALB controller will be installed" ; exit 255 ; fi
-  if [[ $count -gt 1 ]] ; then echo "   +++ .nsx.config.segments_overlay[].avi_ip can be defined only once" ; exit 255 ; fi
   # .nsx.config.segments_overlay[].app_ips
   count=0
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
