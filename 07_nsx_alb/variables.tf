@@ -5,3 +5,4 @@ variable "vsphere_nested_password" {}
 variable "external_gw" {}
 variable "avi_port_group" {}
 variable "avi_ova_path" {}
+variable "nsx_alb_se_cl" {}

@@ -1,3 +1,4 @@
 {
-  "avi_ova_path": "/root/avi.ova"
+  "avi_ova_path": "/root/avi.ova",
+  "nsx_alb_se_cl": "nsx_alb_se_cl"
 }
