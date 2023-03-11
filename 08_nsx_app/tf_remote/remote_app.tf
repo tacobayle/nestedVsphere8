@@ -12,7 +12,7 @@ resource "vsphere_content_library" "nested_library_avi_app" {
 resource "vsphere_content_library_item" "nested_library_item_avi_app" {
   name        = "ubuntu.ova"
   library_id  = vsphere_content_library.nested_library_avi_app.id
-  file_url = "/hone/ubuntu/${basename(var.ubuntu_ova_path)}"
+  file_url = "/home/ubuntu/${basename(var.ubuntu_ova_path)}"
 }
 
 data "template_file" "avi_app_userdata" {

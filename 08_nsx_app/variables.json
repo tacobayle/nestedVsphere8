@@ -5,6 +5,7 @@
     "cpu": 2,
     "memory": 4096,
     "disk": 20,
+    "mtu": 1300,
     "username": "ubuntu",
     "netplan_file": "/etc/netplan/50-cloud-init.yaml",
     "nsxt_vm_tags": "avi-app-tag",

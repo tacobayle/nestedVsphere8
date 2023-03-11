@@ -17,7 +17,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "nu
   #
   echo "   +++ Adding app..."
   app=$(jq -c -r '.app' $localJsonFile)
-  app_json=$(echo $app_json | jq '. += {"app": "'$(echo $app)'"}')
+  app_json=$(echo $app_json | jq '. += {"app": '$(echo $app)'}')
   #
   app_segments=[]
   app_ips=[]
