@@ -44,7 +44,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   #
   avi_json=$(echo $avi_json | jq '.avi.config += {"static_routes": '$(echo $static_routes)'}')
   #
-  if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) != "CLOUD_NSXT" ]]; then
+  if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
     # .avi.config.cloud.network_management
     echo "   +++ Checking Avi Cloud networks settings"
     for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
@@ -72,7 +72,6 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks_data)')
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks_data": '$(echo $network_data)'}')
     #
-    echo ""
     echo "   +++ Creating Avi pools"
     avi_pools="[]"
     avi_virtiual_services_http="[]"
@@ -85,12 +84,13 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
           pool_name=$(jq -c -r '.app.nsxt_group_name' /nestedVsphere8/08_nsx_app/variables.json)
           tier1=$(echo $item | jq -c -r .tier1)
           default_server_port=$(jq -c -r '.app.hello_world_app_tcp_port' /nestedVsphere8/08_nsx_app/variables.json)
-          avi_pool="{\"name\": \"'$(echo $pool_name)'\", \"tier1\": \"'$(echo $tier1)'\", \"default_server_port\": \"'$(echo $default_server_port)'\", \"type\": \"'$(echo $type)'\"}"
+          avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\"}"
           avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
-          vs_name="app-hello-world-nsxt-group"
+          vs_name="app$count-hello-world-nsx-group"
           segment_name=$(echo $item | jq -c -r .display_name)
-          avi_virtiual_service_http="{\"name\": \"'$(echo $vs_name)'\", \"network_ref\": \"'$(echo $segment_name)'\", \"pool_ref\": \"'$(echo $pool_name)'\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+          avi_virtiual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
           avi_virtiual_services_http=$(echo $avi_virtiual_services_http | jq '. += ['$(echo $avi_virtiual_service_http)']')
+          ((count++))
         fi
         tier1=$(echo $item | jq -c -r .tier1)
         avi_app_server_ips=$(echo $item | jq -c -r .app_ips)
@@ -98,30 +98,30 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
         pool_name="pool$count-hello"
         default_server_port=$(jq -c -r '.app.hello_world_app_tcp_port' /nestedVsphere8/08_nsx_app/variables.json)
         type="ip-based"
-        avi_pool="{\"name\": \"'$(echo $pool_name)'\", \"tier1\": \"'$(echo $tier1)'\", \"default_server_port\": \"'$(echo $default_server_port)'\", \"type\": \"'$(echo $type)'\", \"avi_app_server_ips\": \"'$(echo $avi_app_server_ips)'\"}"
+        avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(echo $avi_app_server_ips)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-hello-world"
         segment_name=$(echo $item | jq -c -r .display_name)
-        avi_virtiual_service_http="{\"name\": \"'$(echo $vs_name)'\", \"network_ref\": \"'$(echo $segment_name)'\", \"pool_ref\": \"'$(echo $pool_name)'\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtiual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
         avi_virtiual_services_http=$(echo $avi_virtiual_services_http | jq '. += ['$(echo $avi_virtiual_service_http)']')
         ((count++))
         pool_name="pool$count-avi"
         default_server_port=$(jq -c -r '.app.avi_app_tcp_port' /nestedVsphere8/08_nsx_app/variables.json)
-        avi_pool="{\"name\": \"'$(echo $pool_name)'\", \"tier1\": \"'$(echo $tier1)'\", \"default_server_port\": \"'$(echo $default_server_port)'\", \"type\": \"'$(echo $type)'\", \"avi_app_server_ips\": \"'$(echo $avi_app_server_ips)'\"}"
+        avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(echo $avi_app_server_ips)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-avi"
         segment_name=$(echo $item | jq -c -r .display_name)
-        avi_virtiual_service_http="{\"name\": \"'$(echo $vs_name)'\", \"network_ref\": \"'$(echo $segment_name)'\", \"pool_ref\": \"'$(echo $pool_name)'\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtiual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
         avi_virtiual_services_http=$(echo $avi_virtiual_services_http | jq '. += ['$(echo $avi_virtiual_service_http)']')
         ((count++))
         #
         pool_name="pool$count-waf"
         default_server_port=$(jq -c -r '.app.hackazon_tcp_port' /nestedVsphere8/08_nsx_app/variables.json)
-        avi_pool="{\"name\": \"'$(echo $pool_name)'\", \"tier1\": \"'$(echo $tier1)'\", \"default_server_port\": \"'$(echo $default_server_port)'\", \"type\": \"'$(echo $type)'\", \"avi_app_server_ips\": \"'$(echo $avi_app_server_ips)'\"}"
+        avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(echo $avi_app_server_ips)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-waf"
         segment_name=$(echo $item | jq -c -r .display_name)
-        avi_virtiual_service_http="{\"name\": \"'$(echo $vs_name)'\", \"network_ref\": \"'$(echo $segment_name)'\", \"pool_ref\": \"'$(echo $pool_name)'\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtiual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
         avi_virtiual_services_http=$(echo $avi_virtiual_services_http | jq '. += ['$(echo $avi_virtiual_service_http)']')
         ((count++))
       fi
@@ -130,10 +130,6 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
       avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
       avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '$(echo $avi_virtiual_services_http)'}')
     fi
-
-
-
-
   fi
   #
   echo $avi_json | jq . | tee /root/avi.json > /dev/null
