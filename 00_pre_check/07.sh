@@ -11,6 +11,14 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   rm -f /root/avi.json
   avi_json=$(jq -c -r . $jsonFile | jq .)
   #
+  echo "   +++ Adding avi.config.avi_config_repo..."
+  avi_config_repo=$(jq -c -r '.avi_config_repo' $localJsonFile)
+  avi_json=$(echo $avi_json | jq '.avi.config += {"avi_config_repo": "'$(echo $avi_config_repo)'"}')
+  #
+  echo "   +++ Adding avi.config.avi_config_tag..."
+  avi_config_tag=$(jq -c -r '.avi_config_tag' $localJsonFile)
+  avi_json=$(echo $avi_json | jq '.avi.config += {"avi_config_tag": "'$(echo $avi_config_tag)'"}')
+  #
   echo "   +++ Adding avi_ova_path..."
   avi_ova_path=$(jq -c -r '.avi_ova_path' $localJsonFile)
   avi_json=$(echo $avi_json | jq '. += {"avi_ova_path": "'$(echo $avi_ova_path)'"}')
