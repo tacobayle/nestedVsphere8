@@ -264,7 +264,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
     if [[ $count -eq 0 ]] ; then echo "   +++ .nsx.config.segments_overlay[].app_ips has to be defined at least once to locate where the App servers will be installed" ; exit 255 ; fi
     echo ""
     echo "==> Checking ALB with NSX Cloud type"
-    if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) != "CLOUD_NSXT" ]]; then
+    if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
       test_if_json_variable_is_defined .avi.config.cloud.networks_data $jsonFile "   "
       test_if_json_variable_is_defined .avi.config.cloud.name $jsonFile "   "
       test_if_json_variable_is_defined .avi.config.cloud.type $jsonFile "   "
