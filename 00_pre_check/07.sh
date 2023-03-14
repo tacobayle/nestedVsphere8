@@ -31,10 +31,10 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   avi_port_group=$(jq -c -r '.networks.vsphere.management.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
   avi_json=$(echo $avi_json | jq '. += {"avi_port_group": "'$(echo $avi_port_group)'"}')
   #
-  if [[ $(jq -c -r .nsx $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) != "CLOUD_NSXT" ]]; then
+  if [[ $(jq -c -r .nsx $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
     echo "   +++ Adding transport_zone details..."
-    transport_zone=$(jq -c -r '.transport_zone[0]' /nestedVsphere8/06_nsx_config/variables.json)
-    avi_json=$(echo $avi_json | jq '. += {"transport_zone": '$(echo $transport_zone | jq -c -r .)'}')
+    transport_zone=$(jq -c -r '.transport_zones[0].name' /nestedVsphere8/06_nsx_config/variables.json)
+    avi_json=$(echo $avi_json | jq '. += {"transport_zone": "'$(echo $transport_zone)'"}')
   fi
   #
   if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
@@ -75,10 +75,10 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
         fi
       done
       network_data=$(echo $network | jq '. += {"tier1": "'$(echo $tier1)'"}')
-      networks_data=$(echo $networks_data | jq '. += ['$(echo $new_network)']')
+      networks_data=$(echo $networks_data | jq '. += ['$(echo $network_data)']')
     done
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks_data)')
-    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks_data": '$(echo $network_data)'}')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks_data": '$(echo $networks_data)'}')
     #
     echo "   +++ Creating Avi pools"
     avi_pools="[]"

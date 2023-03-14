@@ -33,15 +33,23 @@ data "template_file" "values" {
     vcenter_password = var.vsphere_nested_password
     vcenter_ip = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
     content_library = var.nsx_alb_se_cl
-    service_engine_groups = jsonencode(var.avi.config.service_engine_groups)
-    pools = jsonencode(var.avi.config.pools)
-    virtual_services = jsonencode(var.avi.config.virtual_services)
+    service_engine_groups = jsonencode(var.avi.config.cloud.service_engine_groups)
+    pools = jsonencode(var.avi.config.cloud.pools)
+    virtual_services = jsonencode(var.avi.config.cloud.virtual_services)
   }
 }
 
-resource "null_resource" "alb_ansible_config" {
+resource "null_resource" "alb_ansible_config_values" {
 
   provisioner "local-exec" {
-    command = "cat > values.yml <<EOL\n${data.template_file.values.rendered}\nEOL ; git clone ${var.avi.config.avi_config_repo} --branch ${var.avi.config.avi_config_tag} ; cd ${split("/", var.avi.config.avi_config_repo)[4]} ; ansible-playbook -i ../hosts_avi nsx.yml --extra-vars @../values.yml"
+    command = "cat > values.yml <<EOL\n${data.template_file.values.rendered}\nEOL"
+  }
+}
+
+
+resource "null_resource" "alb_ansible_config" {
+  depends_on = [null_resource.ansible_hosts_avi_controllers, null_resource.alb_ansible_config_values]
+  provisioner "local-exec" {
+    command = "git clone ${var.avi.config.avi_config_repo} --branch ${var.avi.config.avi_config_tag} ; cd ${split("/", var.avi.config.avi_config_repo)[4]} ; ansible-playbook -i ../hosts_avi nsx.yml --extra-vars @../values.yml"
   }
 }
