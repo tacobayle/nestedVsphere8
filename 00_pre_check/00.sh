@@ -312,24 +312,26 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
         do
           test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a name defined"
           test_if_variable_is_defined $(echo $item | jq -c .network_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a network_ref defined"
-          test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].network_ref" \
-                                                       ".nsx.config.segments_overlay[].display_name" \
-                                                       "$jsonFile" \
-                                                       "   +++ Checking network_ref in .avi.config.cloud.virtual_services.dns" \
-                                                       "   ++++++ Segment " \
-                                                       "   ++++++ERROR++++++ Segment not found: "
+
           test_if_variable_is_defined $(echo $item | jq -c .se_group_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a se_group_ref defined"
-          test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].se_group_ref" \
-                                                       ".avi.config.cloud.service_engine_groups[].name" \
-                                                       "$jsonFile" \
-                                                       "   +++ Checking se_group_ref in .avi.config.cloud.virtual_services.dns" \
-                                                       "   ++++++ Service Engine Group " \
-                                                       "   ++++++ERROR++++++ ervice Engine Group not found: "
           for service in $(echo $item | jq -c -r .services[])
           do
             test_if_variable_is_defined $(echo $service | jq -c .port) "   " "testing if each .avi.config.cloud.virtual_services.dns[].services have a port defined"
           done
         done
+        test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].se_group_ref" \
+                                                     ".avi.config.cloud.service_engine_groups[].name" \
+                                                     "$jsonFile" \
+                                                     "   +++ Checking se_group_ref in .avi.config.cloud.virtual_services.dns" \
+                                                     "   ++++++ Service Engine Group " \
+                                                     "   ++++++ERROR++++++ ervice Engine Group not found: "
+        #
+        test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].network_ref" \
+                                                     ".nsx.config.segments_overlay[].display_name" \
+                                                     "$jsonFile" \
+                                                     "   +++ Checking network_ref in .avi.config.cloud.virtual_services.dns" \
+                                                     "   ++++++ Segment " \
+                                                     "   ++++++ERROR++++++ Segment not found: "
       fi
     fi
   fi
