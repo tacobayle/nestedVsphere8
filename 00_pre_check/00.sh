@@ -289,11 +289,11 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
       for item in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
       do
         test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.networks_data[] have a name defined"
-        test_if_variable_is_valid_ip "$(echo $item | jq -c .avi_ipam_pool_se | cut -d"-" -f1 )" "   "
-        test_if_variable_is_valid_ip "$(echo $item | jq -c .avi_ipam_pool_se | cut -d"-" -f2 )" "   "
+        test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool_se | cut -d"-" -f1 )" "   "
+        test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool_se | cut -d"-" -f2 )" "   "
         test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .avi_ipam_vip.cidr)" "   "
-        test_if_variable_is_valid_ip "$(echo $item | jq -c .avi_ipam_vip.pool | cut -d"-" -f1 )" "   "
-        test_if_variable_is_valid_ip "$(echo $item | jq -c .avi_ipam_vip.pool | cut -d"-" -f2 )" "   "
+        test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f1 )" "   "
+        test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f2 )" "   "
       done
       test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.networks_data[].name" \
                                                    ".nsx.config.segments_overlay[].display_name" \
