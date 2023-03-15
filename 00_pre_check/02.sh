@@ -74,6 +74,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
       do
         if [[ $(echo $segment | jq -c -r .display_name) != $(jq -c -r .avi.config.cloud.network_management.name $jsonFile) ]] ; then
           ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(echo $segment | jq -c -r .cidr)'"]')
+          echo "   ++++++ Prefix $(echo $segment | jq -c -r .cidr) added: OK"
         fi
       done
     fi
