@@ -79,7 +79,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
       done
     fi
   fi
-  external_gw_json=$(echo $external_gw_json | jq '.ip_table_prefixes += '$(echo $ip_table_prefixes)'')
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
   #
   echo "   +++ Adding Networks MTU details"
   networks_details=$(jq -c -r .networks $localJsonFile)
