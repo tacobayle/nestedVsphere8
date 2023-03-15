@@ -266,7 +266,6 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
     echo "==> Checking ALB with NSX Cloud type"
     if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
       test_if_json_variable_is_defined .avi.config.cloud.networks_data $jsonFile "   "
-      test_if_json_variable_is_defined .avi.config.cloud.name $jsonFile "   "
       test_if_json_variable_is_defined .avi.config.cloud.type $jsonFile "   "
       test_if_json_variable_is_defined .avi.config.cloud.obj_name_prefix $jsonFile "   "
       # .avi.config.cloud.network_management

@@ -28,3 +28,7 @@ kubectl exec -it test-pod3 -- /bin/bash
 
 /bin/bash nestedVsphere8/apply.sh
 /bin/bash nestedVsphere8/destroy.sh
+
+
+
+python3 -m http.server
