@@ -277,8 +277,68 @@ resource "null_resource" "adding_ip_to_nsx_overlay_and_nsx_overlay_edge" {
       "echo \"    version: 2\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "sudo netplan apply",
       "sudo sysctl -w net.ipv4.ip_forward=1",
-      "echo \"net.ipv4.ip_forward=1\" | sudo tee -a /etc/sysctl.conf",
-      "sudo iptables -t nat -A POSTROUTING -o $iface -j MASQUERADE",
+      "echo \"net.ipv4.ip_forward=1\" | sudo tee -a /etc/sysctl.conf"
+    ]
+  }
+}
+
+resource "null_resource" "set_initial_state_ip_tables" {
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "echo \"0\" > current_state_ip_tables.txt"
+  }
+}
+
+
+resource "null_resource" "update_ip_tables" {
+  depends_on = [null_resource.adding_ip_to_nsx_overlay_and_nsx_overlay_edge, null_resource.set_initial_state_ip_tables]
+  count = length(var.external_gw.ip_table_prefixes)
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "while [[ $(cat current_state_ip_tables.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
+  }
+
+
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "iface=`ip -o link show | awk -F': ' '{print $2}' | head -2 | tail -1`",
+      "sudo iptables -t nat -A POSTROUTING -s ${var.external_gw.ip_table_prefixes[count.index]} -o $iface -j MASQUERADE"
+    ]
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "echo \"${count.index+1}\" > current_state_ip_tables.txt"
+  }
+
+}
+
+
+resource "null_resource" "end" {
+  depends_on = [null_resource.update_ip_tables]
+
+
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "iface=`ip -o link show | awk -F': ' '{print $2}' | head -2 | tail -1`",
+      "ifaceSecond=`ip -o link show | awk -F': ' '{print $2}' | head -3 | tail -1`",
       "sudo iptables -A FORWARD -i $ifaceSecond -o $iface -j ACCEPT",
       "sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
       "sudo service ntp stop",

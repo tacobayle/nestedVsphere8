@@ -66,6 +66,20 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   fi
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"routes": '$(echo $new_routes)'}')
   #
+  if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+    echo "   +++ Creating External ip_table_prefixes..."
+    ip_table_prefixes="[]"
+    if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
+      for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+      do
+        if [[ $(echo $segment | jq -c -r .display_name) != $(jq -c -r .avi.config.cloud.network_management.name $jsonFile) ]] ; then
+          ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(echo $segment | jq -c -r .display_name)'"]')
+        fi
+      done
+    fi
+  fi
+  external_gw_json=$(echo $external_gw_json | jq '.ip_table_prefixes += {'$(echo $ip_table_prefixes)'}')
+  #
   echo "   +++ Adding Networks MTU details"
   networks_details=$(jq -c -r .networks $localJsonFile)
   external_gw_json=$(echo $external_gw_json | jq '. += {"networks": '$(echo $networks_details)'}')
