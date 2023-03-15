@@ -50,6 +50,6 @@ resource "null_resource" "alb_ansible_config_values" {
 resource "null_resource" "alb_ansible_config" {
   depends_on = [null_resource.ansible_hosts_avi_controllers, null_resource.alb_ansible_config_values]
   provisioner "local-exec" {
-    command = "git clone ${var.avi.config.avi_config_repo} --branch ${var.avi.config.avi_config_tag} ; cd ${split("/", var.avi.config.avi_config_repo)[4]} ; ansible-playbook -i ../hosts_avi nsx.yml --extra-vars @../values.yml"
+    command = "git clone ${var.avi.config.avi_config_repo} --branch ${var.avi.config.avi_config_tag} ; cd ${split("/", var.avi.config.avi_config_repo)[4]} ; ansible-playbook -i ../hosts_avi ${var.avi.config.playbook_nsx_env_nsx_cloud} --extra-vars @../values.yml"
   }
 }

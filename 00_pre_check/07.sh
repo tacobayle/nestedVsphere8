@@ -22,6 +22,10 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   avi_config_tag=$(jq -c -r '.avi_config_tag' $localJsonFile)
   avi_json=$(echo $avi_json | jq '.avi.config += {"avi_config_tag": "'$(echo $avi_config_tag)'"}')
   #
+  echo "   +++ Adding avi.config.playbook_nsx_env_nsx_cloud..."
+  playbook_nsx_env_nsx_cloud=$(jq -c -r '.playbook_nsx_env_nsx_cloud' $localJsonFile)
+  avi_json=$(echo $avi_json | jq '.avi.config += {"playbook_nsx_env_nsx_cloud": "'$(echo $playbook_nsx_env_nsx_cloud)'"}')
+  #
   echo "   +++ Adding avi_ova_path..."
   avi_ova_path=$(jq -c -r '.avi_ova_path' $localJsonFile)
   avi_json=$(echo $avi_json | jq '. += {"avi_ova_path": "'$(echo $avi_ova_path)'"}')
