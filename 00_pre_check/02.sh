@@ -73,7 +73,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
       for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
       do
         if [[ $(echo $segment | jq -c -r .display_name) != $(jq -c -r .avi.config.cloud.network_management.name $jsonFile) ]] ; then
-          ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(echo $segment | jq -c -r .display_name)'"]')
+          ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(echo $segment | jq -c -r .cidr)'"]')
         fi
       done
     fi
