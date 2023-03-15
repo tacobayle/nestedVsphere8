@@ -328,6 +328,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
       for item in $(jq -c -r .avi.config.cloud.service_engine_groups[] $jsonFile)
       do
         test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.service_engine_groups[] have a name defined"
+        test_if_variable_is_defined $(echo $item | jq -c .vcenter_folder) "   " "testing if each .avi.config.cloud.service_engine_groups[] have a vcenter_folder defined"
       done
       #
       if [[ $(jq -c -r .avi.config.cloud.virtual_services.dns $jsonFile) != "null" ]]; then
