@@ -12,7 +12,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   avi_json=$(jq -c -r . $jsonFile | jq .)
   #
   echo "   +++ Adding avi.config.cloud.name..."
-  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "Default-Cloud"}')
+  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "dc1_nsx"}')
   #
   echo "   +++ Adding avi.config.avi_config_repo..."
   avi_config_repo=$(jq -c -r '.avi_config_repo' $localJsonFile)
