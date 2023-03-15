@@ -1,5 +1,5 @@
 resource "dns_a_record_set" "esxi" {
-  depends_on = [vsphere_virtual_machine.external_gw]
+  depends_on = [null_resource.end]
   count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
   zone  = "${var.external_gw.bind.domain}."
   name  = "${var.vsphere_nested.esxi.basename}${count.index + 1}"
@@ -8,7 +8,7 @@ resource "dns_a_record_set" "esxi" {
 }
 
 resource "dns_a_record_set" "nsx" {
-  depends_on = [vsphere_virtual_machine.external_gw]
+  depends_on = [null_resource.end]
   count = 1
   zone  = "${var.external_gw.bind.domain}."
   name  = "nsx-manager"
@@ -17,7 +17,7 @@ resource "dns_a_record_set" "nsx" {
 }
 
 resource "dns_cname_record" "nsx_cname" {
-  depends_on = [dns_a_record_set.nsx, vsphere_virtual_machine.external_gw]
+  depends_on = [dns_a_record_set.nsx, null_resource.end]
   zone  = "${var.external_gw.bind.domain}."
   name  = "nsx"
   cname = "nsx-manager.${var.external_gw.bind.domain}."
@@ -25,7 +25,7 @@ resource "dns_cname_record" "nsx_cname" {
 }
 
 resource "dns_ptr_record" "esxi" {
-  depends_on = [vsphere_virtual_machine.external_gw]
+  depends_on = [null_resource.end]
   count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
   zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
   name = split(".", element(var.vsphere_underlay.networks.vsphere.management.esxi_ips, count.index))[3]
@@ -35,7 +35,7 @@ resource "dns_ptr_record" "esxi" {
 
 resource "dns_a_record_set" "vcenter" {
   count = 1
-  depends_on = [vsphere_virtual_machine.external_gw]
+  depends_on = [null_resource.end]
   zone  = "${var.external_gw.bind.domain}."
   name  = var.vsphere_nested.vcsa_name
   addresses = [var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip]
@@ -43,7 +43,7 @@ resource "dns_a_record_set" "vcenter" {
 }
 
 resource "dns_cname_record" "vcenter_cname" {
-  depends_on = [dns_a_record_set.vcenter, vsphere_virtual_machine.external_gw]
+  depends_on = [dns_a_record_set.vcenter, null_resource.end]
   zone  = "${var.external_gw.bind.domain}."
   name  = "vcenter"
   cname = "${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}."
@@ -52,7 +52,7 @@ resource "dns_cname_record" "vcenter_cname" {
 
 resource "dns_ptr_record" "vcenter" {
   count = 1
-  depends_on = [vsphere_virtual_machine.external_gw]
+  depends_on = [null_resource.end]
   zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
   name = split(".", var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip)[3]
   ptr  = "${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}."
