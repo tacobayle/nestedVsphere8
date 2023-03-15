@@ -301,6 +301,29 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
                                                    "   +++ Checking name in .avi.config.cloud.networks_data" \
                                                    "   ++++++ Segment " \
                                                    "   ++++++ERROR++++++ Segment not found: "
+      # checking that there is a network data with the proper tier1 for each .nsx.config.segments_overlay[].app_ips
+      echo "   +++ Checking that there is a network data with the proper tier1 for each .nsx.config.segments_overlay[].app_ips"
+      for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+      do
+        if [[ $(echo $segment | jq -c .app_ips) != "null" ]] ; then
+          tier1_app_ips=$(echo $segment | jq -c -r .tier1)
+          tier1_app_ips_segment_data=0
+          for network_data in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
+          do
+            for segment_data in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+            do
+              if [[ $(echo $network_data | jq -c .name) == $(echo $segment_data | jq -c .display_name) ]] ; then
+                tier1_segment_data=$(echo $segment_data | jq -c -r .tier1)
+                if [[ $tier1_segment_data == $tier1_app_ips ]] ; then
+                  echo "   ++++++ Avi network data found for pool segment $(echo $segment | jq -c .display_name), tier1 $tier1_app_ips: $(echo $network_data | jq -c .name) with tier1: $tier1_segment_data"
+                  tier1_app_ips_segment_data=1
+                fi
+              fi
+            done
+          done
+        fi
+      done
+      if [[ $tier1_app_ips_segment_data -eq 0 ]] ; then echo "   ++++++ERROR++++++ no Avi network_data found for $(echo $segment | jq -c .display_name)" ; exit 255 ; fi
       # .avi.config.cloud.service_engine_groups[]
       for item in $(jq -c -r .avi.config.cloud.service_engine_groups[] $jsonFile)
       do

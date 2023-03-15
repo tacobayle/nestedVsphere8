@@ -1,7 +1,7 @@
 ---
 avi_version: ${avi_version}
-controllerPrivateIps:
-  - ${controllerPrivateIp}
+controllerPrivateIps: |
+  [${controllerPrivateIp}]
 avi_old_password: ${avi_old_password}
 avi_password: ${avi_password}
 avi_username: ${avi_username}
@@ -9,10 +9,10 @@ controller:
   aviCredsJsonFile: ~/.creds.json
   environment: vCenter
   cluster: false
-  ntp:
-    - ${ntp}
-  dns:
-    - ${dns}
+  ntp: |
+    [${ntp}]
+  dns: |
+    [${dns}]
 nsx_username: admin
 nsx_password: ${nsx_password}
 nsx_server: ${nsx_server}

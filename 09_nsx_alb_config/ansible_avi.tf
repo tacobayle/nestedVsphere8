@@ -15,12 +15,12 @@ data "template_file" "values" {
   template = file("templates/values_nsx.yml.template")
   vars = {
     avi_version = var.avi.version
-    controllerPrivateIp = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
+    controllerPrivateIp = jsonencode(var.vsphere_underlay.networks.vsphere.management.avi_nested_ip)
     avi_old_password =  jsonencode(var.avi_old_password)
     avi_password = jsonencode(var.avi_password)
     avi_username = "admin"
-    ntp = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
-    dns = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    ntp = jsonencode(var.vsphere_underlay.networks.vsphere.management.external_gw_ip)
+    dns = jsonencode(var.vsphere_underlay.networks.vsphere.management.external_gw_ip)
     nsx_password = var.nsx_password
     nsx_server = var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip
     domain = var.external_gw.bind.domain

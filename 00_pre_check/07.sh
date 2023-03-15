@@ -11,6 +11,9 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   rm -f /root/avi.json
   avi_json=$(jq -c -r . $jsonFile | jq .)
   #
+  echo "   +++ Adding avi.config.cloud.name..."
+  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "Default-Cloud"}')
+  #
   echo "   +++ Adding avi.config.avi_config_repo..."
   avi_config_repo=$(jq -c -r '.avi_config_repo' $localJsonFile)
   avi_json=$(echo $avi_json | jq '.avi.config += {"avi_config_repo": "'$(echo $avi_config_repo)'"}')
@@ -80,9 +83,9 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks_data)')
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks_data": '$(echo $networks_data)'}')
     #
-    echo "   +++ Creating Avi pools"
+    echo "   +++ Creating Avi pools and VS"
     avi_pools="[]"
-    avi_virtiual_services_http="[]"
+    avi_virtual_services_http="[]"
     count=1
     for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
     do
@@ -95,9 +98,20 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
           avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\"}"
           avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
           vs_name="app$count-hello-world-nsx-group"
-          segment_name=$(echo $item | jq -c -r .display_name)
-          avi_virtiual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
-          avi_virtiual_services_http=$(echo $avi_virtiual_services_http | jq '. += ['$(echo $avi_virtiual_service_http)']')
+          for network_data in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
+          do
+            for segment_data in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+            do
+              if [[ $(echo $network_data | jq -c .name) == $(echo $segment_data | jq -c .display_name) ]] ; then
+                tier1_segment_data=$(echo $segment_data | jq -c -r  .tier1)
+                if [[ $tier1_segment_data == $tier1 ]] ; then
+                  segment_name=$(echo $segment_data | jq -c -r .display_name)
+                fi
+              fi
+            done
+          done
+          avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+          avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
           ((count++))
         fi
         tier1=$(echo $item | jq -c -r .tier1)
@@ -109,18 +123,40 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
         avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(echo $avi_app_server_ips)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-hello-world"
-        segment_name=$(echo $item | jq -c -r .display_name)
-        avi_virtiual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
-        avi_virtiual_services_http=$(echo $avi_virtiual_services_http | jq '. += ['$(echo $avi_virtiual_service_http)']')
+        for network_data in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
+        do
+          for segment_data in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+          do
+            if [[ $(echo $network_data | jq -c .name) == $(echo $segment_data | jq -c .display_name) ]] ; then
+              tier1_segment_data=$(echo $segment_data | jq -c -r  .tier1)
+              if [[ $tier1_segment_data == $tier1 ]] ; then
+                segment_name=$(echo $segment_data | jq -c -r .display_name)
+              fi
+            fi
+          done
+        done
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
         ((count++))
         pool_name="pool$count-avi"
         default_server_port=$(jq -c -r '.app.avi_app_tcp_port' /nestedVsphere8/08_nsx_app/variables.json)
         avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(echo $avi_app_server_ips)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-avi"
-        segment_name=$(echo $item | jq -c -r .display_name)
-        avi_virtiual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
-        avi_virtiual_services_http=$(echo $avi_virtiual_services_http | jq '. += ['$(echo $avi_virtiual_service_http)']')
+        for network_data in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
+        do
+          for segment_data in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+          do
+            if [[ $(echo $network_data | jq -c .name) == $(echo $segment_data | jq -c .display_name) ]] ; then
+              tier1_segment_data=$(echo $segment_data | jq -c -r  .tier1)
+              if [[ $tier1_segment_data == $tier1 ]] ; then
+                segment_name=$(echo $segment_data | jq -c -r .display_name)
+              fi
+            fi
+          done
+        done
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
         ((count++))
         #
         pool_name="pool$count-waf"
@@ -128,15 +164,26 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
         avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(echo $avi_app_server_ips)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-waf"
-        segment_name=$(echo $item | jq -c -r .display_name)
-        avi_virtiual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
-        avi_virtiual_services_http=$(echo $avi_virtiual_services_http | jq '. += ['$(echo $avi_virtiual_service_http)']')
+        for network_data in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
+        do
+          for segment_data in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+          do
+            if [[ $(echo $network_data | jq -c .name) == $(echo $segment_data | jq -c .display_name) ]] ; then
+              tier1_segment_data=$(echo $segment_data | jq -c -r  .tier1)
+              if [[ $tier1_segment_data == $tier1 ]] ; then
+                segment_name=$(echo $segment_data | jq -c -r .display_name)
+              fi
+            fi
+          done
+        done
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
         ((count++))
       fi
     done
     if [[ $(echo $avi_pools | jq '. | length') -gt 0 ]] ; then
       avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
-      avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '$(echo $avi_virtiual_services_http)'}')
+      avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '$(echo $avi_virtual_services_http)'}')
     fi
   fi
   #
