@@ -31,4 +31,6 @@ kubectl exec -it test-pod3 -- /bin/bash
 
 
 
+# python3 -m http.server
+
 python3 -m http.server
