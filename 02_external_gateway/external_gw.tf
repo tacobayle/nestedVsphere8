@@ -41,6 +41,7 @@ data "template_file" "external_gw_userdata" {
     vcsa_nested_ip = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
     vcenter_name = var.vsphere_nested.vcsa_name
     vcd_ip = var.vcd_ip
+    nfs_path = var.external_gw.nfs_path
   }
 }
 

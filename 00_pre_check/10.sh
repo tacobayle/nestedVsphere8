@@ -31,11 +31,14 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "nu
   #
   echo "   +++ Adding prefix for db network..."
   prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.vsan.netmask' $jsonFile) "   ++++++")
-  vcd_json=$(echo $vcd_json | jq '.vsphere_underlay.networks.vsan.management += {"prefix": "'$(echo $prefix)'"}')
+  vcd_json=$(echo $vcd_json | jq '.vsphere_underlay.networks.vsphere.vsan += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding vcd_appliance..."
   vcd_appliance=$(jq -c -r '.vcd_appliance' $localJsonFile)
   vcd_json=$(echo $vcd_json | jq '. += {"vcd_appliance": '$(echo $vcd_appliance)'}')
+  #
+  nfs_path=$(jq -c -r '.nfs_path' /nestedVsphere8/02_external_gateway/variables.json)
+  vcd_json=$(echo $vcd_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
   #
   echo $vcd_json | jq . | tee /root/vcd.json > /dev/null
   #

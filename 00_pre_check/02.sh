@@ -97,6 +97,9 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
   #
+  nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
+  #
   if [[ $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
     echo "   +++ Adding external_gw.vcd_deployment: true"
     external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_deployment": true}')

@@ -52,7 +52,7 @@ resource "vsphere_virtual_machine" "vcd_medium" {
       domain = var.vcd_appliance.name
       gateway = var.vsphere_underlay.networks.vsphere.management.vcd_nested_ip
       ip0 = var.vsphere_underlay.networks.vsphere.management.vcd_nested_ip
-      ip1 = var.vsphere_underlay.networks.vsan.management.vcd_nested_ip
+      ip1 = var.vsphere_underlay.networks.vsphere.vsan.vcd_nested_ip
       netmask0 = var.vsphere_underlay.networks.vsphere.management.prefix
       netmask1 = var.vsphere_underlay.networks.vsphere.vsan.prefix
       searchpath = var.external_gw.bind.domain
