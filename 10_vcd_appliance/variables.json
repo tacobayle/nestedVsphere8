@@ -1,0 +1,11 @@
+{
+  "vcd_ova_path": "/root/vcd.ova",
+  "vcd_appliance": {
+    "name": "vcd",
+    "cpu": 8,
+    "memory": 16384,
+    "disk1": 30,
+    "disk2": 2,
+    "disk3": 80
+  }
+}

@@ -29,6 +29,18 @@ kubectl exec -it test-pod3 -- /bin/bash
 /bin/bash nestedVsphere8/apply.sh
 /bin/bash nestedVsphere8/destroy.sh
 
+---
+
+kubectl delete pod test-pod4
+kubectl delete configmap configmap4
+kubectl apply -f configmap4-nested-vpshere-nsx-alb-vcd.yml
+kubectl apply -f pod4-nested-vsphere-nsx-alb-vcd.yml
+sleep 3
+kubectl exec -it test-pod4 -- /bin/bash
+
+/bin/bash nestedVsphere8/apply.sh
+/bin/bash nestedVsphere8/destroy.sh
+
 
 
 # python3 -m http.server

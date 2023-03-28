@@ -40,6 +40,7 @@ data "template_file" "external_gw_userdata" {
     lastOctet = split(".", var.vsphere_underlay.networks.vsphere.management.external_gw_ip)[3]
     vcsa_nested_ip = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
     vcenter_name = var.vsphere_nested.vcsa_name
+    vcd_ip = var.vcd_ip
   }
 }
 
@@ -58,12 +59,12 @@ resource "vsphere_virtual_machine" "external_gw" {
 //    network_id = data.vsphere_network.vsphere_underlay_network_external.id
 //  }
 
-  num_cpus = 2
-  memory = 4096
+  num_cpus = var.cpu
+  memory = var.memory
   guest_id = "ubuntu64Guest"
 
   disk {
-    size             = 20
+    size             = var.disk
     label            = "external-gw-${var.date_index}.lab_vmdk"
     thin_provisioned = true
   }

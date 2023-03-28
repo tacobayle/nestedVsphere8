@@ -105,6 +105,11 @@ fi
 if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile) "   "
 fi
+# VCD
+if [[ $(jq -c -r .vcd $jsonFile) != "null" ]]; then
+  test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile) "   "
+  test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.vsan.vcd_nested_ip $jsonFile) "   "
+fi
 #
 #
 #
@@ -359,4 +364,11 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
     fi
   fi
 fi
-
+#
+#
+#
+if [[ $(jq -c -r .vcd $jsonFile) != "null" ]]; then
+  echo ""
+  echo "==> Checking VCD Variables"
+  test_if_json_variable_is_defined .vcd.ova_url $jsonFile "   "
+fi

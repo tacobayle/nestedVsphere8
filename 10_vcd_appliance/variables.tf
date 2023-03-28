@@ -1,0 +1,9 @@
+variable "vsphere_nested" {}
+variable "vsphere_nested_password" {}
+variable "external_gw" {}
+variable "vcd_ova_path" {}
+variable "vcd_port_group_mgmt" {}
+variable "vcd_port_group_db" {}
+variable "vsphere_underlay" {}
+variable "vcd_appliance" {}
+variable "vcd_root_password" {}

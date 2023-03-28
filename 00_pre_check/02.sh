@@ -96,6 +96,14 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   echo "   +++ Adding prefix for NSX overlay Edge network..."
   prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
+  #
+  if [[ $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+    echo "   +++ external_gw.vcd_deployment: true"
+    external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_deployment": true}')
+  else
+    echo "   +++ external_gw.vcd_deployment: false"
+    external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_deployment": false}')
+  fi
 fi
 #
 echo "   +++ Adding reverse DNS zone..."
@@ -120,6 +128,28 @@ external_gw_json=$(echo $external_gw_json | jq '. += {"date_index": '$(echo $dat
 echo "   +++ Adding Ubuntu OVA path"
 ubuntu_ova_path=$(jq -c -r .ubuntu_ova_path $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
+#
+echo "   +++ Adding cpu..."
+cpu=$(jq -c -r '.cpu' $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '. += {"cpu": "'$(echo $cpu)'"}')
+#
+echo "   +++ Adding memory..."
+memory=$(jq -c -r '.memory' $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '. += {"memory": "'$(echo $memory)'"}')
+#
+if [[ $(jq -c -r .vcd $jsonFile) != "null" ]]; then
+  disk=$(jq -c -r '.disk_if_vcd' $localJsonFile)
+  vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile)
+else
+  disk=$(jq -c -r '.disk' $localJsonFile)
+  vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
+fi
+#
+echo "   +++ Adding disk..."
+external_gw_json=$(echo $external_gw_json | jq '. += {"disk": "'$(echo $disk)'"}')
+#
+echo "   +++ Adding vcd_ip..."
+external_gw_json=$(echo $external_gw_json | jq '. += {"vcd_ip": "'$(echo $vcd_ip)'"}')
 #
 echo "   +++ Adding ansible_version..."
 ansible_version=$(jq -c -r '.ansible_version' $localJsonFile)

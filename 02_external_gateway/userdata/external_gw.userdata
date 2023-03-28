@@ -58,6 +58,11 @@ write_files:
       run_cmd 'sudo apt install -y jq; ls /usr/bin/jq'
       run_cmd 'sudo apt install -y expect; ls /usr/bin/expect'
       run_cmd 'sudo apt install -y python3-jmespath; pip3 list | grep jmespath'
+      run_cmd 'sudo apt -y install nfs-kernel-server; ls /usr/share/nfs-kernel-server'
+      mkdir -p /nfs/vCDspace
+      echo "/nfs/vCDspace ${vcd_ip}(rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports
+      sudo systemctl start nfs-kernel-server.service
+      sudo exportfs -a
       run_cmd 'pip3 install --upgrade pip'
       run_cmd 'pip3 install ansible==${ansible_version}; ls /usr/local/bin/ansible-playbook'
       run_cmd 'pip3 install avisdk==${avi_sdk_version}; pip3 list | grep avisdk'

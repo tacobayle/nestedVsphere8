@@ -58,12 +58,12 @@ resource "vsphere_virtual_machine" "external_gw" {
 //    network_id = data.vsphere_network.vsphere_underlay_network_external.id
 //  }
 
-  num_cpus = 2
-  memory = 4096
+  num_cpus = var.cpu
+  memory = var.memory
   guest_id = "ubuntu64Guest"
 
   disk {
-    size             = 20
+    size             = var.disk
     label            = "external-gw-${var.date_index}.lab_vmdk"
     thin_provisioned = true
   }

@@ -63,9 +63,14 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "nu
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 
-#if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
-#  /bin/bash /nestedVsphere8/09_nsx_alb_config/apply.sh
+if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
+  /bin/bash /nestedVsphere8/09_nsx_alb_config/apply.sh
 #   if [ $? -ne 0 ] ; then exit 1 ; fi
+fi
+
+#if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+#  /bin/bash /nestedVsphere8/10_vcd_appliance/apply.sh
+##   if [ $? -ne 0 ] ; then exit 1 ; fi
 #fi
 
 while true ; do sleep 3600 ; done

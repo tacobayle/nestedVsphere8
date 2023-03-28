@@ -58,3 +58,24 @@ resource "dns_ptr_record" "vcenter" {
   ptr  = "${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}."
   ttl  = 60
 }
+
+
+
+resource "dns_a_record_set" "vcd" {
+  count = var.external_gw.vcd_deployment == true ? 1 : 0
+  depends_on = [null_resource.end]
+  zone  = "${var.external_gw.bind.domain}."
+  name  = "vcd"
+  addresses = [var.vsphere_underlay.networks.vsphere.management.vcd_nested_ip]
+  ttl = 60
+}
+
+resource "dns_ptr_record" "vcd" {
+  count = var.external_gw.vcd_deployment == true ? 1 : 0
+  depends_on = [null_resource.end]
+  zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
+  name = split(".", var.vsphere_underlay.networks.vsphere.management.vcd_nested_ip)[3]
+  ptr  = "vcd.${var.external_gw.bind.domain}."
+  ttl  = 60
+}
+
