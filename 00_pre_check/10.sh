@@ -35,9 +35,9 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "nu
   #
   echo "   +++ Adding vcd_appliance..."
   vcd_appliance=$(jq -c -r '.vcd_appliance' $localJsonFile)
-  vcd_json=$(echo $vcd_json | jq '. += {"vcd_appliance": "'$(echo $vcd_appliance)'"}')
+  vcd_json=$(echo $vcd_json | jq '. += {"vcd_appliance": '$(echo $vcd_appliance)'}')
   #
-  echo $vcd_json | jq . | tee /root/vcd_json > /dev/null
+  echo $vcd_json | jq . | tee /root/vcd.json > /dev/null
   #
   echo ""
   echo "==> Downloading VCD ova file"

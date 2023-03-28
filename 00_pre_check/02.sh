@@ -98,10 +98,10 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
   #
   if [[ $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
-    echo "   +++ external_gw.vcd_deployment: true"
+    echo "   +++ Adding external_gw.vcd_deployment: true"
     external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_deployment": true}')
   else
-    echo "   +++ external_gw.vcd_deployment: false"
+    echo "   +++ Adding external_gw.vcd_deployment: false"
     external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_deployment": false}')
   fi
 fi

@@ -35,6 +35,10 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "nu
   /bin/bash /nestedVsphere8/00_pre_check/08.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+  /bin/bash /nestedVsphere8/00_pre_check/10.sh
+   if [ $? -ne 0 ] ; then exit 1 ; fi
+fi
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 /bin/bash /nestedVsphere8/02_external_gateway/apply.sh
