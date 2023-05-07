@@ -7,23 +7,6 @@ resource "dns_a_record_set" "esxi" {
   ttl = 60
 }
 
-resource "dns_a_record_set" "nsx" {
-  depends_on = [null_resource.end]
-  count = 1
-  zone  = "${var.external_gw.bind.domain}."
-  name  = "nsx-manager"
-  addresses = [var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip]
-  ttl = 60
-}
-
-resource "dns_cname_record" "nsx_cname" {
-  depends_on = [dns_a_record_set.nsx, null_resource.end]
-  zone  = "${var.external_gw.bind.domain}."
-  name  = "nsx"
-  cname = "nsx-manager.${var.external_gw.bind.domain}."
-  ttl   = 300
-}
-
 resource "dns_ptr_record" "esxi" {
   depends_on = [null_resource.end]
   count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
@@ -59,13 +42,47 @@ resource "dns_ptr_record" "vcenter" {
   ttl  = 60
 }
 
+resource "dns_a_record_set" "nsx" {
+  depends_on = [null_resource.end]
+  count = var.external_gw.nsx_deployment == true ? 1 : 0
+  zone  = "${var.external_gw.bind.domain}."
+  name  = var.external_gw.nsx_manager_name
+  addresses = [var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip]
+  ttl = 60
+}
 
+resource "dns_ptr_record" "nsx" {
+  count = var.external_gw.nsx_deployment == true ? 1 : 0
+  depends_on = [null_resource.end]
+  zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
+  name = split(".", var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip)[3]
+  ptr  = "${var.external_gw.nsx_controller_name}.${var.external_gw.bind.domain}."
+  ttl  = 60
+}
+
+resource "dns_a_record_set" "alb" {
+  count = var.external_gw.avi_deployment == true ? 1 : 0
+  depends_on = [null_resource.end]
+  zone  = "${var.external_gw.bind.domain}."
+  name  = var.external_gw.alb_controller_name
+  addresses = [var.vsphere_underlay.networks.vsphere.management.avi_nested_ip]
+  ttl = 60
+}
+
+resource "dns_ptr_record" "alb" {
+  count = var.external_gw.avi_deployment == true ? 1 : 0
+  depends_on = [null_resource.end]
+  zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
+  name = split(".", var.vsphere_underlay.networks.vsphere.management.avi_nested_ip)[3]
+  ptr  = "${var.external_gw.alb_controller_name}.${var.external_gw.bind.domain}."
+  ttl  = 60
+}
 
 resource "dns_a_record_set" "vcd" {
   count = var.external_gw.vcd_deployment == true ? 1 : 0
   depends_on = [null_resource.end]
   zone  = "${var.external_gw.bind.domain}."
-  name  = "vcd"
+  name  = var.external_gw.vcd_appliance_name
   addresses = [var.vsphere_underlay.networks.vsphere.management.vcd_nested_ip]
   ttl = 60
 }
@@ -75,7 +92,8 @@ resource "dns_ptr_record" "vcd" {
   depends_on = [null_resource.end]
   zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
   name = split(".", var.vsphere_underlay.networks.vsphere.management.vcd_nested_ip)[3]
-  ptr  = "vcd.${var.external_gw.bind.domain}."
+  ptr  = "${var.external_gw.vcd_appliance_name}.${var.external_gw.bind.domain}."
   ttl  = 60
 }
+
 

@@ -53,3 +53,14 @@ resource "null_resource" "alb_ansible_config" {
     command = "git clone ${var.avi.config.avi_config_repo} --branch ${var.avi.config.avi_config_tag} ; cd ${split("/", var.avi.config.avi_config_repo)[4]} ; ansible-playbook -i ../hosts_avi ${var.avi.config.playbook_nsx_env_nsx_cloud} --extra-vars @../values.yml"
   }
 }
+
+#
+# Need to update Avi UI/API cert.
+#
+
+resource "null_resource" "dump_alb_cert_locally" {
+  depends_on = [null_resource.alb_ansible_config]
+  provisioner "local-exec" {
+    command = "echo -n | openssl s_client -connect ${var.vsphere_underlay.networks.vsphere.management.avi_nested_ip}:443 -servername ${var.vsphere_underlay.networks.vsphere.management.avi_nested_ip} | openssl x509 | tee /root/${var.vsphere_underlay.networks.vsphere.management.avi_nested_ip}.cert"
+  }
+}

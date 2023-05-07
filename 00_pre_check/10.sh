@@ -13,6 +13,14 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "nu
   rm -f /root/vcd.json
   vcd_json=$(jq -c -r . $jsonFile | jq .)
   #
+  echo "   +++ nsx_manager_name"
+  nsx_manager_name=$(jq -c -r .nsx_manager_name /nestedVsphere8/02_external_gateway/variables.json)
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_manager_name": "'$(echo $nsx_manager_name)'"}')
+  #
+  echo "   +++ alb_controller_name"
+  alb_controller_name=$(jq -c -r .alb_controller_name /nestedVsphere8/02_external_gateway/variables.json)
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"alb_controller_name": "'$(echo $alb_controller_name)'"}')
+  #
   echo "   +++ Adding vcd_ova_path..."
   vcd_ova_path=$(jq -c -r '.vcd_ova_path' $localJsonFile)
   vcd_json=$(echo $vcd_json | jq '. += {"vcd_ova_path": "'$(echo $vcd_ova_path)'"}')

@@ -17,6 +17,10 @@ external_gw_json=$(jq -c -r . $jsonFile | jq .)
 echo ""
 echo "==> Creating /root/external_gw.json file..."
 if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+  #
+  echo "   +++ Adding external_gw.nsx_deployment: true"
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": true}')
+  #
   echo "   +++ Creating External gateway routes to subnet segments..."
   new_routes="[]"
   if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
@@ -97,9 +101,6 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
   #
-  nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
-  external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
-  #
   if [[ $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
     echo "   +++ Adding external_gw.vcd_deployment: true"
     external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_deployment": true}')
@@ -107,6 +108,17 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     echo "   +++ Adding external_gw.vcd_deployment: false"
     external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_deployment": false}')
   fi
+else
+  echo "   +++ Adding external_gw.nsx_deployment: false"
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": false}')
+fi
+#
+if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
+  echo "   +++ Adding external_gw.avi_deployment: true"
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment": true}')
+else
+  echo "   +++ Adding external_gw.avi_deployment: false"
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment": false}')
 fi
 #
 echo "   +++ Adding reverse DNS zone..."
@@ -132,6 +144,18 @@ echo "   +++ Adding Ubuntu OVA path"
 ubuntu_ova_path=$(jq -c -r .ubuntu_ova_path $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
 #
+echo "   +++ alb_controller_name"
+alb_controller_name=$(jq -c -r .alb_controller_name $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"alb_controller_name": "'$(echo $alb_controller_name)'"}')
+#
+echo "   +++ nsx_manager_name"
+nsx_manager_name=$(jq -c -r .nsx_manager_name $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_manager_name": "'$(echo $nsx_manager_name)'"}')
+#
+echo "   +++ vcd_appliance_name"
+vcd_appliance_name=$(jq -c -r .vcd_appliance_name $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_appliance_name": "'$(echo $vcd_appliance_name)'"}')
+#
 echo "   +++ Adding cpu..."
 cpu=$(jq -c -r '.cpu' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"cpu": "'$(echo $cpu)'"}')
@@ -139,6 +163,9 @@ external_gw_json=$(echo $external_gw_json | jq '. += {"cpu": "'$(echo $cpu)'"}')
 echo "   +++ Adding memory..."
 memory=$(jq -c -r '.memory' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"memory": "'$(echo $memory)'"}')
+#
+nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
 #
 if [[ $(jq -c -r .vcd $jsonFile) != "null" ]]; then
   disk=$(jq -c -r '.disk_if_vcd' $localJsonFile)

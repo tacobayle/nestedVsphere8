@@ -75,6 +75,6 @@ resource "null_resource" "configure_appliance" {
   depends_on = [null_resource.wait_https_vcd_appliance]
 
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/vcd_configure_appliance.sh"
+    command = "/bin/bash /nestedVsphere8/bash/vcd/vcd_configure_appliance.sh"
   }
 }

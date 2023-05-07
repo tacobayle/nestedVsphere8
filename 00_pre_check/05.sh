@@ -17,6 +17,10 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   nsx_ova_path=$(jq -c -r '.nsx_ova_path' $localJsonFile)
   nsx_json=$(echo $nsx_json | jq '. += {"nsx_ova_path": "'$(echo $nsx_ova_path)'"}')
   #
+  echo "   +++ nsx_manager_name"
+  nsx_manager_name=$(jq -c -r .nsx_manager_name /nestedVsphere8/02_external_gateway/variables.json)
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_manager_name": "'$(echo $nsx_manager_name)'"}')
+  #
   echo "   +++ Adding networks..."
   networks=$(jq -c -r '.networks' "/nestedVsphere8/03_nested_vsphere/variables.json")
   nsx_json=$(echo $nsx_json | jq '. += {"networks": '$(echo $networks)'}')

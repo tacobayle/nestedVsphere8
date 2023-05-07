@@ -11,6 +11,10 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   rm -f /root/avi.json
   avi_json=$(jq -c -r . $jsonFile | jq .)
   #
+  echo "   +++ alb_controller_name"
+  alb_controller_name=$(jq -c -r .alb_controller_name /nestedVsphere8/02_external_gateway/variables.json)
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"alb_controller_name": "'$(echo $alb_controller_name)'"}')
+  #
   echo "   +++ Adding avi.config.cloud.name..."
   avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "dc1_nsx"}')
   #

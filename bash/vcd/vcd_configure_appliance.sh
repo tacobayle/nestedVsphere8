@@ -39,7 +39,7 @@ vcd_json_config_appliance=$(echo $vcd_json_config_appliance | jq '. += {"install
 #}
 echo "waiting for 10 seconds"
 sleep 10
-token=$(/nestedVsphere8/bash/create_vcd_appliance_api_session.sh "$vcd_root_password" "$vcd_nested_ip")
+token=$(/nestedVsphere8/bash/vcd/create_vcd_appliance_api_session.sh "$vcd_root_password" "$vcd_nested_ip")
 echo "VCD Appliance API token: $token"
 rm -f headers.txt
 response=$(curl -k  -s --write-out "\n%{http_code}" -D headers.txt -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $token" -d "$(echo $vcd_json_config_appliance | jq -c -r .)" "https://$vcd_nested_ip:5480/api/1.0.0/systemSetup")

@@ -130,3 +130,15 @@ resource "nsxt_policy_fixed_segment" "segments" {
     cidr        = "${cidrhost(var.nsx.config.segments_overlay[count.index].cidr, "1")}/${split("/", var.nsx.config.segments_overlay[count.index].cidr)[1]}"
   }
 }
+
+resource "time_sleep" "wait_for_cert_change" {
+  depends_on = [nsxt_policy_fixed_segment.segments]
+  create_duration = "10s"
+}
+
+resource "null_resource" "update_ssl_cert" {
+  depends_on = [time_sleep.wait_for_cert_change]
+  provisioner "local-exec" {
+    command = "/bin/bash /nestedVsphere8/bash/nsx/update_cert.sh"
+  }
+}

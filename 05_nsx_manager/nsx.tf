@@ -5,7 +5,7 @@ resource "vsphere_folder" "nsx" {
 }
 
 resource "vsphere_virtual_machine" "nsx_medium" {
-  name             = "nsx-manager"
+  name             = var.external_gw.nsx_manager_name
   datastore_id     = data.vsphere_datastore.datastore_nested.id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
   folder           = vsphere_folder.nsx.path
@@ -20,7 +20,7 @@ resource "vsphere_virtual_machine" "nsx_medium" {
 
   disk {
     size             = 200
-    label            = "nsx-manager.lab_vmdk"
+    label            = "${var.external_gw.nsx_manager_name}.lab_vmdk"
     thin_provisioned = true
   }
 
@@ -35,7 +35,7 @@ resource "vsphere_virtual_machine" "nsx_medium" {
       nsx_cli_passwd_0 = var.nsx_password
       nsx_dns1_0 = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
       nsx_gateway_0 = var.vsphere_underlay.networks.vsphere.management.gateway
-      nsx_hostname = "nsx-manager"
+      nsx_hostname = "${var.external_gw.nsx_manager_name}.${var.external_gw.bind.domain}"
       nsx_ip_0 = var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip
       nsx_isSSHEnabled = "True"
       nsx_netmask_0 = var.vsphere_underlay.networks.vsphere.management.netmask

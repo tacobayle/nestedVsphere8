@@ -68,3 +68,7 @@ do
   fi
   count=$((count+1))
 done
+#
+# Saving vSphere certificate
+#
+echo -n | openssl s_client -connect $api_host:443 -servername $api_host | openssl x509 | tee /root/$api_host.cert

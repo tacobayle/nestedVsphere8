@@ -25,7 +25,7 @@ resource "vsphere_content_library_item" "nested_library_avi_item" {
 
 resource "vsphere_virtual_machine" "controller" {
   count            = 1
-  name             = "avi-controller-${count.index + 1}"
+  name             = var.external_gw.alb_controller_name
   datastore_id     = data.vsphere_datastore.datastore_nested.id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
   folder           = vsphere_folder.avi.path
@@ -41,7 +41,7 @@ resource "vsphere_virtual_machine" "controller" {
 
   disk {
     size             = var.avi.disk
-    label            = "avi-controller-${count.index + 1}.lab_vmdk"
+    label            = "${var.external_gw.alb_controller_name}.lab_vmdk"
     thin_provisioned = true
   }
 
