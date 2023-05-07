@@ -22,8 +22,6 @@ data "template_file" "external_gw_userdata" {
     defaultGw = var.vsphere_underlay.networks.vsphere.management.gateway
     password      = var.ubuntu_password
     hostname = "external-gw-${var.date_index}"
-    ansible_version = var.ansible_version
-    avi_sdk_version = var.avi_sdk_version
     ip_vcenter = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
     vcenter_name = var.vsphere_nested.vcsa_name
     dns_domain = var.external_gw.bind.domain

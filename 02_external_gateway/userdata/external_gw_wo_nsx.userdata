@@ -60,9 +60,6 @@ write_files:
       run_cmd 'sudo apt install -y python3-jmespath; pip3 list | grep jmespath'
       sudo exportfs -a
       run_cmd 'pip3 install --upgrade pip'
-      run_cmd 'pip3 install ansible==${ansible_version}; ls /usr/local/bin/ansible-playbook'
-      run_cmd 'pip3 install avisdk==${avi_sdk_version}; pip3 list | grep avisdk'
-      run_cmd 'sudo -u ubuntu ansible-galaxy collection install vmware.alb; sudo -u ubuntu ansible-galaxy collection list | grep vmware.alb'
       run_cmd 'pip3 install dnspython; pip3 list | grep dnspython'
       run_cmd 'pip3 install netaddr; pip3 list | grep netaddr'
       apt install -y language-pack-en python3-pip python3-jmespath sshpass bind9 bind9utils bind9-doc bind9-host

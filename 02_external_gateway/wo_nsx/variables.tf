@@ -7,8 +7,6 @@ variable "vsphere_nested" {}
 variable "ubuntu_password" {}
 variable "bind_password" {}
 variable "ubuntu_ova_path" {}
-variable "ansible_version" {}
-variable "avi_sdk_version" {}
 variable "cpu" {}
 variable "memory" {}
 variable "disk" {}
