@@ -13,7 +13,7 @@ resource "vsphere_content_library_item" "file_external_gw" {
 
 data "template_file" "external_gw_userdata" {
   count = 1
-  template = file("${path.module}/userdata/external_gw.userdata")
+  template = file("${path.module}/userdata/external_gw_wo_nsx.userdata")
   vars = {
     pubkey        = file("/root/.ssh/id_rsa.pub")
     username = "ubuntu"
