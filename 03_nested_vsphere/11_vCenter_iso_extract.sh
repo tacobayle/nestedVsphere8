@@ -37,6 +37,7 @@ contents="$(jq '.new_vcsa.esxi.hostname = "'$(jq -r .vsphere_nested.esxi.basenam
          .new_vcsa.esxi.VCSA_cluster.disks_for_vsan.cache_disk[0] = "'$(jq -r .cache_disk $jsonFile)'" |
          .new_vcsa.esxi.VCSA_cluster.disks_for_vsan.capacity_disk[0] = "'$(jq -r .capacity_disk $jsonFile)'" |
          .new_vcsa.esxi.VCSA_cluster.enable_vsan_esa = '$(jq -r .enable_vsan_esa $jsonFile)' |
+         .new_vcsa.esxi.VCSA_cluster.storage_pool.single_tier[0] = "'$(jq -r .capacity_disk $jsonFile)'" |
          .new_vcsa.appliance.thin_disk_mode = '$(jq -r .thin_disk_mode $jsonFile)' |
          .new_vcsa.appliance.deployment_option = "'$(jq -r .deployment_option $jsonFile)'" |
          .new_vcsa.appliance.name = "'$(jq -r .vsphere_nested.vcsa_name $jsonFile)'" |

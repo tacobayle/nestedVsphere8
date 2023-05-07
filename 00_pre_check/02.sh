@@ -108,14 +108,39 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     echo "   +++ Adding external_gw.vcd_deployment: false"
     external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_deployment": false}')
   fi
+  #
+  if [[ $(jq -c -r .vcd $jsonFile) != "null" ]]; then
+    disk=$(jq -c -r '.disk_if_vcd' $localJsonFile)
+    vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile)
+  else
+    disk=$(jq -c -r '.disk' $localJsonFile)
+    vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
+  fi
+  #
+  echo "   +++ Adding vcd_ip..."
+  external_gw_json=$(echo $external_gw_json | jq '. += {"vcd_ip": "'$(echo $vcd_ip)'"}')
+  #
+  nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
 else
   echo "   +++ Adding external_gw.nsx_deployment: false"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": false}')
+  disk=$(jq -c -r '.disk' $localJsonFile)
 fi
 #
 if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
+  #
   echo "   +++ Adding external_gw.avi_deployment: true"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment": true}')
+  #
+  echo "   +++ Adding ansible_version..."
+  ansible_version=$(jq -c -r '.ansible_version' $localJsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '. += {"ansible_version": "'$(echo $ansible_version)'"}')
+  #
+  echo "   +++ Adding avi_sdk_version..."
+  avi_sdk_version=$(jq -c -r '.avi_sdk_version' $localJsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(echo $avi_sdk_version)'"}')
+  #
 else
   echo "   +++ Adding external_gw.avi_deployment: false"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment": false}')
@@ -164,30 +189,8 @@ echo "   +++ Adding memory..."
 memory=$(jq -c -r '.memory' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"memory": "'$(echo $memory)'"}')
 #
-nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
-external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
-#
-if [[ $(jq -c -r .vcd $jsonFile) != "null" ]]; then
-  disk=$(jq -c -r '.disk_if_vcd' $localJsonFile)
-  vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile)
-else
-  disk=$(jq -c -r '.disk' $localJsonFile)
-  vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
-fi
-#
-echo "   +++ Adding disk..."
+echo "   +++ Adding disk..." # defined above if vcd is enabled or not
 external_gw_json=$(echo $external_gw_json | jq '. += {"disk": "'$(echo $disk)'"}')
-#
-echo "   +++ Adding vcd_ip..."
-external_gw_json=$(echo $external_gw_json | jq '. += {"vcd_ip": "'$(echo $vcd_ip)'"}')
-#
-echo "   +++ Adding ansible_version..."
-ansible_version=$(jq -c -r '.ansible_version' $localJsonFile)
-external_gw_json=$(echo $external_gw_json | jq '. += {"ansible_version": "'$(echo $ansible_version)'"}')
-#
-echo "   +++ Adding avi_sdk_version..."
-avi_sdk_version=$(jq -c -r '.avi_sdk_version' $localJsonFile)
-external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(echo $avi_sdk_version)'"}')
 #
 echo $external_gw_json | jq . | tee /root/external_gw.json > /dev/null
 #
