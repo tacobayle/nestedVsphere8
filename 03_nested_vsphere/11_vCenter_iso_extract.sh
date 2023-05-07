@@ -52,7 +52,7 @@ contents="$(jq '.new_vcsa.esxi.hostname = "'$(jq -r .vsphere_nested.esxi.basenam
                 .new_vcsa.sso.password = "'$TF_VAR_vsphere_nested_password'" |
                 .new_vcsa.sso.domain_name = "'$(jq -r .vsphere_nested.sso.domain_name $jsonFile)'" |
                 .ceip.settings.ceip_enabled = '$(jq -r .ceip_enabled $jsonFile)' ' $template_file_location)"
-echo "${contents}" | jq 'del .new_vcsa.esxi.VCSA_cluster.storage_pool.single_tier' | tee /root/vcenter_config.json
+echo "${contents}" | jq 'del (.new_vcsa.esxi.VCSA_cluster.storage_pool.single_tier)' | tee /root/vcenter_config.json
 #
 echo ""
 echo "++++++++++++++++++++++++++++++++"
