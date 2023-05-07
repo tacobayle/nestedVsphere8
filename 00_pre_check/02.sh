@@ -16,10 +16,18 @@ rm -f /root/external_gw.json
 external_gw_json=$(jq -c -r . $jsonFile | jq .)
 echo ""
 echo "==> Creating /root/external_gw.json file..."
-if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
   #
   echo "   +++ Adding external_gw.nsx_deployment: true"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": true}')
+  #
+  echo "   +++ Adding ansible_version..."
+  ansible_version=$(jq -c -r '.ansible_version' $localJsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '. += {"ansible_version": "'$(echo $ansible_version)'"}')
+  #
+  echo "   +++ Adding avi_sdk_version..."
+  avi_sdk_version=$(jq -c -r '.avi_sdk_version' $localJsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(echo $avi_sdk_version)'"}')
   #
   echo "   +++ Creating External gateway routes to subnet segments..."
   new_routes="[]"
@@ -116,13 +124,13 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     disk=$(jq -c -r '.disk' $localJsonFile)
     vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
   fi
-  #
   echo "   +++ Adding vcd_ip..."
   external_gw_json=$(echo $external_gw_json | jq '. += {"vcd_ip": "'$(echo $vcd_ip)'"}')
   #
   nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
   external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
-else
+  #
+else # without NSX
   echo "   +++ Adding external_gw.nsx_deployment: false"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": false}')
   disk=$(jq -c -r '.disk' $localJsonFile)
@@ -132,15 +140,6 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   #
   echo "   +++ Adding external_gw.avi_deployment: true"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment": true}')
-  #
-  echo "   +++ Adding ansible_version..."
-  ansible_version=$(jq -c -r '.ansible_version' $localJsonFile)
-  external_gw_json=$(echo $external_gw_json | jq '. += {"ansible_version": "'$(echo $ansible_version)'"}')
-  #
-  echo "   +++ Adding avi_sdk_version..."
-  avi_sdk_version=$(jq -c -r '.avi_sdk_version' $localJsonFile)
-  external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(echo $avi_sdk_version)'"}')
-  #
 else
   echo "   +++ Adding external_gw.avi_deployment: false"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment": false}')
