@@ -21,14 +21,6 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
   echo "   +++ Adding external_gw.nsx_deployment: true"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": true}')
   #
-  echo "   +++ Adding ansible_version..."
-  ansible_version=$(jq -c -r '.ansible_version' $localJsonFile)
-  external_gw_json=$(echo $external_gw_json | jq '. += {"ansible_version": "'$(echo $ansible_version)'"}')
-  #
-  echo "   +++ Adding avi_sdk_version..."
-  avi_sdk_version=$(jq -c -r '.avi_sdk_version' $localJsonFile)
-  external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(echo $avi_sdk_version)'"}')
-  #
   echo "   +++ Creating External gateway routes to subnet segments..."
   new_routes="[]"
   if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
@@ -197,6 +189,14 @@ external_gw_json=$(echo $external_gw_json | jq '. += {"memory": "'$(echo $memory
 #
 echo "   +++ Adding disk..." # defined above if vcd is enabled or not
 external_gw_json=$(echo $external_gw_json | jq '. += {"disk": "'$(echo $disk)'"}')
+#
+echo "   +++ Adding ansible_version..."
+ansible_version=$(jq -c -r '.ansible_version' $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '. += {"ansible_version": "'$(echo $ansible_version)'"}')
+#
+echo "   +++ Adding avi_sdk_version..."
+avi_sdk_version=$(jq -c -r '.avi_sdk_version' $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(echo $avi_sdk_version)'"}')
 #
 echo $external_gw_json | jq . | tee /root/external_gw.json > /dev/null
 #
