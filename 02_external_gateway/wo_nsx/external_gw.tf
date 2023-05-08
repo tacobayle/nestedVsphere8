@@ -29,6 +29,8 @@ data "template_file" "external_gw_userdata" {
     dns      = join(", ", var.external_gw.bind.forwarders)
     netplanFile = "/etc/netplan/50-cloud-init.yaml"
     privateKey = "/root/.ssh/id_rsa"
+    ansible_version = var.ansible_version
+    avi_sdk_version = var.avi_sdk_version
     forwarders = join("; ", var.external_gw.bind.forwarders)
     domain = var.external_gw.bind.domain
     reverse = var.external_gw.bind.reverse
@@ -38,6 +40,8 @@ data "template_file" "external_gw_userdata" {
     lastOctet = split(".", var.vsphere_underlay.networks.vsphere.management.external_gw_ip)[3]
     vcsa_nested_ip = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
     vcenter_name = var.vsphere_nested.vcsa_name
+    vcd_ip = var.vcd_ip
+    nfs_path = var.external_gw.nfs_path
   }
 }
 
