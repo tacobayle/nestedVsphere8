@@ -285,6 +285,7 @@ resource "null_resource" "adding_ip_to_nsx_overlay_and_nsx_overlay_edge" {
 }
 
 resource "null_resource" "set_initial_state_ip_tables" {
+  count = var.external_gw.avi_deployment_nsx == true ? 1 : 0
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
     command = "echo \"0\" > current_state_ip_tables.txt"
@@ -294,7 +295,7 @@ resource "null_resource" "set_initial_state_ip_tables" {
 
 resource "null_resource" "update_ip_tables" {
   depends_on = [null_resource.adding_ip_to_nsx_overlay_and_nsx_overlay_edge, null_resource.set_initial_state_ip_tables]
-  count = length(var.external_gw.ip_table_prefixes)
+  count = var.external_gw.avi_deployment_nsx == true ? length(var.external_gw.ip_table_prefixes) : 0
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
@@ -327,7 +328,6 @@ resource "null_resource" "update_ip_tables" {
 
 resource "null_resource" "end" {
   depends_on = [null_resource.update_ip_tables]
-
 
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip

@@ -79,6 +79,10 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"routes": '$(echo $new_routes)'}')
   #
   if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+    #
+    echo "   +++ Adding external_gw.avi_deployment_nsx: true"
+    external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment_nsx": true}')
+    #
     echo "   +++ Creating External ip_table_prefixes..."
     ip_table_prefixes="[]"
     if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
