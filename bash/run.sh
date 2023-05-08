@@ -17,6 +17,7 @@ kubectl exec -it test-pod2 -- /bin/bash
 
 /bin/bash nestedVsphere8/apply.sh
 /bin/bash nestedVsphere8/destroy.sh
+cd / ; rm -fr nestedVsphere8 ; git clone https://github.com/tacobayle/nestedVsphere8 ; cd nestedVsphere8 ;  /bin/bash apply.sh
 
 ---
 kubectl delete pod test-pod3

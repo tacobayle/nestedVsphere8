@@ -147,6 +147,9 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
 else
   echo "   +++ Adding external_gw.avi_deployment: false"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment": false}')
+  #
+  echo "   +++ Adding external_gw.avi_deployment_nsx: false"
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment_nsx": false}')
 fi
 #
 echo "   +++ Adding reverse DNS zone..."
