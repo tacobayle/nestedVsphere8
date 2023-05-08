@@ -295,7 +295,8 @@ resource "null_resource" "set_initial_state_ip_tables" {
 
 resource "null_resource" "update_ip_tables" {
   depends_on = [null_resource.adding_ip_to_nsx_overlay_and_nsx_overlay_edge, null_resource.set_initial_state_ip_tables]
-  count = var.external_gw.avi_deployment_nsx == true ? length(var.external_gw.ip_table_prefixes) : 0
+  count = 0
+  #count = var.external_gw.avi_deployment_nsx == true ? length(var.external_gw.ip_table_prefixes) : 0
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
