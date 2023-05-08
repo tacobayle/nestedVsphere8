@@ -10,3 +10,5 @@ variable "ubuntu_ova_path" {}
 variable "cpu" {}
 variable "memory" {}
 variable "disk" {}
+variable "ansible_version" {}
+variable "avi_sdk_version" {}
