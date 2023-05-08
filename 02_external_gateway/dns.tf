@@ -56,7 +56,7 @@ resource "dns_ptr_record" "nsx" {
   depends_on = [null_resource.end]
   zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
   name = split(".", var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip)[3]
-  ptr  = "${var.external_gw.nsx_controller_name}.${var.external_gw.bind.domain}."
+  ptr  = "${var.external_gw.nsx_manager_name}.${var.external_gw.bind.domain}."
   ttl  = 60
 }
 
