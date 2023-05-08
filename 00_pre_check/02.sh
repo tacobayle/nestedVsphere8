@@ -51,8 +51,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
     done
   fi
   #
-  echo "   +++ Creating External gateway routes to Avi VIP subnets..."
   if [[ $(jq -c -r '.avi.config.cloud.networks_data | length' $jsonFile) -gt 0 ]] ; then
+    echo "   +++ Creating External gateway routes to Avi VIP subnets..."
     for network in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
     do
       for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
@@ -90,8 +90,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
         fi
       done
     fi
+    external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
   fi
-  external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
   #
   echo "   +++ Adding Networks MTU details"
   networks_details=$(jq -c -r .networks $localJsonFile)
