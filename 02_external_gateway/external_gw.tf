@@ -327,7 +327,7 @@ resource "null_resource" "update_ip_tables" {
 
 
 resource "null_resource" "end" {
-  depends_on = [null_resource.update_ip_tables]
+  depends_on = [null_resource.update_ip_tables, null_resource.adding_ip_to_nsx_overlay_and_nsx_overlay_edge]
 
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
