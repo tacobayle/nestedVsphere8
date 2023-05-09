@@ -36,6 +36,7 @@ data "template_file" "values" {
     service_engine_groups = jsonencode(var.avi.config.cloud.service_engine_groups)
     pools = jsonencode(var.avi.config.cloud.pools)
     virtual_services = jsonencode(var.avi.config.cloud.virtual_services)
+    external_gw_ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
   }
 }
 

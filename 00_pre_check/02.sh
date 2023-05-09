@@ -132,6 +132,12 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   #
   echo "   +++ Adding external_gw.avi_deployment: true"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment": true}')
+
+  if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+    #
+    echo "   +++ Adding external_gw.avi_deployment_nsx: true"
+    external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment_nsx": true}')
+  fi
 else
   echo "   +++ Adding external_gw.avi_deployment: false"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"avi_deployment": false}')

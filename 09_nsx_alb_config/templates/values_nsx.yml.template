@@ -1,4 +1,5 @@
 ---
+external_gw_ip: ${external_gw_ip}
 avi_version: ${avi_version}
 controllerPrivateIps: |
   [${controllerPrivateIp}]
