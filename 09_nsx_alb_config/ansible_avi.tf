@@ -55,6 +55,38 @@ resource "null_resource" "alb_ansible_config" {
   }
 }
 
+resource "null_resource" "traffic_gen" {
+  depends_on = [null_resource.alb_ansible_config]
+  provisioner "local-exec" {
+    command = "/bin/bash /nestedVsphere8/bash/alb/traffic_gen.sh admin ${var.avi_password} ${var.vsphere_underlay.networks.vsphere.management.avi_nested_ip}"
+  }
+}
+
+resource "null_resource" "transfer_traffic_gen" {
+  depends_on = [null_resource.traffic_gen]
+
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "file" {
+    content = "/root/traffic_gen.sh"
+    destination = "/home/ubuntu/traffic_gen.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod u+x /home/ubuntu/traffic_gen.sh",
+      "(crontab -l 2>/dev/null; echo \"* * * * * /home/ubuntu/traffic_gen.sh\") | crontab -"
+    ]
+  }
+
+}
+
 #
 # Need to update Avi UI/API cert.
 #
