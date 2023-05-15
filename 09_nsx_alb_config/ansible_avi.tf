@@ -74,7 +74,7 @@ resource "null_resource" "transfer_traffic_gen" {
   }
 
   provisioner "file" {
-    content = "/root/traffic_gen.sh"
+    source = "/root/traffic_gen.sh"
     destination = "/home/ubuntu/traffic_gen.sh"
   }
 
