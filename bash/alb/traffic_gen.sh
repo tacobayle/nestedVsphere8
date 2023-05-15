@@ -19,7 +19,9 @@ if [[ $(echo $curl_virtualservice | jq -c -r '.results | length') -gt 0 ]] ; the
         #echo $vs | jq .vsvip_ref
         curl_vsvip=$(curl -s -k -X GET -H "Content-Type: application/json" -b avi_cookie.txt $(echo $vs | jq -c -r .vsvip_ref))
         #vip_ip_list=$(echo $vip_ip_list | jq '. += ['$(echo $curl_vsvip | jq .vip[0].ip_address.addr)']')
-        echo "for i in {1..20}; do curl -k https://$(echo $curl_vsvip | jq -c -r .vip[0].ip_address.addr); sleep 0.5 ; done" | tee -a /root/traffic_gen.sh
+        echo "random_number=$(echo $(( $RANDOM % 25 + 1 )))" | tee -a /root/traffic_gen.sh
+        echo "for i in $(seq 1 \"$random_number\"); do curl -k https://$(echo $curl_vsvip | jq -c -r .vip[0].ip_address.addr); sleep 0.5 ; done" | tee -a /root/traffic_gen.sh
+        echo "for i in $(seq 1 2); do curl -k https://$(echo $curl_vsvip | jq -c -r .vip[0].ip_address.addr)/wrong-path; sleep 0.5 ; done" | tee -a /root/traffic_gen.sh
       fi
     done
   done
