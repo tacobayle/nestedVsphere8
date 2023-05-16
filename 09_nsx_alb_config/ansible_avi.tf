@@ -40,6 +40,16 @@ data "template_file" "values" {
   }
 }
 
+data "template_file" "traffic_gen" {
+  template = file("templates/traffic_gen.sh.template")
+  vars = {
+    controllerPrivateIp = jsonencode(var.vsphere_underlay.networks.vsphere.management.avi_nested_ip)
+    avi_password = jsonencode(var.avi_password)
+    avi_username = "admin"
+  }
+}
+
+
 resource "null_resource" "alb_ansible_config_values" {
 
   provisioner "local-exec" {
@@ -55,15 +65,8 @@ resource "null_resource" "alb_ansible_config" {
   }
 }
 
-resource "null_resource" "traffic_gen" {
-  depends_on = [null_resource.alb_ansible_config]
-  provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/alb/traffic_gen.sh admin ${var.avi_password} ${var.vsphere_underlay.networks.vsphere.management.avi_nested_ip}"
-  }
-}
-
 resource "null_resource" "transfer_traffic_gen" {
-  depends_on = [null_resource.traffic_gen]
+  depends_on = [null_resource.alb_ansible_config]
 
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
@@ -74,7 +77,7 @@ resource "null_resource" "transfer_traffic_gen" {
   }
 
   provisioner "file" {
-    source = "/root/traffic_gen.sh"
+    content = data.template_file.traffic_gen
     destination = "/home/ubuntu/traffic_gen.sh"
   }
 
