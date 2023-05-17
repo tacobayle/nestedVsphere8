@@ -108,10 +108,6 @@ data "template_file" "external_gw_userdata_tanzu" {
     pubkey        = file("/root/.ssh/id_rsa.pub")
     username = "ubuntu"
     ipCidr  = "${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}/${var.vsphere_underlay.networks.vsphere.management.prefix}"
-    ipCidr_se = "${var.vsphere_underlay.networks.alb.se.external_gw_ip}/${var.vsphere_underlay.networks.alb.se.prefix}"
-    ipCidr_backend = "${var.vsphere_underlay.networks.alb.backend.external_gw_ip}/${var.vsphere_underlay.networks.alb.backend.prefix}"
-    ipCidr_vip = "${var.vsphere_underlay.networks.alb.vip.external_gw_ip}/${var.vsphere_underlay.networks.alb.vip.prefix}"
-    ipCidr_tanzu = "${var.vsphere_underlay.networks.alb.tanzu.external_gw_ip}/${var.vsphere_underlay.networks.alb.tanzu.prefix}"
     ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     defaultGw = var.vsphere_underlay.networks.vsphere.management.gateway
     password      = var.ubuntu_password
@@ -216,6 +212,142 @@ resource "vsphere_virtual_machine" "external_gw_tanzu" {
     ]
   }
 }
+
+resource "null_resource" "add_nic_to_gw_alb_se" {
+  depends_on = [vsphere_virtual_machine.external_gw_tanzu]
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      export GOVC_USERNAME=${var.vsphere_underlay_username}
+      export GOVC_PASSWORD=${var.vsphere_underlay_password}
+      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
+      export GOVC_URL=${var.vsphere_underlay.vcsa}
+      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
+      export GOVC_INSECURE=true
+      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vsphere_underlay.networks.alb.se.name}"
+    EOT
+  }
+}
+
+resource "null_resource" "add_nic_to_gw_alb_backend" {
+  depends_on = [null_resource.add_nic_to_gw_alb_se]
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      export GOVC_USERNAME=${var.vsphere_underlay_username}
+      export GOVC_PASSWORD=${var.vsphere_underlay_password}
+      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
+      export GOVC_URL=${var.vsphere_underlay.vcsa}
+      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
+      export GOVC_INSECURE=true
+      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vsphere_underlay.networks.alb.backend.name}"
+    EOT
+  }
+}
+
+resource "null_resource" "add_nic_to_gw_alb_vip" {
+  depends_on = [null_resource.add_nic_to_gw_alb_backend]
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      export GOVC_USERNAME=${var.vsphere_underlay_username}
+      export GOVC_PASSWORD=${var.vsphere_underlay_password}
+      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
+      export GOVC_URL=${var.vsphere_underlay.vcsa}
+      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
+      export GOVC_INSECURE=true
+      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vsphere_underlay.networks.alb.vip.name}"
+    EOT
+  }
+}
+
+resource "null_resource" "add_nic_to_gw_alb_tanzu" {
+  depends_on = [null_resource.add_nic_to_gw_alb_vip]
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      export GOVC_USERNAME=${var.vsphere_underlay_username}
+      export GOVC_PASSWORD=${var.vsphere_underlay_password}
+      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
+      export GOVC_URL=${var.vsphere_underlay.vcsa}
+      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
+      export GOVC_INSECURE=true
+      /usr/local/bin/govc vm.network.add -vm "external-gw-${var.date_index}" -net "${var.vsphere_underlay.networks.alb.tanzu.name}"
+    EOT
+  }
+}
+
+resource "null_resource" "adding_ips" {
+  depends_on = [null_resource.add_nic_to_gw_alb_tanzu]
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
+
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "iface=`ip -o link show | awk -F': ' '{print $2}' | head -2 | tail -1`",
+      "mac=`ip -o link show | awk -F'link/ether ' '{print $2}' | awk -F' ' '{print $1}' | head -2 | tail -1`",
+      "iface_se=`ip -o link show | awk -F': ' '{print $2}' | head -3 | tail -1`",
+      "mac_se=`ip -o link show | awk -F'link/ether ' '{print $2}' | awk -F' ' '{print $1}' | head -3 | tail -1`",
+      "iface_backend=`ip -o link show | awk -F': ' '{print $2}' | head -4 | tail -1`",
+      "mac_backend=`ip -o link show | awk -F'link/ether ' '{print $2}' | awk -F' ' '{print $1}' | head -4 | tail -1`",
+      "iface_vip=`ip -o link show | awk -F': ' '{print $2}' | head -5 | tail -1`",
+      "mac_vip=`ip -o link show | awk -F'link/ether ' '{print $2}' | awk -F' ' '{print $1}' | head -5 | tail -1`",
+      "iface_tanzu=`ip -o link show | awk -F': ' '{print $2}' | head -6 | tail -1`",
+      "mac_tanzu=`ip -o link show | awk -F'link/ether ' '{print $2}' | awk -F' ' '{print $1}' | head -6 | tail -1`",
+      "echo \"network:\" | sudo tee /etc/netplan/50-cloud-init.yaml",
+      "echo \"    ethernets:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"        $iface:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            dhcp4: false\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            addresses: [${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}/${var.vsphere_underlay.networks.vsphere.management.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            match:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"                macaddress: $mac\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            set-name: $iface\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            gateway4: ${var.vsphere_underlay.networks.vsphere.management.gateway}\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            nameservers:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"              addresses: [${join(", ", var.external_gw.bind.forwarders)}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"        $iface_se:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            dhcp4: false\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            addresses: [${var.vsphere_underlay.networks.alb.se.external_gw_ip}/${var.vsphere_underlay.networks.alb.se.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            match:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"                macaddress: $mac_se\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            set-name: $iface_se\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"        $iface_backend:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            dhcp4: false\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            addresses: [${var.vsphere_underlay.networks.alb.backend.external_gw_ip}/${var.vsphere_underlay.networks.alb.backend.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            match:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"                macaddress: $mac_backend\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            set-name: $iface_backend\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"        $iface_vip:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            dhcp4: false\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            addresses: [${var.vsphere_underlay.networks.alb.vip.external_gw_ip}/${var.vsphere_underlay.networks.alb.vip.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            match:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"                macaddress: $mac_vip\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            set-name: $iface_vip\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"        $iface_tanzu:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            dhcp4: false\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            addresses: [${var.vsphere_underlay.networks.alb.tanzu.external_gw_ip}/${var.vsphere_underlay.networks.alb.tanzu.prefix}]\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            match:\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"                macaddress: $mac_tanzu\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"            set-name: $iface_tanzu\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "echo \"    version: 2\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+      "sudo netplan apply",
+      "sudo sysctl -w net.ipv4.ip_forward=1"
+    ]
+  }
+}
+
+
 
 resource "null_resource" "clear_ssh_key_external_gw_locally" {
   provisioner "local-exec" {

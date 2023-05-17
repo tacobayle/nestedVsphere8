@@ -2,7 +2,7 @@
 #
 source /nestedVsphere8/bash/ip.sh
 #
-jsonFile="/etc/config/variables.json"
+jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/03_nested_vsphere/variables.json"
 #
 IFS=$'\n'
