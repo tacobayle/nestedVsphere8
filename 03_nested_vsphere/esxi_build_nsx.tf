@@ -1,6 +1,6 @@
-resource "vsphere_virtual_machine" "esxi_host" {
+resource "vsphere_virtual_machine" "esxi_host_nsx" {
   depends_on = [ vsphere_file.iso_upload ]
-  count = var.deployment == "vsphere_wo_nsx" ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.deployment != "vsphere_wo_nsx" && var.deployment != "vsphere_tanzu_alb_wo_nsx" ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   name             = "${var.vsphere_nested.esxi.basename}${count.index + 1}"
   datastore_id     = data.vsphere_datastore.datastore.id
   resource_pool_id = data.vsphere_resource_pool.pool.id
@@ -18,6 +18,18 @@ resource "vsphere_virtual_machine" "esxi_host" {
     content {
       network_id = network_interface.value["id"]
     }
+  }
+
+  network_interface {
+    network_id = data.vsphere_network.network_nsx_external[0].id
+  }
+
+  network_interface {
+    network_id = data.vsphere_network.network_nsx_overlay[0].id
+  }
+
+  network_interface {
+    network_id = data.vsphere_network.network_nsx_overlay_edge[0].id
   }
 
   num_cpus = var.vsphere_nested.esxi.cpu

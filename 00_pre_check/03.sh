@@ -120,11 +120,9 @@ echo "==> Downloading vSphere ISO file"
 if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .vcenter_iso_path $localJsonFile) $(jq -c -r .vsphere_nested.iso_url $jsonFile) ; fi
 if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else echo "   +++ vSphere ova $(jq -c -r .vcenter_iso_path $localJsonFile) is empty" ; exit 255 ; fi
 #
-echo ""
-echo "==> Copying the files..."
-if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
-  echo "   +++ with NSX..."
-else
-  echo "   +++ without NSX..."
-  cp /nestedVsphere8/03_nested_vsphere/wo_nsx/* /nestedVsphere8/03_nested_vsphere/
+if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
+  #
+  echo "   +++ Adding variable nsx in /nestedVsphere8/03_nested_vsphere/variables.tf"
+  echo 'variable "nsx" {}' | tee -a /nestedVsphere8/03_nested_vsphere/variables.tf > /dev/null
+  #
 fi

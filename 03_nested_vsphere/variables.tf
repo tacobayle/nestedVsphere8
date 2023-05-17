@@ -1,6 +1,5 @@
 variable "vsphere_underlay" {}
 variable "vsphere_nested" {}
-variable "nsx" {}
 variable "external_gw" {}
 variable "vcenter_iso_path" {}
 variable "iso_location" {}
@@ -15,3 +14,4 @@ variable "vsphere_underlay_username" {}
 variable "vsphere_underlay_password" {}
 variable "vsphere_nested_password" {}
 variable "date_index" {}
+variable "deployment" {}
