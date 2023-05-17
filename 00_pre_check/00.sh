@@ -128,7 +128,13 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
 else
   if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
-    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_nsx_alb"}')
+    if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+      if [[ $(jq -c -r .vcd $jsonFile) != "null" ]]; then
+        variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_nsx_alb_vcd"}')
+      else
+        variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_nsx_alb"}')
+      fi
+    fi
   else
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_wo_nsx"}')
   fi

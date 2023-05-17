@@ -15,3 +15,4 @@ variable "cpu" {}
 variable "memory" {}
 variable "disk" {}
 variable "vcd_ip" {}
+variable "deployment" {}
