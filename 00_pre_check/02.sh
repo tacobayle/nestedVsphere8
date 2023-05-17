@@ -24,6 +24,8 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
   echo "   +++ Adding variable networks in /nestedVsphere8/02_external_gateway/variables.tf"
   echo 'variable "networks" {}' | tee -a /nestedVsphere8/02_external_gateway/variables.tf > /dev/null
   #
+  mv /nestedVsphere8/02_external_gateway/external_gw_nsx.tf.inactive /nestedVsphere8/02_external_gateway/external_gw_nsx.tf
+  #
   echo "   +++ Adding external_gw.nsx_deployment: true"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": true}')
   #
