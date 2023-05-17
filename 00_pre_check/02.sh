@@ -18,6 +18,12 @@ echo ""
 echo "==> Creating /root/external_gw.json file..."
 if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
   #
+  echo "   +++ Adding variable nsx in /nestedVsphere8/02_external_gateway/variables.tf"
+  echo 'variable "nsx" {}' | tee -a /nestedVsphere8/02_external_gateway/variables.tf > /dev/null
+  #
+  echo "   +++ Adding variable networks in /nestedVsphere8/02_external_gateway/variables.tf"
+  echo 'variable "networks" {}' | tee -a /nestedVsphere8/02_external_gateway/variables.tf > /dev/null
+  #
   echo "   +++ Adding external_gw.nsx_deployment: true"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": true}')
   #
