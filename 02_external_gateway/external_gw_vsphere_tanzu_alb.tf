@@ -143,7 +143,7 @@ resource "null_resource" "add_nic_to_gw_alb_tanzu" {
   }
 }
 
-resource "null_resource" "adding_ips" {
+resource "null_resource" "end" {
   depends_on = [null_resource.add_nic_to_gw_alb_tanzu]
   count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
