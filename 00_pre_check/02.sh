@@ -203,6 +203,24 @@ external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'
 echo "   +++ Adding vcd_ip..."
 external_gw_json=$(echo $external_gw_json | jq '. += {"vcd_ip": "'$(echo $vcd_ip)'"}')
 #
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+  echo "   +++ Adding prefix for alb se network..."
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.se.netmask' $jsonFile) "   ++++++")
+  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.se += {"prefix": "'$(echo $prefix)'"}')
+  #
+  echo "   +++ Adding prefix for alb backend network..."
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.backend.netmask' $jsonFile) "   ++++++")
+  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.backend += {"prefix": "'$(echo $prefix)'"}')
+  #
+  echo "   +++ Adding prefix for alb vip network..."
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.vip.netmask' $jsonFile) "   ++++++")
+  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.vip += {"prefix": "'$(echo $prefix)'"}')
+  #
+  echo "   +++ Adding prefix for alb tanzu network..."
+  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.tanzu.netmask' $jsonFile) "   ++++++")
+  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.tanzu += {"prefix": "'$(echo $prefix)'"}')
+fi
+#
 echo $external_gw_json | jq . | tee /root/external_gw.json > /dev/null
 #
 echo ""

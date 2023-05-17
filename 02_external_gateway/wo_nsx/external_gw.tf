@@ -103,11 +103,15 @@ resource "vsphere_virtual_machine" "external_gw" {
 
 data "template_file" "external_gw_userdata_tanzu" {
   count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
-  template = file("${path.module}/userdata/external_gw.userdata")
+  template = file("${path.module}/userdata/external_gw_tanzu_wo_nsx.userdata")
   vars = {
     pubkey        = file("/root/.ssh/id_rsa.pub")
     username = "ubuntu"
     ipCidr  = "${var.vsphere_underlay.networks.vsphere.management.external_gw_ip}/${var.vsphere_underlay.networks.vsphere.management.prefix}"
+    ipCidr_se = "${var.vsphere_underlay.networks.alb.se.external_gw_ip}/${var.vsphere_underlay.networks.alb.se.prefix}"
+    ipCidr_backend = "${var.vsphere_underlay.networks.alb.backend.external_gw_ip}/${var.vsphere_underlay.networks.alb.backend.prefix}"
+    ipCidr_vip = "${var.vsphere_underlay.networks.alb.vip.external_gw_ip}/${var.vsphere_underlay.networks.alb.vip.prefix}"
+    ipCidr_tanzu = "${var.vsphere_underlay.networks.alb.tanzu.external_gw_ip}/${var.vsphere_underlay.networks.alb.tanzu.prefix}"
     ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     defaultGw = var.vsphere_underlay.networks.vsphere.management.gateway
     password      = var.ubuntu_password
@@ -194,7 +198,7 @@ resource "vsphere_virtual_machine" "external_gw_tanzu" {
     properties = {
       hostname    = "external-gw-${var.date_index}"
       public-keys = file("/root/.ssh/id_rsa.pub")
-      user-data   = base64encode(data.template_file.external_gw_userdata_tanzu.rendered)
+      user-data   = base64encode(data.template_file.external_gw_userdata_tanzu[0].rendered)
     }
   }
 
