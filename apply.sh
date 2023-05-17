@@ -45,11 +45,13 @@ if [ $? -ne 0 ] ; then exit 1 ; fi
 if [ $? -ne 0 ] ; then exit 1 ; fi
 /bin/bash /nestedVsphere8/03_nested_vsphere/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
-if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+if [[ $(jq -c -r .nsx $jsonFile) != "null" || $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   echo "waiting for 20 minutes to finish the vCenter config..."
   sleep 1200
-  /bin/bash /nestedVsphere8/04_nsx_networks/apply.sh
+  /bin/bash /nestedVsphere8/04_networks/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
+fi
+if [[ $(jq -c -r .nsx $jsonFile) != "null" ]] ; then
   /bin/bash /nestedVsphere8/05_nsx_manager/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
   echo "waiting for 5 minutes to finish the NSX bootstrap..."

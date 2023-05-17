@@ -128,6 +128,12 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
   fi
   #
 else # without NSX
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
+    #
+    echo "   +++ Adding Networks MTU details"
+    networks_details=$(jq -c -r .networks $localJsonFile)
+    external_gw_json=$(echo $external_gw_json | jq '. += {"networks": '$(echo $networks_details)'}')
+  fi
   echo "   +++ Adding external_gw.nsx_deployment: false"
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": false}')
   disk=$(jq -c -r '.disk' $localJsonFile)

@@ -28,6 +28,28 @@
         "name": "nsx_overlay",
         "port_group_name": "nsx_overlay-pg"
       }
+    },
+    "alb": {
+      "se": {
+        "max_mtu": 1700,
+        "name": "se",
+        "port_group_name": "se-pg"
+      },
+      "backend": {
+        "max_mtu": 1700,
+        "name": "backend",
+        "port_group_name": "backend-pg"
+      },
+      "vip": {
+        "max_mtu": 1700,
+        "name": "vip",
+        "port_group_name": "vip-pg"
+      },
+      "tanzu": {
+        "max_mtu": 1700,
+        "name": "tanzu",
+        "port_group_name": "tanzu-pg"
+      }
     }
   }
 }
