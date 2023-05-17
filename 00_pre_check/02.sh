@@ -247,11 +247,11 @@ echo "==> Downloading Ubuntu OVA"
 if [ -s "$(jq -c -r .ubuntu_ova_path $localJsonFile)" ]; then echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .ubuntu_ova_path $localJsonFile) $(jq -c -r .ubuntu_ova_url $localJsonFile) ; fi
 if [ -s "$(jq -c -r .ubuntu_ova_path $localJsonFile)" ]; then echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is not empty" ; else echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is empty" ; exit 255 ; fi
 #
-echo ""
-echo "==> Copying the files..."
-if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
-  echo "   +++ with NSX..."
-else
-  echo "   +++ without NSX..."
-  cp /nestedVsphere8/02_external_gateway/wo_nsx/* /nestedVsphere8/02_external_gateway/
-fi
+#echo ""
+#echo "==> Copying the files..."
+#if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+#  echo "   +++ with NSX..."
+#else
+#  echo "   +++ without NSX..."
+#  cp /nestedVsphere8/02_external_gateway/wo_nsx/* /nestedVsphere8/02_external_gateway/
+#fi
