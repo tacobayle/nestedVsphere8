@@ -2,7 +2,7 @@
 #
 source /nestedVsphere8/bash/vcenter_api.sh
 #
-jsonFile="/etc/config/variables.json"
+jsonFile="/root/variables.json"
 #
 echo ""
 echo "==> Checking vSphere folders for name conflict..."

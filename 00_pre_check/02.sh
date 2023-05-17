@@ -3,7 +3,7 @@
 source /nestedVsphere8/bash/vcenter_api.sh
 source /nestedVsphere8/bash/ip.sh
 #
-jsonFile="/etc/config/variables.json"
+jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/02_external_gateway/variables.json"
 #
 IFS=$'\n'

@@ -24,6 +24,9 @@ fi
 #
 #
 #
+rm -f /root/variables.json
+variables_json=$(jq -c -r . $jsonFile | jq .)
+#
 IFS=$'\n'
 echo ""
 echo "==> Checking vSphere Underlay Variables"
@@ -61,6 +64,78 @@ for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.vsan.esxi_ips[] $jsonFil
 do
   test_if_variable_is_valid_ip $ip "   "
 done
+#
+#
+#
+echo ""
+echo "==> Checking External Gateway Variables"
+test_if_json_variable_is_defined .external_gw.bind.forwarders $jsonFile "   "
+for ip in $(jq -c -r .external_gw.bind.forwarders[] $jsonFile)
+do
+  test_if_variable_is_valid_ip $ip "   "
+done
+test_if_json_variable_is_defined .external_gw.bind.domain $jsonFile "   "
+test_if_json_variable_is_defined .external_gw.ntp $jsonFile "   "
+#
+#
+#
+echo ""
+echo "==> Checking vCenter Variables"
+test_if_json_variable_is_defined .vsphere_nested.vcsa_name $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.iso_url $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.iso_url $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.datacenter $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.cluster $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.sso.domain_name $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.timezone $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.iso_url $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.basename $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.cpu $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.memory $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.disks $jsonFile "   "
+if [[ $(jq -c -r '.vsphere_nested.esxi.disks | length' $jsonFile) -ne 3 ]] ; then echo "   +++ 3 ESXi host's disks must be configured" ; exit 255 ; fi
+test_if_json_variable_is_defined .vsphere_nested.esxi.disks[0].size $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.disks[1].size $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.disks[2].size $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.disks[0].thin_provisioned $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.disks[1].thin_provisioned $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.esxi.disks[2].thin_provisioned $jsonFile "   "
+#
+#
+# ALB in vSphere with Tanzu without NSX
+if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
+  test_if_json_variable_is_defined .vsphere_underlay.networks.alb.se.name $jsonFile "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.se.cidr $jsonFile)" "   "
+  test_if_variable_is_netmask .vsphere_underlay.networks.alb.se.netmask $jsonFile "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.external_gw_ip $jsonFile)" "   "
+  #
+  test_if_json_variable_is_defined .vsphere_underlay.networks.alb.backend.name $jsonFile "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)" "   "
+  test_if_variable_is_netmask .vsphere_underlay.networks.alb.backend.netmask $jsonFile "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)" "   "
+  #
+  test_if_json_variable_is_defined .vsphere_underlay.networks.alb.vip.name $jsonFile "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)" "   "
+  test_if_variable_is_netmask .vsphere_underlay.networks.alb.vip.netmask $jsonFile "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.vip.external_gw_ip $jsonFile)" "   "
+  #
+  test_if_json_variable_is_defined .vsphere_underlay.networks.alb.tanzu.name $jsonFile "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)" "   "
+  test_if_variable_is_netmask .vsphere_underlay.networks.alb.tanzu.netmask $jsonFile "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.external_gw_ip $jsonFile)" "   "
+  #
+  echo "   +++ Adding .deployment: vsphere_tanzu_alb_wo_nsx"
+  variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
+else
+  if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_nsx_alb"}')
+  else
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_wo_nsx"}')
+  fi
+fi
+echo $variables_json | jq . | tee /root/variables.json > /dev/null
+#
+#
 # NSX
 if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile) "   "
@@ -110,42 +185,6 @@ if [[ $(jq -c -r .vcd $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile) "   "
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.vsan.vcd_nested_ip $jsonFile) "   "
 fi
-#
-#
-#
-echo ""
-echo "==> Checking External Gateway Variables"
-test_if_json_variable_is_defined .external_gw.bind.forwarders $jsonFile "   "
-for ip in $(jq -c -r .external_gw.bind.forwarders[] $jsonFile)
-do
-  test_if_variable_is_valid_ip $ip "   "
-done
-test_if_json_variable_is_defined .external_gw.bind.domain $jsonFile "   "
-test_if_json_variable_is_defined .external_gw.ntp $jsonFile "   "
-#
-#
-#
-echo ""
-echo "==> Checking vCenter Variables"
-test_if_json_variable_is_defined .vsphere_nested.vcsa_name $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.iso_url $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.iso_url $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.datacenter $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.cluster $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.sso.domain_name $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.timezone $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.iso_url $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.basename $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.cpu $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.memory $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.disks $jsonFile "   "
-if [[ $(jq -c -r '.vsphere_nested.esxi.disks | length' $jsonFile) -ne 3 ]] ; then echo "   +++ 3 ESXi host's disks must be configured" ; exit 255 ; fi
-test_if_json_variable_is_defined .vsphere_nested.esxi.disks[0].size $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.disks[1].size $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.disks[2].size $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.disks[0].thin_provisioned $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.disks[1].thin_provisioned $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.esxi.disks[2].thin_provisioned $jsonFile "   "
 #
 #
 #

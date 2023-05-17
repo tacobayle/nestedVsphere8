@@ -13,3 +13,4 @@ variable "disk" {}
 variable "ansible_version" {}
 variable "avi_sdk_version" {}
 variable "vcd_ip" {}
+variable "deployment" {}

@@ -57,6 +57,45 @@ function test_if_variable_is_valid_cidr () {
   if [[ $stat -ne 0 || $test_prefix -ne 0 ]] ; then echo "$2$1 does not seem to be a valid CIDR" ; exit 255 ; fi
 }
 #
+function test_if_variable_is_netmask () {
+  # $1 netmask
+  # $2 indentation message
+  error_prefix=1
+  if [[ $1 == "255.255.255.255" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.255.254" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.255.252" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.255.248" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.255.240" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.255.224" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.255.192" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.255.128" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.255.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.254.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.252.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.248.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.240.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.224.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.192.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.128.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.255.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.254.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.252.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.248.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.240.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.224.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.192.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.128.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "255.0.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "254.0.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "252.0.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "248.0.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "240.0.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "224.0.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "192.0.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ $1 == "128.0.0.0" ]] ; then error_prefix=0 ; fi
+  if [[ error_prefix -eq 1 ]] ; then echo "$2+++ $1 does not seem to be a proper netmask" ; exit 255 ; fi
+   }
+#
 test_if_ref_from_list_exists_in_another_list () {
   # $1 list + ref to check
   # $2 list + ref to check against
