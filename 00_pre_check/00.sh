@@ -121,7 +121,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.tanzu.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)" "   "
-  test_if_variable_is_netmask .vsphere_underlay.networks.alb.tanzu.netmask $jsonFile "   "
+  test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.external_gw_ip $jsonFile)" "   "
   #
   echo "   +++ Adding .deployment: vsphere_tanzu_alb_wo_nsx"
