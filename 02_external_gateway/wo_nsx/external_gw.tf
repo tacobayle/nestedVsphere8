@@ -148,25 +148,25 @@ resource "vsphere_virtual_machine" "external_gw_tanzu" {
     ovf_mapping = "ens192"
   }
 
-  network_interface {
-    network_id = data.vsphere_network.se[0].id
-    ovf_mapping = "ens33"
-  }
-
-  network_interface {
-    network_id = data.vsphere_network.backend[0].id
-    ovf_mapping = "ens34"
-  }
-
-  network_interface {
-    network_id = data.vsphere_network.vip[0].id
-    ovf_mapping = "ens35"
-  }
-
-  network_interface {
-    network_id = data.vsphere_network.tanzu[0].id
-    ovf_mapping = "ens36"
-  }
+#  network_interface {
+#    network_id = data.vsphere_network.se[0].id
+#    ovf_mapping = "ens33"
+#  }
+#
+#  network_interface {
+#    network_id = data.vsphere_network.backend[0].id
+#    ovf_mapping = "ens34"
+#  }
+#
+#  network_interface {
+#    network_id = data.vsphere_network.vip[0].id
+#    ovf_mapping = "ens35"
+#  }
+#
+#  network_interface {
+#    network_id = data.vsphere_network.tanzu[0].id
+#    ovf_mapping = "ens36"
+#  }
 
   //  network_interface {
   //    network_id = data.vsphere_network.vsphere_underlay_network_external.id
