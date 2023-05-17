@@ -106,17 +106,17 @@ test_if_json_variable_is_defined .vsphere_nested.esxi.disks[2].thin_provisioned 
 if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.se.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.se.cidr $jsonFile)" "   "
-  test_if_variable_is_netmask .vsphere_underlay.networks.alb.se.netmask $jsonFile "   "
+  test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.se.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.external_gw_ip $jsonFile)" "   "
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.backend.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)" "   "
-  test_if_variable_is_netmask .vsphere_underlay.networks.alb.backend.netmask $jsonFile "   "
+  test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.backend.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)" "   "
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.vip.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)" "   "
-  test_if_variable_is_netmask .vsphere_underlay.networks.alb.vip.netmask $jsonFile "   "
+  test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.vip.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.vip.external_gw_ip $jsonFile)" "   "
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.tanzu.name $jsonFile "   "
