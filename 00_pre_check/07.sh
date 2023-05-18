@@ -15,20 +15,9 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   alb_controller_name=$(jq -c -r .alb_controller_name /nestedVsphere8/02_external_gateway/variables.json)
   avi_json=$(echo $avi_json | jq '.external_gw += {"alb_controller_name": "'$(echo $alb_controller_name)'"}')
   #
-  echo "   +++ Adding avi.config.cloud.name..."
-  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "dc1_nsx"}')
-  #
   echo "   +++ Adding avi.config.avi_config_repo..."
   avi_config_repo=$(jq -c -r '.avi_config_repo' $localJsonFile)
   avi_json=$(echo $avi_json | jq '.avi.config += {"avi_config_repo": "'$(echo $avi_config_repo)'"}')
-  #
-  echo "   +++ Adding avi.config.avi_config_tag..."
-  avi_config_tag=$(jq -c -r '.avi_config_tag' $localJsonFile)
-  avi_json=$(echo $avi_json | jq '.avi.config += {"avi_config_tag": "'$(echo $avi_config_tag)'"}')
-  #
-  echo "   +++ Adding avi.config.playbook_nsx_env_nsx_cloud..."
-  playbook_nsx_env_nsx_cloud=$(jq -c -r '.playbook_nsx_env_nsx_cloud' $localJsonFile)
-  avi_json=$(echo $avi_json | jq '.avi.config += {"playbook_nsx_env_nsx_cloud": "'$(echo $playbook_nsx_env_nsx_cloud)'"}')
   #
   echo "   +++ Adding avi_ova_path..."
   avi_ova_path=$(jq -c -r '.avi_ova_path' $localJsonFile)
@@ -43,12 +32,22 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   avi_json=$(echo $avi_json | jq '. += {"avi_port_group": "'$(echo $avi_port_group)'"}')
   #
   if [[ $(jq -c -r .nsx $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+    #
+    echo "   +++ Adding avi.config.cloud.name..."
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "dc1_nsx"}')
+    #
+    echo "   +++ Adding avi.config.avi_config_tag..."
+    avi_config_tag=$(jq -c -r '.avi_config_tag_nsx_cloud' $localJsonFile)
+    avi_json=$(echo $avi_json | jq '.avi.config += {"avi_config_tag": "'$(echo $avi_config_tag)'"}')
+    #
+    echo "   +++ Adding avi.config.playbook_nsx_env_nsx_cloud..."
+    playbook_nsx_env_nsx_cloud=$(jq -c -r '.playbook_nsx_env_nsx_cloud' $localJsonFile)
+    avi_json=$(echo $avi_json | jq '.avi.config += {"playbook_nsx_env_nsx_cloud": "'$(echo $playbook_nsx_env_nsx_cloud)'"}')
+    #
     echo "   +++ Adding transport_zone details..."
     transport_zone=$(jq -c -r '.transport_zones[0].name' /nestedVsphere8/06_nsx_config/variables.json)
     avi_json=$(echo $avi_json | jq '. += {"transport_zone": "'$(echo $transport_zone)'"}')
-  fi
-  #
-  if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+    #
     if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
       echo "   +++ Creating External routes to subnet overlay segments..."
       static_routes="[]"
@@ -58,12 +57,9 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
         static_routes=$(echo $static_routes | jq '. += [{"prefix": "'$(echo $segment | jq -c -r .cidr)'", "next_hop": "'$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)'", "if_name": "'$(jq -c -r .nsx_alb_controller_if_name $localJsonFile)'", "route_id": "'$(echo $count)'"}]')
         ((count++))
       done
+      avi_json=$(echo $avi_json | jq '.avi.config += {"static_routes": '$(echo $static_routes)'}')
     fi
-  fi
-  #
-  avi_json=$(echo $avi_json | jq '.avi.config += {"static_routes": '$(echo $static_routes)'}')
-  #
-  if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+    #
     # .avi.config.cloud.network_management
     echo "   +++ Checking Avi Cloud networks settings"
     for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
