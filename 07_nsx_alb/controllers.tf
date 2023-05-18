@@ -58,11 +58,3 @@ resource "vsphere_virtual_machine" "controller" {
   }
 }
 
-resource "null_resource" "wait_https_controller" {
-  depends_on = [vsphere_virtual_machine.controller]
-
-  provisioner "local-exec" {
-    command = "until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.avi_nested_ip}); do echo 'Waiting for Avi Controllers to be ready'; sleep 60 ; done"
-  }
-}
-
