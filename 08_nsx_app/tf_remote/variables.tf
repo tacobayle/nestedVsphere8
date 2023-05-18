@@ -3,7 +3,6 @@ variable "external_gw" {}
 variable "vsphere_underlay" {}
 variable "vsphere_nested_password" {}
 variable "ubuntu_ova_path" {}
-variable "nsx_password" {}
 variable "app" {}
 variable "ubuntu_password" {}
 variable "app_segments" {}
