@@ -108,8 +108,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.se.cidr $jsonFile)" "   "
   test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.se.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.external_gw_ip $jsonFile)" "   "
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips[])
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" ]] ; then
+    for ip in $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips[] $jsonFile)
     do
       test_if_variable_is_valid_ip "$ip" "   "
     done
@@ -119,8 +119,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)" "   "
   test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.backend.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)" "   "
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips[])
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips $jsonFile) != "null" ]] ; then
+    for ip in $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips[] $jsonFile)
     do
       test_if_variable_is_valid_ip "$ip" "   "
     done
@@ -130,8 +130,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)" "   "
   test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.vip.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.vip.external_gw_ip $jsonFile)" "   "
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.vip.app_ips) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.vip.app_ips[])
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.vip.app_ips $jsonFile) != "null" ]] ; then
+    for ip in $(jq -c -r .vsphere_underlay.networks.alb.vip.app_ips[] $jsonFile)
     do
       test_if_variable_is_valid_ip "$ip" "   "
     done
@@ -141,8 +141,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)" "   "
   test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.external_gw_ip $jsonFile)" "   "
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips[])
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips $jsonFile) != "null" ]] ; then
+    for ip in $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips[] $jsonFile)
     do
       test_if_variable_is_valid_ip "$ip" "   "
     done

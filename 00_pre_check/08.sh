@@ -45,39 +45,40 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "nu
 fi
 #
 if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" && $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips[])
+  #
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" ]] ; then
+    for ip in $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips[] $jsonFile)
     do
       app_ips=$(echo $app_ips | jq '. += ["'$(echo $ip)'"]')
-      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.se.name)'"]')
-      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.se.cidr)'"]')
+      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.se.name $jsonFile)'"]')
+      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.se.cidr $jsonFile)'"]')
     done
   fi
   #
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips[])
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips $jsonFile) != "null" ]] ; then
+    for ip in $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips[] $jsonFile)
     do
       app_ips=$(echo $app_ips | jq '. += ["'$(echo $ip)'"]')
-      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.name)'"]')
-      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr)'"]')
+      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.name $jsonFile)'"]')
+      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)'"]')
     done
   fi
   #
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.vip.app_ips) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.vip.app_ips[])
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.vip.app_ips $jsonFile) != "null" ]] ; then
+    for ip in $(jq -c -r .vsphere_underlay.networks.alb.vip.app_ips[] $jsonFile)
     do
       app_ips=$(echo $app_ips | jq '. += ["'$(echo $ip)'"]')
-      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.name)'"]')
-      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr)'"]')
+      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.name $jsonFile)'"]')
+      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)'"]')
     done
   fi
   #
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips[])
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips $jsonFile) != "null" ]] ; then
+    for ip in $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips[] $jsonFile)
     do
       app_ips=$(echo $app_ips | jq '. += ["'$(echo $ip)'"]')
-      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.name)'"]')
-      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr)'"]')
+      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.name $jsonFile)'"]')
+      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)'"]')
     done
   #
   fi
