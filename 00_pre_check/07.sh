@@ -96,9 +96,9 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
       if [[ $(echo $item | jq -c .app_ips) != "null" ]] ; then
         if [[ $count -eq 1 ]] ; then
           type="nsx-group-based"
-          pool_name=$(jq -c -r '.app.nsxt_group_name' /nestedVsphere8/08_nsx_app/variables.json)
+          pool_name=$(jq -c -r '.app.nsxt_group_name' /nestedVsphere8/08_app/variables.json)
           tier1=$(echo $item | jq -c -r .tier1)
-          default_server_port=$(jq -c -r '.app.hello_world_app_tcp_port' /nestedVsphere8/08_nsx_app/variables.json)
+          default_server_port=$(jq -c -r '.app.hello_world_app_tcp_port' /nestedVsphere8/08_app/variables.json)
           avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\"}"
           avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
           vs_name="app$count-hello-world-nsx-group"
@@ -122,7 +122,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
         avi_app_server_ips=$(echo $item | jq -c -r .app_ips)
         #
         pool_name="pool$count-hello"
-        default_server_port=$(jq -c -r '.app.hello_world_app_tcp_port' /nestedVsphere8/08_nsx_app/variables.json)
+        default_server_port=$(jq -c -r '.app.hello_world_app_tcp_port' /nestedVsphere8/08_app/variables.json)
         type="ip-based"
         avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(echo $avi_app_server_ips)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
@@ -143,7 +143,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
         avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
         ((count++))
         pool_name="pool$count-avi"
-        default_server_port=$(jq -c -r '.app.avi_app_tcp_port' /nestedVsphere8/08_nsx_app/variables.json)
+        default_server_port=$(jq -c -r '.app.avi_app_tcp_port' /nestedVsphere8/08_app/variables.json)
         avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(echo $avi_app_server_ips)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-avi"
@@ -164,7 +164,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
         ((count++))
         #
         pool_name="pool$count-waf"
-        default_server_port=$(jq -c -r '.app.hackazon_tcp_port' /nestedVsphere8/08_nsx_app/variables.json)
+        default_server_port=$(jq -c -r '.app.hackazon_tcp_port' /nestedVsphere8/08_app/variables.json)
         avi_pool="{\"name\": \"$(echo $pool_name)\", \"tier1\": \"$(echo $tier1)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(echo $avi_app_server_ips)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-waf"
