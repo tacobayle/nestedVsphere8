@@ -1,5 +1,5 @@
 data "template_file" "environment_variables" {
-  template = file("templates/environment_variables_nsx.json.template")
+  template = file("templates/environment_variables.json.template")
   vars = {
     vsphere_nested_password = var.vsphere_nested_password
     ubuntu_password = var.ubuntu_password
