@@ -143,7 +143,7 @@ resource "null_resource" "add_nic_to_gw_alb_tanzu" {
   }
 }
 
-resource "null_resource" "end" {
+resource "null_resource" "add_ips_to_gw_alb_tanzu" {
   depends_on = [null_resource.add_nic_to_gw_alb_tanzu]
   count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
@@ -205,6 +205,77 @@ resource "null_resource" "end" {
       "echo \"    version: 2\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
       "sudo netplan apply",
       "sudo sysctl -w net.ipv4.ip_forward=1"
+    ]
+  }
+}
+
+
+resource "null_resource" "set_initial_state_ip_tables" {
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "echo \"0\" > current_state_ip_tables.txt"
+  }
+}
+
+
+resource "null_resource" "update_ip_tables" {
+  depends_on = [null_resource.add_ips_to_gw_alb_tanzu, null_resource.set_initial_state_ip_tables]
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.external_gw.ip_table_prefixes) : 0
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "while [[ $(cat current_state_ip_tables.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
+  }
+
+
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "iface=`ip -o link show | awk -F': ' '{print $2}' | head -2 | tail -1`",
+      "sudo iptables -t nat -A POSTROUTING -s ${var.external_gw.ip_table_prefixes[count.index]} -o $iface -j MASQUERADE"
+    ]
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "echo \"${count.index+1}\" > current_state_ip_tables.txt"
+  }
+
+}
+
+resource "null_resource" "end" {
+  depends_on = [null_resource.update_ip_tables]
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
+
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "iface=`ip -o link show | awk -F': ' '{print $2}' | head -2 | tail -1`",
+      "iface_backend=`ip -o link show | awk -F': ' '{print $2}' | head -4 | tail -1`",
+      "iface_vip=`ip -o link show | awk -F': ' '{print $2}' | head -5 | tail -1`",
+      "iface_tanzu=`ip -o link show | awk -F': ' '{print $2}' | head -6 | tail -1`",
+      "sudo iptables -A FORWARD -i $iface_backend -o $iface -j ACCEPT",
+      "sudo iptables -A FORWARD -i $iface_vip -o $iface -j ACCEPT",
+      "sudo iptables -A FORWARD -i $iface_tanzu -o $iface -j ACCEPT",
+      "sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
+      "sudo service ntp stop",
+      "sleep 5",
+      "sudo service ntp start",
     ]
   }
 }

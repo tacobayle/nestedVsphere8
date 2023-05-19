@@ -138,6 +138,13 @@ else # without NSX
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_deployment": false}')
   disk=$(jq -c -r '.disk' $localJsonFile)
   vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
+  #
+  echo "   +++ Creating External ip_table_prefixes..."
+  ip_table_prefixes="[]"
+  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)'"]')
+  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)'"]')
+  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)'"]')
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
 fi
 #
 if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
