@@ -109,10 +109,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.se.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.external_gw_ip $jsonFile)" "   "
   if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips[] $jsonFile)
-    do
-      test_if_variable_is_valid_ip "$ip" "   "
-    done
+    echo "app_ips is not supported on Port Group SE - because NAT is disabled hence no Internet Access"
+    exit 255
   fi
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.backend.name $jsonFile "   "
