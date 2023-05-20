@@ -26,14 +26,10 @@ vcenter:
     content_lib:
       id: ${content_library_id}
       name: ${content_library_name}
-    dhcp_enabled: true
+    dhcp_enabled: ${dhcp_enabled}
     networks: |
       ${networks}
-    additional_subnets: |
-      ${additional_subnets}
-    service_engine_groups: |
-      ${service_engine_groups}
-    contexts: |
-      ${contexts}
+    pools: |
+      ${pools}
     virtual_services: |
       ${virtual_services}

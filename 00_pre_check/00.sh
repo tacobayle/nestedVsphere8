@@ -325,6 +325,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   test_if_json_variable_is_defined .avi.memory $jsonFile "   "
   test_if_json_variable_is_defined .avi.disk $jsonFile "   "
   test_if_json_variable_is_defined .avi.version $jsonFile "   "
+  test_if_json_variable_is_defined .avi.config.cloud.service_engine_groups $jsonFile "   "
   #
   if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     echo ""

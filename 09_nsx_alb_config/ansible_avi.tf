@@ -75,13 +75,12 @@ data "template_file" "values_vcenter" {
     content_library_name = vsphere_content_library.nested_library_se.name
     dhcp_enabled = false
     networks = var.avi.config.cloud.networks
-    service_engine_groups = jsonencode(var.avi.config.cloud.service_engine_groups)
     pools = var.avi.config.cloud.pools
     virtual_services = var.avi.config.cloud.virtual_services
   }
 }
 
-resource "null_resource" "alb_ansible_config_values" {
+resource "null_resource" "alb_ansible_config_values_nsx" {
   count = var.deployment == "vsphere_tanzu_nsx_alb" ? 1 : 0
 
   provisioner "local-exec" {
@@ -89,13 +88,30 @@ resource "null_resource" "alb_ansible_config_values" {
   }
 }
 
-resource "null_resource" "alb_ansible_config_nsx" {
-  count = var.deployment == "vsphere_tanzu_nsx_alb" ? 1 : 0
-  depends_on = [null_resource.ansible_hosts_avi_controllers, null_resource.alb_ansible_config_values, null_resource.wait_https_controller]
+resource "null_resource" "alb_ansible_config_values_vcenter" {
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
+
   provisioner "local-exec" {
-    command = "git clone ${var.avi.config.avi_config_repo} --branch ${var.avi.config.avi_config_tag} ; cd ${split("/", var.avi.config.avi_config_repo)[4]} ; ansible-playbook -i ../hosts_avi ${var.avi.config.playbook_env_nsx_cloud} --extra-vars @../values.yml"
+    command = "cat > values.yml <<EOL\n${data.template_file.values_vcenter[0].rendered}\nEOL"
   }
 }
+
+resource "null_resource" "alb_ansible_config_nsx" {
+  count = var.deployment == "vsphere_tanzu_nsx_alb" ? 1 : 0
+  depends_on = [null_resource.ansible_hosts_avi_controllers, null_resource.alb_ansible_config_values_nsx, null_resource.alb_ansible_config_values_vcenter, null_resource.wait_https_controller]
+  provisioner "local-exec" {
+    command = "git clone ${var.avi.config.avi_config_repo} --branch ${var.avi.config.avi_config_tag} ; cd ${split("/", var.avi.config.avi_config_repo)[4]} ; ansible-playbook -i ../hosts_avi ${var.avi.config.playbook} --extra-vars @../values.yml"
+  }
+}
+
+resource "null_resource" "alb_ansible_config_vcenter" {
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
+  depends_on = [null_resource.ansible_hosts_avi_controllers, null_resource.alb_ansible_config_values_nsx, null_resource.alb_ansible_config_values_vcenter, null_resource.wait_https_controller]
+  provisioner "local-exec" {
+    command = "git clone ${var.avi.config.avi_config_repo} --branch ${var.avi.config.avi_config_tag} ; cd ${split("/", var.avi.config.avi_config_repo)[4]} ; ansible-playbook -i ../hosts_avi ${var.avi.config.playbook} --extra-vars @../values.yml"
+  }
+}
+
 
 data "template_file" "traffic_gen" {
   template = file("templates/traffic_gen.sh.template")
@@ -107,7 +123,7 @@ data "template_file" "traffic_gen" {
 }
 
 resource "null_resource" "transfer_traffic_gen" {
-  depends_on = [null_resource.alb_ansible_config_nsx]
+  depends_on = [null_resource.alb_ansible_config_nsx, null_resource.alb_ansible_config_vcenter]
 
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
