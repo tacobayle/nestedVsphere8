@@ -343,12 +343,15 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
     fi
     #
     if [[ $(echo $avi_pools | jq '. | length') -gt 0 ]] ; then
+      echo "   ++++++ Adding Avi pools..."
       avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
+      echo "   ++++++ Adding Avi HTTP virtual services..."
       avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '$(echo $avi_virtual_services_http)'}')
     fi
     #
     avi_virtual_service_dns="{\"name\": \"app-dns\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 53}]}"
     avi_virtual_services_dns=$(echo $avi_virtual_services_dns | jq '. += ['$(echo $avi_virtual_service_dns)']')
+    echo "   ++++++ Adding Avi DNS virtual services..."
     avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"dns": '$(echo $avi_virtual_services_dns)'}')
   fi
   #
