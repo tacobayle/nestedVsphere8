@@ -4,11 +4,6 @@ resource "vsphere_folder" "avi" {
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 
-resource "vsphere_content_library" "nested_library_se" {
-  name            = var.nsx_alb_se_cl
-  storage_backing = [data.vsphere_datastore.datastore_nested.id]
-}
-
 resource "vsphere_content_library" "nested_library_avi" {
   name            = "avi_controller"
   storage_backing = [data.vsphere_datastore.datastore_nested.id]

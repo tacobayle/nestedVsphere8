@@ -112,6 +112,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
     echo "app_ips is not supported on Port Group SE - because NAT is disabled hence no Internet Access"
     exit 255
   fi
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.backend.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)" "   "
@@ -123,6 +125,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
       test_if_variable_is_valid_ip "$ip" "   "
     done
   fi
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.backend.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.backend.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.vip.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)" "   "
@@ -134,6 +138,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
       test_if_variable_is_valid_ip "$ip" "   "
     done
   fi
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.vip.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.vip.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.tanzu.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)" "   "
@@ -145,6 +151,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
       test_if_variable_is_valid_ip "$ip" "   "
     done
   fi
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
+  test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
   #
   echo "   +++ Adding .deployment: vsphere_tanzu_alb_wo_nsx"
   variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')

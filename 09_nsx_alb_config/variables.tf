@@ -6,3 +6,4 @@ variable "external_gw" {}
 variable "vsphere_nested" {}
 variable "vsphere_nested_password" {}
 variable "nsx_alb_se_cl" {}
+variable "deployment" {}
