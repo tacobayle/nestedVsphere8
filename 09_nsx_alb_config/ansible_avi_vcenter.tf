@@ -12,7 +12,7 @@ data "template_file" "values" {
     vsphere_username = "administrator@${var.vsphere_nested.sso.domain_name}"
     vsphere_password = var.vsphere_nested_password
     vsphere_server = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
-    domain = var.external_gw.bind.domain
+    domain = jsonencode(var.external_gw.bind.domain)
     ipam = jsonencode(var.avi.config.cloud.ipam)
     cloud_name = var.avi.config.cloud.name
     dc = var.vsphere_nested.datacenter
