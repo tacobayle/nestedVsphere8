@@ -23,6 +23,7 @@ data "template_file" "values" {
     pools = jsonencode(var.avi.config.cloud.pools)
     virtual_services = jsonencode(var.avi.config.cloud.virtual_services)
     external_gw_ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    external_gw_se_ip = var.vsphere_underlay.networks.alb.se.external_gw_ip
   }
 }
 
