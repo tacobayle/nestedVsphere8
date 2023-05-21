@@ -16,7 +16,6 @@ vsphere_username: ${vsphere_username}
 vsphere_password: ${vsphere_password}
 vsphere_server: ${vsphere_server}
 external_gw_ip: ${external_gw_ip}
-mgmt_cidr: ${mgmt_cidr}
 vcenter:
   domains: |
     [{"name": ${domain}}]

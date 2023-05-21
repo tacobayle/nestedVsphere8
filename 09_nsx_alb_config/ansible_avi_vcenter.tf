@@ -11,7 +11,7 @@ data "template_file" "values" {
     avi_username = "admin"
     vsphere_username = "administrator@${var.vsphere_nested.sso.domain_name}"
     vsphere_password = var.vsphere_nested_password
-    vsphere_server = "${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
+    vsphere_server = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
     domain = jsonencode(var.external_gw.bind.domain)
     ipam = jsonencode(var.avi.config.cloud.ipam)
     cloud_name = var.avi.config.cloud.name

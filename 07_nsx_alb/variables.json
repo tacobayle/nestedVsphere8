@@ -5,6 +5,6 @@
   "avi_config_repo": "https://github.com/tacobayle/ansibleAviConfig",
   "avi_config_tag_nsx_cloud": "v1.93",
   "playbook_env_nsx_cloud": "nsx.yml",
-  "avi_config_tag_vcenter_cloud": "v1.94",
+  "avi_config_tag_vcenter_cloud": "v1.95",
   "playbook_env_vcenter_cloud": "vcenter.yml"
 }
