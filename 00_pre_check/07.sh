@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-jsonFile="/etc/config/variables.json"
+jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/07_nsx_alb/variables.json"
 #
 IFS=$'\n'
@@ -38,6 +38,9 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
     #
     echo "   +++ Adding variable transport_zone in /nestedVsphere8/09_nsx_alb_config/variables.tf"
     echo 'variable "transport_zone" {}' | tee -a /nestedVsphere8/09_nsx_alb_config/variables.tf > /dev/null
+    #
+    mv /nestedVsphere8/09_nsx_alb_config/ansible_avi_nsx.tf.disabled /nestedVsphere8/09_nsx_alb_config/ansible_avi_nsx.tf
+    mv /nestedVsphere8/09_nsx_alb_config/ansible_avi_vcenter.tf /nestedVsphere8/09_nsx_alb_config/ansible_avi_vcenter.tf..disabled
     #
     echo "   +++ Adding avi.config.cloud.name..."
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "dc1_nsx"}')
