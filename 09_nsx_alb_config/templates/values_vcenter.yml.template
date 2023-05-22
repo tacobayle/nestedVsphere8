@@ -31,6 +31,8 @@ vcenter:
     dhcp_enabled: ${dhcp_enabled}
     networks: |
       ${networks}
+    service_engine_groups: |
+      ${service_engine_groups:}
     pools: |
       ${pools}
     virtual_services: |

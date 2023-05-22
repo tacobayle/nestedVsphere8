@@ -12,6 +12,8 @@ data "template_file" "values" {
     vsphere_username = "administrator@${var.vsphere_nested.sso.domain_name}"
     vsphere_password = var.vsphere_nested_password
     vsphere_server = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
+    external_gw_ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    external_gw_se_ip = var.vsphere_underlay.networks.alb.se.external_gw_ip
     domain = jsonencode(var.external_gw.bind.domain)
     ipam = jsonencode(var.avi.config.cloud.ipam)
     cloud_name = var.avi.config.cloud.name
@@ -20,10 +22,9 @@ data "template_file" "values" {
     content_library_name = vsphere_content_library.nested_library_se.name
     dhcp_enabled = false
     networks = jsonencode(var.avi.config.cloud.networks)
+    service_engine_groups = jsonencode(var.avi.config.cloud.service_engine_groups)
     pools = jsonencode(var.avi.config.cloud.pools)
     virtual_services = jsonencode(var.avi.config.cloud.virtual_services)
-    external_gw_ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
-    external_gw_se_ip = var.vsphere_underlay.networks.alb.se.external_gw_ip
   }
 }
 
