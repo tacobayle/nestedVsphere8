@@ -61,7 +61,7 @@ resource "dns_ptr_record" "nsx" {
 }
 
 resource "dns_a_record_set" "alb" {
-  count = var.deployment != "vsphere_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" || var.deployment == "vsphere_tanzu_nsx_alb_vcd" || var.deployment == "vsphere_tanzu_nsx_alb" ? 1 : 0
   depends_on = [null_resource.end, vsphere_virtual_machine.external_gw]
   zone  = "${var.external_gw.bind.domain}."
   name  = var.external_gw.alb_controller_name
@@ -70,7 +70,7 @@ resource "dns_a_record_set" "alb" {
 }
 
 resource "dns_ptr_record" "alb" {
-  count = var.deployment != "vsphere_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" || var.deployment == "vsphere_tanzu_nsx_alb_vcd" || var.deployment == "vsphere_tanzu_nsx_alb" ? 1 : 0
   depends_on = [null_resource.end, vsphere_virtual_machine.external_gw]
   zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
   name = split(".", var.vsphere_underlay.networks.vsphere.management.avi_nested_ip)[3]
