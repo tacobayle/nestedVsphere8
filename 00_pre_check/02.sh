@@ -225,7 +225,7 @@ external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'
 echo "   +++ Adding vcd_ip..."
 external_gw_json=$(echo $external_gw_json | jq '. += {"vcd_ip": "'$(echo $vcd_ip)'"}')
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" ]]; then
   echo "   +++ Adding prefix for alb se network..."
   prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.se.netmask' $jsonFile) "   ++++++")
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.se += {"prefix": "'$(echo $prefix)'"}')

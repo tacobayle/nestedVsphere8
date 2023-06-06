@@ -3,8 +3,7 @@ kubectl delete configmap configmap1
 kubectl apply -f configmap1-nested-vpshere.yml
 kubectl apply -f pod1-nested-vpshere.yml
 sleep 3
-kubectl exec -it test-pod1 -- /bin/bash
-
+kubectl exec -it pod1-nested-vsphere -- /bin/bash
 /bin/bash nestedVsphere8/apply.sh
 /bin/bash nestedVsphere8/destroy.sh
 

@@ -154,21 +154,30 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
   #
-  echo "   +++ Adding .deployment: vsphere_tanzu_alb_wo_nsx"
-  variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
+  if [[ $(jq -c -r .tanzu $jsonFile) == "null" ]]; then
+    echo "   +++ Adding .deployment: vsphere_alb_wo_nsx"
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_alb_wo_nsx"}')
+  else
+    echo "   +++ Adding .deployment: vsphere_tanzu_alb_wo_nsx"
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
+  fi
 else
   if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     if [[ $(jq -c -r .avi $jsonFile) == "null" ]]; then
-      variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_nsx"}')
+      echo "   +++ Adding .deployment: vsphere_nsx"
+      variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx"}')
     fi
     if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
       if [[ $(jq -c -r .vcd $jsonFile) != "null" ]]; then
-        variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_nsx_alb_vcd"}')
+        echo "   +++ Adding .deployment: vsphere_nsx_alb_vcd"
+        variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_vcd"}')
       else
-        variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_nsx_alb"}')
+        echo "   +++ Adding .deployment: vsphere_nsx_alb"
+        variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb"}')
       fi
     fi
   else
+    echo "   +++ Adding .deployment: vsphere_wo_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_wo_nsx"}')
   fi
 fi
