@@ -102,7 +102,7 @@ test_if_json_variable_is_defined .vsphere_nested.esxi.disks[1].thin_provisioned 
 test_if_json_variable_is_defined .vsphere_nested.esxi.disks[2].thin_provisioned $jsonFile "   "
 #
 #
-# ALB in vSphere with Tanzu without NSX
+#
 if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.se.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.se.cidr $jsonFile)" "   "
@@ -154,12 +154,14 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
   #
-  if [[ $(jq -c -r .tanzu $jsonFile) == "null" ]]; then
-    echo "   +++ Adding .deployment: vsphere_alb_wo_nsx"
-    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_alb_wo_nsx"}')
-  else
-    echo "   +++ Adding .deployment: vsphere_tanzu_alb_wo_nsx"
-    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
+  if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
+    if [[ $(jq -c -r .tanzu $jsonFile) == "null" ]]; then
+      echo "   +++ Adding .deployment: vsphere_alb_wo_nsx"
+      variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_alb_wo_nsx"}')
+    else
+      echo "   +++ Adding .deployment: vsphere_tanzu_alb_wo_nsx"
+      variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
+    fi
   fi
 else
   if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then

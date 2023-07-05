@@ -1,4 +1,4 @@
-kubectl delete pod test-pod1
+kubectl delete pod pod1-nested-vsphere
 kubectl delete configmap configmap1
 kubectl apply -f configmap1-nested-vpshere.yml
 kubectl apply -f pod1-nested-vpshere.yml
