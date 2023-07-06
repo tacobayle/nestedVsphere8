@@ -1,0 +1,40 @@
+- hosts: localhost
+  tasks:
+
+    - name: Add Management vmkernel port using static network type for vmk3
+      community.vmware.vmware_vmkernel:
+        hostname: "{{ vsphere_nested.vcsa_name }}.{{ external_gw.bind.domain}}"
+        username: "administrator@{{ vsphere_nested.sso.domain_name }}"
+        password: "{{ lookup('env', 'TF_VAR_vsphere_nested_password') }}"
+        validate_certs: false
+        device: vmk3
+        esxi_hostname: "{{ vsphere_nested.esxi.basename }}{{ my_idx + 1 }}.{{ external_gw.bind.domain }}"
+        dvswitch_name: "{{ networks.vsphere.management.vds_name }}"
+        portgroup_name: "{{ networks.vsphere.management.port_group_name }}-vmk"
+        network:
+          type: 'static'
+          ip_address: "{{ item.1 }}"
+          subnet_mask: "{{ vsphere_underlay.networks.vsphere.management.netmask }}"
+        state: present
+        enable_mgmt: True
+      loop: "{{ vsphere_underlay.networks.vsphere.management.esxi_ips | zip(vsphere_underlay.networks.vsphere.management.esxi_ips_temp) | list }}"
+      loop_control:
+        index_var: my_idx
+
+    - name: Add Management vmkernel port using static network type for vmk4
+      community.vmware.vmware_vmkernel:
+        hostname: "{{ vsphere_nested.vcsa_name }}.{{ external_gw.bind.domain}}"
+        username: "administrator@{{ vsphere_nested.sso.domain_name }}"
+        password: "{{ lookup('env', 'TF_VAR_vsphere_nested_password') }}"
+        validate_certs: false
+        device: vmk4
+        esxi_hostname: "{{ vsphere_nested.esxi.basename }}{{ my_idx + 1 }}.{{ external_gw.bind.domain }}"
+        dvswitch_name: "{{ networks.vsphere.management.vds_name }}"
+        portgroup_name: "{{ networks.vsphere.management.port_group_name }}-vmk"
+        network:
+          type: 'dhcp'
+        state: present
+        enable_mgmt: True
+      loop: "{{ vsphere_underlay.networks.vsphere.management.esxi_ips }}"
+      loop_control:
+        index_var: my_idx

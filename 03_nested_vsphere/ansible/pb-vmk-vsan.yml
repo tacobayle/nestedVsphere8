@@ -1,0 +1,18 @@
+- hosts: localhost
+  tasks:
+
+    - name: Migrate vmk2 (VSAN) to the VDS
+      community.vmware.vmware_migrate_vmk:
+        hostname: "{{ vsphere_nested.vcsa_name }}.{{ external_gw.bind.domain}}"
+        username: "administrator@{{ vsphere_nested.sso.domain_name }}"
+        password: "{{ lookup('env', 'TF_VAR_vsphere_nested_password') }}"
+        validate_certs: false
+        esxi_hostname: "{{ vsphere_nested.esxi.basename }}{{ my_idx + 1 }}.{{ external_gw.bind.domain }}"
+        device: 'vmk2'
+        current_switch_name: 'vSwitch2'
+        current_portgroup_name: 'VSAN Network'
+        migrate_switch_name: "{{ networks.vsphere.VSAN.vds_name }}"
+        migrate_portgroup_name: "{{ networks.vsphere.VSAN.port_group_name }}"
+      loop: "{{ vsphere_underlay.networks.vsphere.management.esxi_ips }}"
+      loop_control:
+        index_var: my_idx

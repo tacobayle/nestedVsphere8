@@ -1,0 +1,18 @@
+- hosts: localhost
+  tasks:
+
+    - name: Migrate vmk1 (VMotion) to the VDS
+      community.vmware.vmware_migrate_vmk:
+        hostname: "{{ vsphere_nested.vcsa_name }}.{{ external_gw.bind.domain}}"
+        username: "administrator@{{ vsphere_nested.sso.domain_name }}"
+        password: "{{ lookup('env', 'TF_VAR_vsphere_nested_password') }}"
+        validate_certs: false
+        esxi_hostname: "{{ vsphere_nested.esxi.basename }}{{ my_idx + 1 }}.{{ external_gw.bind.domain }}"
+        device: 'vmk1'
+        current_switch_name: 'vSwitch1'
+        current_portgroup_name: 'VMotion Network'
+        migrate_switch_name: "{{ networks.vsphere.VMotion.vds_name }}"
+        migrate_portgroup_name: "{{ networks.vsphere.VMotion.port_group_name }}"
+      loop: "{{ vsphere_underlay.networks.vsphere.management.esxi_ips }}"
+      loop_control:
+        index_var: my_idx

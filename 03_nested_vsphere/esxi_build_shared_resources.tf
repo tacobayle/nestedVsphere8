@@ -1,5 +1,5 @@
 resource "local_file" "ks_cust_multiple_vswitch" {
-  count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
+  count = var.vsphere_underlay.networks.vsphere.dual_attached == true ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   content     = templatefile("${path.module}/templates/ks_cust_multiple_vswitch.cfg.tmpl",
     { nested_esxi_root_password = var.nested_esxi_root_password,
       keyboard_type = var.keyboard_type,
@@ -18,8 +18,28 @@ resource "local_file" "ks_cust_multiple_vswitch" {
   filename = "/root/ks_cust.cfg.${count.index}"
 }
 
+resource "local_file" "ks_cust_single_attached" {
+  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  content     = templatefile("${path.module}/templates/ks_cust_multiple_vswitch_single_attached.cfg.tmpl",
+    { nested_esxi_root_password = var.nested_esxi_root_password,
+      keyboard_type = var.keyboard_type,
+      ip_mgmt = var.vsphere_underlay.networks.vsphere.management.esxi_ips[count.index],
+      netmask = var.vsphere_underlay.networks.vsphere.management.netmask,
+      gateway = var.vsphere_underlay.networks.vsphere.management.gateway,
+      ip_vmotion = var.vsphere_underlay.networks.vsphere.vmotion.esxi_ips[count.index],
+      netmask_vmotion = var.vsphere_underlay.networks.vsphere.vmotion.netmask,
+      ip_vsan = var.vsphere_underlay.networks.vsphere.vsan.esxi_ips[count.index],
+      netmask_vsan = var.vsphere_underlay.networks.vsphere.vsan.netmask,
+      ntp = var.vsphere_underlay.networks.vsphere.management.external_gw_ip,
+      nameserver = var.vsphere_underlay.networks.vsphere.management.external_gw_ip,
+      hostname = "${var.vsphere_nested.esxi.basename}${count.index + 1}.${var.external_gw.bind.domain}"
+    }
+  )
+  filename = "/root/ks_cust.cfg.${count.index}"
+}
+
 resource "null_resource" "iso_build" {
-  depends_on = [local_file.ks_cust_multiple_vswitch]
+  depends_on = [local_file.ks_cust_multiple_vswitch, local_file.ks_cust_single_attached]
   provisioner "local-exec" {
     command = "/bin/bash 01_esxi_iso_build.sh"
   }
