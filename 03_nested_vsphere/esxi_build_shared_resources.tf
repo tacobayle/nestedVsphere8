@@ -62,7 +62,7 @@ resource "null_resource" "iso_destroy" {
 }
 
 resource "null_resource" "wait_esxi" {
-  depends_on = [vsphere_virtual_machine.esxi_host, vsphere_virtual_machine.esxi_host_nsx, vsphere_virtual_machine.esxi_host_tanzu]
+  depends_on = [vsphere_virtual_machine.esxi_host, vsphere_virtual_machine.esxi_host_nsx, vsphere_virtual_machine.esxi_host_tanzu, vsphere_virtual_machine.esxi_host_nsx_single_attached, vsphere_virtual_machine.esxi_host_tanzu_single_attached, vsphere_virtual_machine.esxi_host_single_attached]
   count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
 
   provisioner "local-exec" {
