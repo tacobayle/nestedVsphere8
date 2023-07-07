@@ -19,7 +19,7 @@ resource "null_resource" "wait_vsca" {
 
 resource "null_resource" "vcenter_configure1_dual_attached" {
   depends_on = [null_resource.wait_vsca]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == true ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == true ? 1 : 0
   provisioner "local-exec" {
     command = "/bin/bash 12_vCenter_config1.sh"
   }
@@ -27,7 +27,7 @@ resource "null_resource" "vcenter_configure1_dual_attached" {
 
 resource "null_resource" "vcenter_migrating_vmk_to_vds" {
   depends_on = [null_resource.vcenter_configure1_dual_attached]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == true ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == true ? 1 : 0
   provisioner "local-exec" {
     command = "ansible-playbook ansible/pb-vmk.yml --extra-vars @/root/nested_vsphere.json"
   }
@@ -35,7 +35,7 @@ resource "null_resource" "vcenter_migrating_vmk_to_vds" {
 
 resource "null_resource" "migrating_vmk0" {
   depends_on = [null_resource.vcenter_migrating_vmk_to_vds]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == true ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == true ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips_temp[count.index]
     type        = "ssh"
@@ -61,7 +61,7 @@ resource "null_resource" "migrating_vmk0" {
 
 resource "null_resource" "dual_uplink_update_multiple_vds" {
   depends_on = [null_resource.vcenter_configure2]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == true ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == true ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[count.index]
     type        = "ssh"
@@ -88,7 +88,7 @@ resource "null_resource" "dual_uplink_update_multiple_vds" {
 
 resource "null_resource" "vcenter_configure1_single_attached" {
   depends_on = [null_resource.wait_vsca]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
     command = "/bin/bash 12_vCenter_config1_single_attached.sh"
   }
@@ -96,7 +96,7 @@ resource "null_resource" "vcenter_configure1_single_attached" {
 
 resource "null_resource" "vcenter_migrating_vmk_to_vds_single_attached" {
   depends_on = [null_resource.vcenter_configure1_single_attached]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
     command = "ansible-playbook ansible/pb-vmk-mgmt.yml --extra-vars @/root/nested_vsphere.json"
   }
@@ -104,7 +104,7 @@ resource "null_resource" "vcenter_migrating_vmk_to_vds_single_attached" {
 
 resource "null_resource" "migrating_vmk0_single_attached" {
   depends_on = [null_resource.vcenter_migrating_vmk_to_vds_single_attached]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips_temp[count.index]
     type        = "ssh"
@@ -161,7 +161,7 @@ resource "null_resource" "vcenter_configure2" {
 
 resource "null_resource" "migrating_mgmt_vds_uplink" {
   depends_on = [null_resource.vcenter_migrating_vmk_to_vds_single_attached]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips_temp[count.index]
     type        = "ssh"
@@ -182,7 +182,7 @@ resource "null_resource" "migrating_mgmt_vds_uplink" {
 
 resource "null_resource" "adding_vmotion_vds_uplink_temporary" {
   depends_on = [null_resource.migrating_mgmt_vds_uplink]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = "/bin/bash 14_vCenter_vmotion.sh"
   }
@@ -190,7 +190,7 @@ resource "null_resource" "adding_vmotion_vds_uplink_temporary" {
 
 resource "null_resource" "migrating_vmk_vmotion" {
   depends_on = [null_resource.adding_vmotion_vds_uplink_temporary]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = "ansible-playbook ansible/pb-vmk-vmotion.yml --extra-vars @/root/nested_vsphere.json"
   }
@@ -198,7 +198,7 @@ resource "null_resource" "migrating_vmk_vmotion" {
 
 resource "null_resource" "migrating_vmotion_vds_uplink" {
   depends_on = [null_resource.migrating_vmk_vmotion]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips_temp[count.index]
     type        = "ssh"
@@ -219,7 +219,7 @@ resource "null_resource" "migrating_vmotion_vds_uplink" {
 
 resource "null_resource" "adding_vsan_vds_uplink_temporary" {
   depends_on = [null_resource.migrating_vmotion_vds_uplink]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = "/bin/bash 15_vCenter_vsan.sh"
   }
@@ -227,7 +227,7 @@ resource "null_resource" "adding_vsan_vds_uplink_temporary" {
 
 resource "null_resource" "migrating_vmk_vsan" {
   depends_on = [null_resource.adding_vsan_vds_uplink_temporary]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = "ansible-playbook ansible/pb-vmk-vsan.yml --extra-vars @/root/nested_vsphere.json"
   }
@@ -235,7 +235,7 @@ resource "null_resource" "migrating_vmk_vsan" {
 
 resource "null_resource" "migrating_vsan_vds_uplink" {
   depends_on = [null_resource.migrating_vmk_vsan]
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips_temp[count.index]
     type        = "ssh"
@@ -256,7 +256,7 @@ resource "null_resource" "migrating_vsan_vds_uplink" {
 
 resource "null_resource" "removing_vmnic3_vsphere_wo_nsx" {
   depends_on = [null_resource.migrating_vsan_vds_uplink]
-  count = var.deployment == "vsphere_wo_nsx" && var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.deployment == "vsphere_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
       export GOVC_USERNAME=${var.vsphere_underlay_username}
@@ -272,7 +272,7 @@ resource "null_resource" "removing_vmnic3_vsphere_wo_nsx" {
 
 resource "null_resource" "removing_vmnic3_vsphere_nsx" {
   depends_on = [null_resource.migrating_vsan_vds_uplink]
-  count = var.deployment != "vsphere_wo_nsx" && var.deployment != "vsphere_alb_wo_nsx" && var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.deployment != "vsphere_wo_nsx" && var.deployment != "vsphere_alb_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
       export GOVC_USERNAME=${var.vsphere_underlay_username}
@@ -288,7 +288,7 @@ resource "null_resource" "removing_vmnic3_vsphere_nsx" {
 
 resource "null_resource" "removing_vmnic3_vsphere_alb_wo_nsx" {
   depends_on = [null_resource.migrating_vsan_vds_uplink]
-  count = var.deployment == "vsphere_alb_wo_nsx" && var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
       export GOVC_USERNAME=${var.vsphere_underlay_username}

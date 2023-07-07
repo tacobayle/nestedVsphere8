@@ -1,5 +1,5 @@
 resource "local_file" "ks_cust_multiple_vswitch" {
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == true ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == true ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   content     = templatefile("${path.module}/templates/ks_cust_multiple_vswitch.cfg.tmpl",
     { nested_esxi_root_password = var.nested_esxi_root_password,
       keyboard_type = var.keyboard_type,
@@ -19,7 +19,7 @@ resource "local_file" "ks_cust_multiple_vswitch" {
 }
 
 resource "local_file" "ks_cust_single_attached" {
-  count = var.vsphere_underlay.networks.vsphere.dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   content     = templatefile("${path.module}/templates/ks_cust_multiple_vswitch_single_attached.cfg.tmpl",
     { nested_esxi_root_password = var.nested_esxi_root_password,
       keyboard_type = var.keyboard_type,
