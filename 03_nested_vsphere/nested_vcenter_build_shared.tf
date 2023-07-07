@@ -34,7 +34,7 @@ resource "null_resource" "wait_vsca" {
 #
 #
 #resource "null_resource" "execute_expect_script" {
-#  depends_on = [null_resource.dual_uplink_update_multiple_vds, null_resource.removing_vmnic3_vsphere_alb_wo_nsx, null_resource.removing_vmnic3_vsphere_nsx, null_resource.removing_vmnic3_vsphere_wo_nsx]
+#  depends_on = [null_resource.dual_uplink_update_multiple_vds, null_resource.vsan_config]
 #  connection {
 #    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
 #    type        = "ssh"
