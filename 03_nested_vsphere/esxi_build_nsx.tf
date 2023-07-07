@@ -71,7 +71,7 @@ resource "vsphere_virtual_machine" "esxi_host_nsx_single_attached" {
   }
 
   network_interface {
-    network_id = data.vsphere_network.vsphere_underlay_network_mgmt.id
+    network_id = data.vsphere_network.vsphere_underlay_network_mgmt[0].id
   }
 
   network_interface {
