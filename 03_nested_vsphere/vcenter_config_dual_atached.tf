@@ -96,5 +96,3 @@ resource "null_resource" "dual_uplink_update_multiple_vds" {
     ]
   }
 }
-
-
