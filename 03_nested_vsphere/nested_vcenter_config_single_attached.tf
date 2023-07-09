@@ -92,7 +92,7 @@ resource "null_resource" "migrating_mgmt_vds_uplink" {
 resource "time_sleep" "wait_before_adding_vmotion_vds_uplink_temporary" {
   depends_on = [null_resource.migrating_mgmt_vds_uplink]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
-  create_duration = "60s"
+  create_duration = "120s"
 }
 
 resource "null_resource" "adding_vmotion_vds_uplink_temporary" {
