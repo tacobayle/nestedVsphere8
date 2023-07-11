@@ -489,4 +489,3 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
 fi
 #
 echo $variables_json | jq . | tee /root/variables.json > /dev/null
-
