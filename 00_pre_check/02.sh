@@ -60,9 +60,6 @@ echo "   +++ Adding memory..."
 memory=$(jq -c -r '.memory' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"memory": "'$(echo $memory)'"}')
 #
-echo "   +++ Adding disk..." # defined above if vcd is enabled or not
-external_gw_json=$(echo $external_gw_json | jq '. += {"disk": "'$(echo $disk)'"}')
-#
 echo "   +++ Adding ansible_version..."
 ansible_version=$(jq -c -r '.ansible_version' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"ansible_version": "'$(echo $ansible_version)'"}')
@@ -209,6 +206,9 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" ]]; then
   external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
   #
 fi
+#
+echo "   +++ Adding disk..." # defined above if vcd is enabled or not
+external_gw_json=$(echo $external_gw_json | jq '. += {"disk": "'$(echo $disk)'"}')
 #
 echo "   +++ Adding vcd_ip..."
 external_gw_json=$(echo $external_gw_json | jq '. += {"vcd_ip": "'$(echo $vcd_ip)'"}')
