@@ -143,15 +143,6 @@ resource "null_resource" "restart_esxi_nsx" {
   }
 }
 
-resource "null_resource" "wait_vsca_after_esxi_restart" {
-  depends_on = [null_resource.restart_esxi_nsx, null_resource.restart_esxi_vsphere_alb_wo_nsx, null_resource.restart_esxi_vsphere_wo_nsx]
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
-
-  provisioner "local-exec" {
-    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip}); do echo \"Attempt $count: Waiting for vCenter to be reachable...\"; sleep 10 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to vCenter\" ; exit 1 ; fi ; done"
-  }
-}
-
 resource "null_resource" "wait_esxi_after_esxi_restart" {
   depends_on = [null_resource.restart_esxi_nsx, null_resource.restart_esxi_vsphere_alb_wo_nsx, null_resource.restart_esxi_vsphere_wo_nsx]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
@@ -161,8 +152,35 @@ resource "null_resource" "wait_esxi_after_esxi_restart" {
   }
 }
 
+resource "null_resource" "restart_vcsa" {
+  depends_on = [null_resource.wait_esxi_after_esxi_restart]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[0]
+    type        = "ssh"
+    agent       = false
+    user        = "root"
+    password    = var.nested_esxi_root_password
+  }
+
+  provisioner "remote-exec" {
+    inline      = [
+      "vim-cmd vmsvc/power.on 1"
+    ]
+  }
+}
+
+resource "null_resource" "wait_vsca_after_esxi_restart" {
+  depends_on = [null_resource.restart_vcsa]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip}); do echo \"Attempt $count: Waiting for vCenter to be reachable...\"; sleep 10 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to vCenter\" ; exit 1 ; fi ; done"
+  }
+}
+
 resource "null_resource" "adding_vmotion_vds_uplink_temporary" {
-  depends_on = [null_resource.wait_vsca_after_esxi_restart, null_resource.wait_esxi_after_esxi_restart]
+  depends_on = [null_resource.wait_vsca_after_esxi_restart]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
     command = "/bin/bash 14_vCenter_adding_uplink_vmotion.sh"
