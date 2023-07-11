@@ -117,8 +117,8 @@ resource "null_resource" "restart_esxi_vsphere_alb_wo_nsx" {
       export GOVC_URL=${var.vsphere_underlay.vcsa}
       export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
-      /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
-      /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
+      /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_host_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
+      /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_host_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
     EOT
   }
 }
@@ -282,9 +282,9 @@ resource "null_resource" "reconfigure_esxi_vsphere_alb_wo_nsx" {
       export GOVC_URL=${var.vsphere_underlay.vcsa}
       export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
-      /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
-      /usr/local/bin/govc device.remove -vm.uuid ${vsphere_virtual_machine.esxi_vsphere_alb_wo_nsx_single_attached[count.index].uuid} "ethernet-3"
-      /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
+      /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_host_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
+      /usr/local/bin/govc device.remove -vm.uuid ${vsphere_virtual_machine.esxi_host_vsphere_alb_wo_nsx_single_attached[count.index].uuid} "ethernet-3"
+      /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_host_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
     EOT
   }
 }

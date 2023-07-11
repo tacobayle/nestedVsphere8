@@ -64,7 +64,7 @@ resource "vsphere_virtual_machine" "esxi_host_vsphere_alb_wo_nsx" {
 }
 
 
-resource "vsphere_virtual_machine" "esxi_vsphere_alb_wo_nsx_single_attached" {
+resource "vsphere_virtual_machine" "esxi_host_vsphere_alb_wo_nsx_single_attached" {
   depends_on = [ vsphere_file.iso_upload ]
   count = var.deployment == "vsphere_alb_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false  ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   name             = "${var.vsphere_nested.esxi.basename}${count.index + 1}"
