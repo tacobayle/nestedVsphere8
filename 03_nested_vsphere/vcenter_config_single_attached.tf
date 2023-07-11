@@ -64,7 +64,7 @@ resource "null_resource" "vcenter_configure2_single_attached" {
   depends_on = [null_resource.cleaning_vmk3_single_attached]
 
   provisioner "local-exec" {
-    command = "/bin/bash 13_vCenter_config2_vsan_single_attached.sh"
+    command = "/bin/bash 13_esxi_delete_vswitch_management.sh"
   }
 }
 
@@ -89,17 +89,45 @@ resource "null_resource" "migrating_mgmt_vds_uplink" {
   }
 }
 
-resource "time_sleep" "wait_before_adding_vmotion_vds_uplink_temporary" {
+resource "null_resource" "restart_esxi" {
   depends_on = [null_resource.migrating_mgmt_vds_uplink]
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
-  create_duration = "120s"
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  provisioner "local-exec" {
+    command = <<-EOT
+      export GOVC_USERNAME=${var.vsphere_underlay_username}
+      export GOVC_PASSWORD=${var.vsphere_underlay_password}
+      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
+      export GOVC_URL=${var.vsphere_underlay.vcsa}
+      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
+      export GOVC_INSECURE=true
+      /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_host_tanzu_single_attached[count.index].uuid}
+      /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_host_tanzu_single_attached[count.index].uuid}
+    EOT
+  }
+}
+
+resource "null_resource" "wait_vsca_after_esxi_restart" {
+  depends_on = [null_resource.restart_esxi]
+
+  provisioner "local-exec" {
+    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip}); do echo \"Attempt $count: Waiting for vCenter to be reachable...\"; sleep 10 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to vCenter\" ; exit 1 ; fi ; done"
+  }
+}
+
+resource "null_resource" "wait_esxi_after_esxi_restart" {
+  depends_on = [null_resource.restart_esxi]
+  count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
+
+  provisioner "local-exec" {
+    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.esxi_ips[count.index]}); do echo \"Attempt $count: Waiting for ESXi host ${count.index} to be reachable...\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to ESXi host\" ; exit 1 ; fi ; done"
+  }
 }
 
 resource "null_resource" "adding_vmotion_vds_uplink_temporary" {
-  depends_on = [time_sleep.wait_before_adding_vmotion_vds_uplink_temporary]
+  depends_on = [null_resource.wait_vsca_after_esxi_restart, null_resource.wait_esxi_after_esxi_restart]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
-    command = "/bin/bash 14_vCenter_vmotion.sh"
+    command = "/bin/bash 14_vCenter_adding_uplink_vmotion.sh"
   }
 }
 
@@ -115,7 +143,7 @@ resource "null_resource" "delete_vswitch_vmotion" {
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   depends_on = [null_resource.migrating_vmk_vmotion]
   provisioner "local-exec" {
-    command = "/bin/bash 15_vCenter_delete_vswitch_vmotion.sh"
+    command = "/bin/bash 15_esxi_delete_vswitch_vmotion.sh"
   }
 }
 
@@ -150,7 +178,7 @@ resource "null_resource" "adding_vsan_vds_uplink_temporary" {
   depends_on = [time_sleep.wait_before_adding_vsan_vds_uplink_temporary]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
-    command = "/bin/bash 16_vCenter_vsan.sh"
+    command = "/bin/bash 16_vCenter_adding_uplink_vsan.sh"
   }
 }
 
@@ -166,7 +194,7 @@ resource "null_resource" "delete_vswitch_vsan" {
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   depends_on = [null_resource.migrating_vmk_vsan]
   provisioner "local-exec" {
-    command = "/bin/bash 17_vCenter_delete_vswitch_vsan.sh"
+    command = "/bin/bash 17_esxi_delete_vswitch_vsan.sh"
   }
 }
 
@@ -191,9 +219,9 @@ resource "null_resource" "migrating_vsan_vds_uplink" {
   }
 }
 
-resource "null_resource" "removing_vmnic3_vsphere_wo_nsx" {
+resource "null_resource" "removing_vmnic3_esxi" {
   depends_on = [null_resource.migrating_vsan_vds_uplink]
-  count = var.deployment == "vsphere_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
       export GOVC_USERNAME=${var.vsphere_underlay_username}
@@ -202,45 +230,32 @@ resource "null_resource" "removing_vmnic3_vsphere_wo_nsx" {
       export GOVC_URL=${var.vsphere_underlay.vcsa}
       export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
-      /usr/local/bin/govc device.remove -vm.uuid ${vsphere_virtual_machine.esxi_host_single_attached[count.index].uuid} "ethernet-3"
-    EOT
-  }
-}
-
-resource "null_resource" "removing_vmnic3_vsphere_nsx" {
-  depends_on = [null_resource.migrating_vsan_vds_uplink]
-  count = var.deployment != "vsphere_wo_nsx" && var.deployment != "vsphere_alb_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
-  provisioner "local-exec" {
-    command = <<-EOT
-      export GOVC_USERNAME=${var.vsphere_underlay_username}
-      export GOVC_PASSWORD=${var.vsphere_underlay_password}
-      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
-      export GOVC_URL=${var.vsphere_underlay.vcsa}
-      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
-      export GOVC_INSECURE=true
+      /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_host_tanzu_single_attached[count.index].uuid}
       /usr/local/bin/govc device.remove -vm.uuid ${vsphere_virtual_machine.esxi_host_nsx_single_attached[count.index].uuid} "ethernet-3"
+      /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_host_tanzu_single_attached[count.index].uuid}
     EOT
   }
 }
 
-resource "null_resource" "removing_vmnic3_vsphere_alb_wo_nsx" {
-  depends_on = [null_resource.migrating_vsan_vds_uplink]
-  count = var.deployment == "vsphere_alb_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+resource "null_resource" "wait_vsca_after_esxi_reconfig" {
+  depends_on = [null_resource.removing_vmnic3_esxi]
+
   provisioner "local-exec" {
-    command = <<-EOT
-      export GOVC_USERNAME=${var.vsphere_underlay_username}
-      export GOVC_PASSWORD=${var.vsphere_underlay_password}
-      export GOVC_DATACENTER=${var.vsphere_underlay.datacenter}
-      export GOVC_URL=${var.vsphere_underlay.vcsa}
-      export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
-      export GOVC_INSECURE=true
-      /usr/local/bin/govc device.remove -vm.uuid ${vsphere_virtual_machine.esxi_host_tanzu_single_attached[count.index].uuid} "ethernet-3"
-    EOT
+    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip}); do echo \"Attempt $count: Waiting for vCenter to be reachable...\"; sleep 10 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to vCenter\" ; exit 1 ; fi ; done"
+  }
+}
+
+resource "null_resource" "wait_esxi_after_esxi_reconfig" {
+  depends_on = [null_resource.removing_vmnic3_esxi]
+  count = length(var.vsphere_underlay.networks.vsphere.management.esxi_ips)
+
+  provisioner "local-exec" {
+    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.esxi_ips[count.index]}); do echo \"Attempt $count: Waiting for ESXi host ${count.index} to be reachable...\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to ESXi host\" ; exit 1 ; fi ; done"
   }
 }
 
 resource "null_resource" "vsan_config" {
-  depends_on = [null_resource.removing_vmnic3_vsphere_alb_wo_nsx, null_resource.removing_vmnic3_vsphere_nsx, null_resource.removing_vmnic3_vsphere_wo_nsx]
+  depends_on = [null_resource.wait_esxi_after_esxi_reconfig, null_resource.wait_vsca_after_esxi_reconfig]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
     command = "/bin/bash 18_vCenter_VSAN_config.sh"
