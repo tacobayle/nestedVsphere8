@@ -59,7 +59,7 @@ resource "null_resource" "cleaning_vmk3_single_attached" {
   }
 }
 
-resource "null_resource" "vcenter_configure2_single_attached" {
+resource "null_resource" "vcenter_delete_vswitch_management" {
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   depends_on = [null_resource.cleaning_vmk3_single_attached]
 
@@ -69,7 +69,7 @@ resource "null_resource" "vcenter_configure2_single_attached" {
 }
 
 resource "null_resource" "migrating_mgmt_vds_uplink" {
-  depends_on = [null_resource.vcenter_configure2_single_attached]
+  depends_on = [null_resource.vcenter_delete_vswitch_management]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[count.index]
@@ -101,6 +101,7 @@ resource "null_resource" "restart_esxi_vsphere_wo_nsx" {
       export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
       /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_host_single_attached[count.index].uuid}
+      count=1 ; until [[ $(/usr/local/bin/govc vm.info  -vm.uuid ${vsphere_virtual_machine.esxi_host_single_attached[count.index].uuid} | grep "Power state:" | awk '{print $3}') == "poweredOff" ]] ; do echo \"Attempt $count: Waiting for ESXi host ${count.index} to be poweredOff...\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to get ESXi host ${count.index} poweredOff\" ; exit 1 ; fi ; done
       /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_host_single_attached[count.index].uuid}
     EOT
   }
@@ -118,6 +119,7 @@ resource "null_resource" "restart_esxi_vsphere_alb_wo_nsx" {
       export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
       /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_host_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
+      count=1 ; until [[ $(/usr/local/bin/govc vm.info  -vm.uuid ${vsphere_virtual_machine.esxi_host_vsphere_alb_wo_nsx_single_attached[count.index].uuid} | grep "Power state:" | awk '{print $3}') == "poweredOff" ]] ; do echo \"Attempt $count: Waiting for ESXi host ${count.index} to be poweredOff...\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to get ESXi host ${count.index} poweredOff\" ; exit 1 ; fi ; done
       /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_host_vsphere_alb_wo_nsx_single_attached[count.index].uuid}
     EOT
   }
@@ -135,6 +137,7 @@ resource "null_resource" "restart_esxi_nsx" {
       export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
       /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_host_nsx_single_attached[count.index].uuid}
+      count=1 ; until [[ $(/usr/local/bin/govc vm.info  -vm.uuid ${vsphere_virtual_machine.esxi_host_nsx_single_attached[count.index].uuid} | grep "Power state:" | awk '{print $3}') == "poweredOff" ]] ; do echo \"Attempt $count: Waiting for ESXi host ${count.index} to be poweredOff...\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to get ESXi host ${count.index} poweredOff\" ; exit 1 ; fi ; done
       /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_host_nsx_single_attached[count.index].uuid}
     EOT
   }
