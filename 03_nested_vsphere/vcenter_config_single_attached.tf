@@ -179,8 +179,17 @@ resource "null_resource" "wait_vsca_after_esxi_restart" {
   }
 }
 
-resource "null_resource" "adding_vmotion_vds_uplink_temporary" {
+resource "null_resource" "test_vcenter_health" {
   depends_on = [null_resource.wait_vsca_after_esxi_restart]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "/bin/bash test_vcenter_health.sh"
+  }
+}
+
+resource "null_resource" "adding_vmotion_vds_uplink_temporary" {
+  depends_on = [null_resource.test_vcenter_health]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
     command = "/bin/bash 14_vCenter_adding_uplink_vmotion.sh"

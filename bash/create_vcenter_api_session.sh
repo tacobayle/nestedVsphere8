@@ -8,8 +8,8 @@
 #
 # Tested with vSphere6.5, vSphere7 and vSphere8
 #
-retry=6
-pause=10
+retry=10
+pause=20
 attempt=0
 url_vpshere6_5="rest/com/vmware/cis/session"
 url_vpshere="api/session"
