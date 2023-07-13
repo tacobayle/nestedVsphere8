@@ -263,14 +263,18 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
     echo "   ++++++ ERROR: cannot get .vsphere_underlay.networks.alb defined without .avi defined: must be one and the other"
     exit 255
   fi
+  # setting unmanaged_k8s_status disabled by default
+  variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": false}')
+  #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.se.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.se.cidr $jsonFile)" "   "
   test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.se.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.external_gw_ip $jsonFile)" "   "
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" ]] ; then
-    echo "app_ips is not supported on Port Group SE - because NAT is disabled hence no Internet Access"
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" || $(jq -c -r .vsphere_underlay.networks.alb.se.k8s_clusters $jsonFile) == "null" ]] ; then
+    echo "app_ips or k8s_clusters is not supported on Port Group SE - because NAT is disabled hence no Internet Access"
     exit 255
   fi
+  #
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
   #
@@ -278,14 +282,34 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)" "   "
   test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.backend.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)" "   "
+  #
   if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips $jsonFile) != "null" ]] ; then
     for ip in $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips[] $jsonFile)
     do
       test_if_variable_is_valid_ip "$ip" "   "
     done
   fi
+  #
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.k8s_clusters $jsonFile) != "null" ]] ; then
+    for cluster in $(jq -c -r .vsphere_underlay.networks.alb.backend.k8s_clusters[] $jsonFile)
+    do
+      test_if_variable_is_defined $(echo $cluster | jq -c .cluster_name) "   " "testing if each .vsphere_underlay.networks.alb.backend.k8s_clusters[] have a cluster_name defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .version) "   " "testing if each .vsphere_underlay.networks.alb.backend.k8s_clusters[] have a version defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .cni) "   " "testing if each .vsphere_underlay.networks.alb.backend.k8s_clusters[] have a cni defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.backend.k8s_clusters[] have a cni_version defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.backend.k8s_clusters[] have a cluster_ips defined"
+      if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
+      for ip in $(echo $cluster | jq -c .cluster_ips)
+      do
+        test_if_variable_is_valid_ip "$ip" "   "
+      done
+    done
+    variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": true}')
+  fi
+  #
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.backend.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.backend.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
+  #
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.vip.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)" "   "
@@ -297,23 +321,63 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
       test_if_variable_is_valid_ip "$ip" "   "
     done
   fi
+  #
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.vip.k8s_clusters $jsonFile) != "null" ]] ; then
+    for cluster in $(jq -c -r .vsphere_underlay.networks.alb.vip.k8s_clusters[] $jsonFile)
+    do
+      test_if_variable_is_defined $(echo $cluster | jq -c .cluster_name) "   " "testing if each .vsphere_underlay.networks.alb.vip.k8s_clusters[] have a cluster_name defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .version) "   " "testing if each .vsphere_underlay.networks.alb.vip.k8s_clusters[] have a version defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .cni) "   " "testing if each .vsphere_underlay.networks.alb.vip.k8s_clusters[] have a cni defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.vip.k8s_clusters[] have a cni_version defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.vip.k8s_clusters[] have a cluster_ips defined"
+      if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
+      for ip in $(echo $cluster | jq -c .cluster_ips)
+      do
+        test_if_variable_is_valid_ip "$ip" "   "
+      done
+    done
+    variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": true}')
+  fi
+  #
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.vip.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.vip.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
+  #
   #
   test_if_json_variable_is_defined .vsphere_underlay.networks.alb.tanzu.name $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)" "   "
   test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.external_gw_ip $jsonFile)" "   "
+  #
   if [[ $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips $jsonFile) != "null" ]] ; then
     for ip in $(jq -c -r .vsphere_underlay.networks.alb.tanzu.app_ips[] $jsonFile)
     do
       test_if_variable_is_valid_ip "$ip" "   "
     done
   fi
+  #
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.tanzu.k8s_clusters $jsonFile) != "null" ]] ; then
+    for cluster in $(jq -c -r .vsphere_underlay.networks.alb.tanzu.k8s_clusters[] $jsonFile)
+    do
+      test_if_variable_is_defined $(echo $cluster | jq -c .cluster_name) "   " "testing if each .vsphere_underlay.networks.alb.tanzu.k8s_clusters[] have a cluster_name defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .version) "   " "testing if each .vsphere_underlay.networks.alb.tanzu.k8s_clusters[] have a version defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .cni) "   " "testing if each .vsphere_underlay.networks.alb.tanzu.k8s_clusters[] have a cni defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.tanzu.k8s_clusters[] have a cni_version defined"
+      test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.tanzu.k8s_clusters[] have a cluster_ips defined"
+      if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
+      for ip in $(echo $cluster | jq -c .cluster_ips)
+      do
+        test_if_variable_is_valid_ip "$ip" "   "
+      done
+    done
+    variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": true}')
+  fi
+  #
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.tanzu.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
+  #
+  #
   # vSphere Avi networks with Avi config.
-  if [[ $(jq -c -r .avi $jsonFile) != "null" && $(jq -c -r .tanzu $jsonFile) == "null" ]]; then
+  if [[ $(jq -c -r .avi $jsonFile) != "null" && $(jq -c -r .tanzu $jsonFile) == "null" && unmanaged_k8s_status -eq 0 ]]; then
     echo "   +++ Adding .deployment: vsphere_alb_wo_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_alb_wo_nsx"}')
     test_nsx_alb_variables "/etc/config/variables.json"

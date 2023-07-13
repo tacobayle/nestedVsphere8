@@ -33,14 +33,14 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   #
   if [[ $(jq -c -r .nsx $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
     #
-    echo "   +++ Adding variable nsx_password in /nestedVsphere8/09_nsx_alb_config/variables.tf"
-    echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/09_nsx_alb_config/variables.tf > /dev/null
+    echo "   +++ Adding variable nsx_password in /nestedVsphere8/10_nsx_alb_config/variables.tf"
+    echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/10_nsx_alb_config/variables.tf > /dev/null
     #
-    echo "   +++ Adding variable transport_zone in /nestedVsphere8/09_nsx_alb_config/variables.tf"
-    echo 'variable "transport_zone" {}' | tee -a /nestedVsphere8/09_nsx_alb_config/variables.tf > /dev/null
+    echo "   +++ Adding variable transport_zone in /nestedVsphere8/10_nsx_alb_config/variables.tf"
+    echo 'variable "transport_zone" {}' | tee -a /nestedVsphere8/10_nsx_alb_config/variables.tf > /dev/null
     #
-    mv /nestedVsphere8/09_nsx_alb_config/ansible_avi_nsx.tf.disabled /nestedVsphere8/09_nsx_alb_config/ansible_avi_nsx.tf
-    mv /nestedVsphere8/09_nsx_alb_config/ansible_avi_vcenter.tf /nestedVsphere8/09_nsx_alb_config/ansible_avi_vcenter.tf..disabled
+    mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf.disabled /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf
+    mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf..disabled
     #
     echo "   +++ Adding avi.config.cloud.name..."
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "dc1_nsx"}')

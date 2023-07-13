@@ -13,6 +13,7 @@ fi
 #
 /bin/bash /nestedVsphere8/00_pre_check/00.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
+jsonFile="/root/variables.json"
 /bin/bash /nestedVsphere8/00_pre_check/01.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 /bin/bash /nestedVsphere8/00_pre_check/02.sh
@@ -38,7 +39,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ||  $(jq -c
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
-  /bin/bash /nestedVsphere8/00_pre_check/10.sh
+  /bin/bash /nestedVsphere8/00_pre_check/11.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/apply.sh
@@ -71,13 +72,18 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ||  $(jq -c
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 
+if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
+  /bin/bash /nestedVsphere8/09_unmanaged_k8s_clusters/apply.sh
+   if [ $? -ne 0 ] ; then exit 1 ; fi
+fi
+
 if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
-  /bin/bash /nestedVsphere8/09_nsx_alb_config/apply.sh
+  /bin/bash /nestedVsphere8/10_nsx_alb_config/apply.sh
 #   if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 
 #if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
-#  /bin/bash /nestedVsphere8/10_vcd_appliance/apply.sh
+#  /bin/bash /nestedVsphere8/11_vcd_appliance/apply.sh
 ##   if [ $? -ne 0 ] ; then exit 1 ; fi
 #fi
 
