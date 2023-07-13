@@ -390,4 +390,3 @@ resource "null_resource" "vsan_config" {
     command = "/bin/bash 18_vCenter_VSAN_config.sh"
   }
 }
-
