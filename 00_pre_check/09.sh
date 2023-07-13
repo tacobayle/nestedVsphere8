@@ -31,10 +31,12 @@ unmanaged_k8s_workers_cidr=[]
 unmanaged_k8s_workers_gw=[]
 unmanaged_k8s_workers_cluster_name=[]
 unmanaged_k8s_workers_version=[]
+unmanaged_k8s_masters_cni=[]
+unmanaged_k8s_masters_cni_version=[]
+unmanaged_k8s_workers_cni=[]
+unmanaged_k8s_workers_cni_version=[]
 
 
-    cni_name = var.unmanaged_k8s_masters_cni_name[count.index]
-    cni_version = var.unmanaged_k8s_masters_cni_version[count.index]
 
 #
 if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.k8s_clusters $jsonFile) != "null" ]] ; then
@@ -46,6 +48,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.k8s_clusters $jsonFile) 
     unmanaged_k8s_masters_cidr=$(echo $unmanaged_k8s_masters_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)'"]')
     unmanaged_k8s_masters_gw=$(echo $unmanaged_k8s_masters_gw | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)'"]')
     unmanaged_k8s_masters_version=$(echo $unmanaged_k8s_masters_version | jq '. += ["'$(echo $cluster | jq -c -r .version)'"]')
+    unmanaged_k8s_masters_cni=$(echo $unmanaged_k8s_masters_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
+    unmanaged_k8s_masters_cni_version=$(echo $unmanaged_k8s_masters_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version)'"]')
     for ip in $(echo $cluster | jq -c -r '.cluster_ips[1:]')
     do
       unmanaged_k8s_workers_associated_master_ips=$(echo $unmanaged_k8s_workers_associated_master_ips | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ips[0])'"]')
@@ -54,6 +58,9 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.k8s_clusters $jsonFile) 
       unmanaged_k8s_workers_cidr=$(echo $unmanaged_k8s_masters_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)'"]')
       unmanaged_k8s_workers_gw=$(echo $unmanaged_k8s_workers_gw | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)'"]')
       unmanaged_k8s_workers_cluster_name=$(echo $unmanaged_k8s_workers_cluster_name | jq '. += ["'$(echo $cluster | jq -c -r .cluster_name'"]'))
+      unmanaged_k8s_workers_version=$(echo $unmanaged_k8s_workers_version | jq '. += ["'$(echo $cluster | jq -c -r .version'"]'))
+      unmanaged_k8s_workers_cni=$(echo $unmanaged_k8s_workers_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni'"]'))
+      unmanaged_k8s_workers_cni_version=$(echo $unmanaged_k8s_workers_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version'"]'))
     done
   done
 fi
@@ -67,6 +74,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb.vip.k8s_clusters $jsonFile) != "
     unmanaged_k8s_masters_cidr=$(echo $unmanaged_k8s_masters_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)'"]')
     unmanaged_k8s_masters_gw=$(echo $unmanaged_k8s_masters_gw | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)'"]')
     unmanaged_k8s_masters_version=$(echo $unmanaged_k8s_masters_version | jq '. += ["'$(echo $cluster | jq -c -r .version)'"]')
+    unmanaged_k8s_masters_cni=$(echo $unmanaged_k8s_masters_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
+    unmanaged_k8s_masters_cni_version=$(echo $unmanaged_k8s_masters_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version)'"]')
     for ip in $(echo $cluster | jq -c -r '.cluster_ips[1:]')
     do
       unmanaged_k8s_workers_associated_master_ips=$(echo $unmanaged_k8s_workers_associated_master_ips | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ips[0])'"]')
@@ -75,6 +84,9 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb.vip.k8s_clusters $jsonFile) != "
       unmanaged_k8s_workers_cidr=$(echo $unmanaged_k8s_masters_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)'"]')
       unmanaged_k8s_workers_gw=$(echo $unmanaged_k8s_workers_gw | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)'"]')
       unmanaged_k8s_workers_cluster_name=$(echo $unmanaged_k8s_workers_cluster_name | jq '. += ["'$(echo $cluster | jq -c -r .cluster_name'"]'))
+      unmanaged_k8s_workers_version=$(echo $unmanaged_k8s_workers_version | jq '. += ["'$(echo $cluster | jq -c -r .version'"]'))
+      unmanaged_k8s_workers_cni=$(echo $unmanaged_k8s_workers_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni'"]'))
+      unmanaged_k8s_workers_cni_version=$(echo $unmanaged_k8s_workers_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version'"]'))
     done
   done
 fi
@@ -88,6 +100,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb.tanzu.k8s_clusters $jsonFile) !=
     unmanaged_k8s_masters_cidr=$(echo $unmanaged_k8s_masters_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)'"]')
     unmanaged_k8s_masters_gw=$(echo $unmanaged_k8s_masters_gw | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)'"]')
     unmanaged_k8s_masters_version=$(echo $unmanaged_k8s_masters_version | jq '. += ["'$(echo $cluster | jq -c -r .version)'"]')
+    unmanaged_k8s_masters_cni=$(echo $unmanaged_k8s_masters_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
+    unmanaged_k8s_masters_cni_version=$(echo $unmanaged_k8s_masters_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version)'"]')
     for ip in $(echo $cluster | jq -c -r '.cluster_ips[1:]')
     do
       unmanaged_k8s_workers_associated_master_ips=$(echo $unmanaged_k8s_workers_associated_master_ips | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ips[0])'"]')
@@ -96,6 +110,9 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb.tanzu.k8s_clusters $jsonFile) !=
       unmanaged_k8s_workers_cidr=$(echo $unmanaged_k8s_masters_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)'"]')
       unmanaged_k8s_workers_gw=$(echo $unmanaged_k8s_workers_gw | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)'"]')
       unmanaged_k8s_workers_cluster_name=$(echo $unmanaged_k8s_workers_cluster_name | jq '. += ["'$(echo $cluster | jq -c -r .cluster_name'"]'))
+      unmanaged_k8s_workers_version=$(echo $unmanaged_k8s_workers_version | jq '. += ["'$(echo $cluster | jq -c -r .version'"]'))
+      unmanaged_k8s_workers_cni=$(echo $unmanaged_k8s_workers_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni'"]'))
+      unmanaged_k8s_workers_cni_version=$(echo $unmanaged_k8s_workers_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version'"]'))
     done
   done
 fi
@@ -114,6 +131,10 @@ echo "   +++ Adding unmanaged_k8s_masters_gw..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_gw": '$(echo $unmanaged_k8s_masters_gw)'}')
 echo "   +++ Adding unmanaged_k8s_masters_version..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_version": '$(echo $unmanaged_k8s_masters_version)'}')
+echo "   +++ Adding unmanaged_k8s_masters_cni..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_cni": '$(echo $unmanaged_k8s_masters_cni)'}')
+echo "   +++ Adding unmanaged_k8s_masters_cni_version..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_cni_version": '$(echo $unmanaged_k8s_masters_cni_version)'}')
 #
 echo "   +++ Adding unmanaged_k8s_workers_associated_master_ips..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_associated_master_ips": '$(echo $unmanaged_k8s_workers_associated_master_ips)'}')
@@ -129,6 +150,11 @@ echo "   +++ Adding unmanaged_k8s_workers_cluster_name..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_cluster_name": '$(echo $unmanaged_k8s_workers_cluster_name)'}')
 echo "   +++ Adding unmanaged_k8s_workers_version..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_version": '$(echo $unmanaged_k8s_workers_version)'}')
-
+echo "   +++ Adding unmanaged_k8s_masters_version..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_version": '$(echo $unmanaged_k8s_masters_version)'}')
+echo "   +++ Adding unmanaged_k8s_workers_cni..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_cni": '$(echo $unmanaged_k8s_workers_cni)'}')
+echo "   +++ Adding unmanaged_k8s_workers_cni_version..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_cni_version": '$(echo $unmanaged_k8s_workers_cni_version)'}')
 #
 echo $unmanaged_k8s_clusters_json | jq . | tee /root/unmanaged_k8s_clusters.json > /dev/null

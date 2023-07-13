@@ -16,7 +16,7 @@ attempt_a=0
 #
 while true ; do
   echo "attempt $attempt_a to get VCSA status"
-  vcenter_api 10 10 "GET" $token '' $api_host "api/appliance/health/system"
+  vcenter_api 20 20 "GET" $token '' $api_host "api/appliance/health/system"
   if [[ $(echo $response_body) == '"green"' ]] ; then
     echo "VCSA status is $response_body after $attempt_a attempts"
     break 2
