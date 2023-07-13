@@ -17,4 +17,9 @@ variable "unmanaged_k8s_workers_cidr" {}
 variable "unmanaged_k8s_workers_gw" {}
 variable "unmanaged_k8s_workers_cluster_name" {}
 variable "unmanaged_k8s_workers_segments" {}
+variable "unmanaged_k8s_masters_version" {}
+variable "unmanaged_k8s_workers_version" {}
+
+
+
 variable "k8s" {}

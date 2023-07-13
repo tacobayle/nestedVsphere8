@@ -35,15 +35,6 @@ write_files:
       echo "    version: 2" | sudo tee -a ${netplan_file}
       sudo netplan apply
       sudo apt update
-      sudo apt install -y apache2
-      sudo mv /var/www/html/index.html /var/www/html/index.html.old
-      echo -e "Hello World - My IP is ${ip}" | sudo tee /var/www/html/index.html
-      sudo apt install -y docker.io
-      sudo usermod -a -G docker ${username}
-      su - ${username}
-      docker login --username ${docker_registry_username} --password ${docker_registry_password}
-      docker run -d -p ${avi_app_tcp_port}:80 ${avi_app_docker_image}
-      docker run --name hackazon -d -p ${hackazon_tcp_port}:80 ${hackazon_docker_image} supervisord -n
       echo "cloud init done" | tee /tmp/cloudInitDone.log
     path: /opt/bootstrap.sh
     permissions: 0755

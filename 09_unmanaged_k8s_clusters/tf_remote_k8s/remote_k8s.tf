@@ -29,8 +29,23 @@ data "template_file" "k8s_userdata" {
     ip = var.unmanaged_k8s_masters_ips[count.index]
     default_gw = var.unmanaged_k8s_masters_gw[count.index]
     dns = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+  }
+}
+
+data "template_file" "k8s_bootstrap_master" {
+  count = length(var.unmanaged_k8s_masters_ips)
+  template = file("${path.module}/templates/k8s_bootstrap_master.template")
+  vars = {
+    net_plan_file = var.k8s.netplan_file
     docker_registry_username = var.docker_registry_username
+    K8s_pod_cidr = var.k8s.pod_cidr
+    K8s_version = var.unmanaged_k8s_masters_version[count.index]
+    Docker_version = var.k8s.docker_version
     docker_registry_password = var.docker_registry_password
+    cni_name = var.unmanaged_k8s_masters_cni_name[count.index]
+    cni_version = var.unmanaged_k8s_masters_cni_version[count.index]
+    ako_service_type = local.ako_service_type
+    dhcp = var.vcenter_network_mgmt_dhcp
   }
 }
 
@@ -84,5 +99,22 @@ resource "vsphere_virtual_machine" "masters" {
     inline      = [
       "while [ ! -f /tmp/cloudInitDone.log ]; do sleep 1; done"
     ]
+  }
+}
+
+data "template_file" "k8s_bootstrap_workers" {
+  template = file("${path.module}/templates/k8s_bootstrap_workers.template")
+  count = 2
+  vars = {
+    net_plan_file = var.master.net_plan_file
+    K8s_version = var.K8s_version
+    Docker_version = var.k8s.docker_version
+    docker_registry_username = var.docker_registry_username
+    docker_registry_password = var.docker_registry_password
+    cni_name = var.unmanaged_k8s_workers_cni_name[count.index]
+    cni_version = var.unmanaged_k8s_workers_cni_version[count.index]
+    ako_service_type = local.ako_service_type
+    dhcp = var.vcenter_network_mgmt_dhcp
+    ip_k8s = split(",", replace(var.vcenter_network_k8s_ip4_addresses, " ", ""))[1 + count.index]
   }
 }
