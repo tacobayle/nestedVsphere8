@@ -338,15 +338,6 @@ resource "null_resource" "reconfigure_esxi_nsx" {
   }
 }
 
-resource "null_resource" "wait_vsca_after_esxi_reconfig" {
-  depends_on = [null_resource.reconfigure_esxi_nsx, null_resource.reconfigure_esxi_vsphere_alb_wo_nsx, null_resource.reconfigure_esxi_vsphere_wo_nsx]
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
-
-  provisioner "local-exec" {
-    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip}); do echo \"Attempt $count: Waiting for vCenter to be reachable...\"; sleep 10 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to vCenter\" ; exit 1 ; fi ; done"
-  }
-}
-
 resource "null_resource" "wait_esxi_after_esxi_reconfig" {
   depends_on = [null_resource.reconfigure_esxi_nsx, null_resource.reconfigure_esxi_vsphere_alb_wo_nsx, null_resource.reconfigure_esxi_vsphere_wo_nsx]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
@@ -356,8 +347,44 @@ resource "null_resource" "wait_esxi_after_esxi_reconfig" {
   }
 }
 
+resource "null_resource" "restart_vcsa_after_esxi_reconfigure" {
+  depends_on = [null_resource.wait_esxi_after_esxi_reconfig]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[0]
+    type        = "ssh"
+    agent       = false
+    user        = "root"
+    password    = var.nested_esxi_root_password
+  }
+
+  provisioner "remote-exec" {
+    inline      = [
+      "vim-cmd vmsvc/power.on 1"
+    ]
+  }
+}
+
+resource "null_resource" "wait_vsca_after_esxi_reconfig" {
+  depends_on = [null_resource.restart_vcsa_after_esxi_reconfigure]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+
+  provisioner "local-exec" {
+    command = "count=1 ; until $(curl --output /dev/null --silent --head -k https://${var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip}); do echo \"Attempt $count: Waiting for vCenter to be reachable...\"; sleep 10 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to connect to vCenter\" ; exit 1 ; fi ; done"
+  }
+}
+
+resource "null_resource" "test_vcenter_health_after_esxi_reconfig" {
+  depends_on = [null_resource.wait_vsca_after_esxi_reconfig]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "/bin/bash test_vcenter_health.sh"
+  }
+}
+
 resource "null_resource" "vsan_config" {
-  depends_on = [null_resource.wait_esxi_after_esxi_reconfig, null_resource.wait_vsca_after_esxi_reconfig]
+  depends_on = [null_resource.test_vcenter_health_after_esxi_reconfig]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
     command = "/bin/bash 18_vCenter_VSAN_config.sh"
