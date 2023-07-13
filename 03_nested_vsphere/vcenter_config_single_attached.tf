@@ -89,8 +89,27 @@ resource "null_resource" "migrating_mgmt_vds_uplink" {
   }
 }
 
-resource "null_resource" "restart_esxi_vsphere_wo_nsx" {
+resource "null_resource" "shutdown_vcsa_vcsa" {
   depends_on = [null_resource.migrating_mgmt_vds_uplink]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[0]
+    type        = "ssh"
+    agent       = false
+    user        = "root"
+    password    = var.nested_esxi_root_password
+  }
+
+  provisioner "remote-exec" {
+    inline      = [
+      "vim-cmd vmsvc/power.shutdown 1",
+      "count=1 ; while [ $(vim-cmd vmsvc/power.getstate 1 | tail -1 | awk '{print $2}') != \"off\" ] ; do echo \"Attempt $count: Waiting for VCSA to be shutdown\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" == 30 ]; then echo \"ERROR: Unable to get VCSA poweredOff\" ; exit 1 ; fi ; done"
+    ]
+  }
+}
+
+resource "null_resource" "restart_esxi_vsphere_wo_nsx" {
+  depends_on = [null_resource.shutdown_vcsa_vcsa]
   count = var.deployment == "vsphere_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
@@ -101,14 +120,14 @@ resource "null_resource" "restart_esxi_vsphere_wo_nsx" {
       export GOVC_CLUSTER=${var.vsphere_underlay.cluster}
       export GOVC_INSECURE=true
       /usr/local/bin/govc vm.power -s -vm.uuid ${vsphere_virtual_machine.esxi_host_single_attached[count.index].uuid}
-      count=1 ; while [ $(/usr/local/bin/govc vm.info  -vm.uuid ${vsphere_virtual_machine.esxi_host_single_attached[count.index].uuid} | grep "Power state:" | awk '{print $3}') != "poweredOff" ] ; do echo \"Attempt $count: Waiting for ESXi host ${count.index} to be poweredOff...\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to get ESXi host ${count.index} poweredOff\" ; exit 1 ; fi ; done
+      count=1 ; while [ $(/usr/local/bin/govc vm.info  -vm.uuid ${vsphere_virtual_machine.esxi_host_single_attached[count.index].uuid} | grep "Power state:" | awk '{print $3}') != "poweredOff" ] ; do echo \"Attempt $count: Waiting for ESXi host ${count.index} to be poweredOff...\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" == 30 ]; then echo \"ERROR: Unable to get ESXi host ${count.index} poweredOff\" ; exit 1 ; fi ; done
       /usr/local/bin/govc vm.power -on -vm.uuid ${vsphere_virtual_machine.esxi_host_single_attached[count.index].uuid}
     EOT
   }
 }
 
 resource "null_resource" "restart_esxi_vsphere_alb_wo_nsx" {
-  depends_on = [null_resource.migrating_mgmt_vds_uplink]
+  depends_on = [null_resource.shutdown_vcsa_vcsa]
   count = var.deployment == "vsphere_alb_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false  ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
@@ -126,7 +145,7 @@ resource "null_resource" "restart_esxi_vsphere_alb_wo_nsx" {
 }
 
 resource "null_resource" "restart_esxi_nsx" {
-  depends_on = [null_resource.migrating_mgmt_vds_uplink]
+  depends_on = [null_resource.shutdown_vcsa_vcsa]
   count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
@@ -290,8 +309,27 @@ resource "null_resource" "migrating_vsan_vds_uplink" {
   }
 }
 
+resource "null_resource" "shutdown_vcsa_vcsa_final" {
+  depends_on = [null_resource.migrating_vsan_vds_uplink]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[0]
+    type        = "ssh"
+    agent       = false
+    user        = "root"
+    password    = var.nested_esxi_root_password
+  }
+
+  provisioner "remote-exec" {
+    inline      = [
+      "vim-cmd vmsvc/power.shutdown 1",
+      "count=1 ; while [ $(vim-cmd vmsvc/power.getstate 1 | tail -1 | awk '{print $2}') != \"off\" ] ; do echo \"Attempt $count: Waiting for VCSA to be shutdown\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" == 30 ]; then echo \"ERROR: Unable to get VCSA poweredOff\" ; exit 1 ; fi ; done"
+    ]
+  }
+}
+
 resource "null_resource" "reconfigure_esxi_vsphere_wo_nsx" {
-  depends_on = [null_resource.delete_vswitch_vsan]
+  depends_on = [null_resource.shutdown_vcsa_vcsa_final]
   count = var.deployment == "vsphere_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
@@ -310,7 +348,7 @@ resource "null_resource" "reconfigure_esxi_vsphere_wo_nsx" {
 }
 
 resource "null_resource" "reconfigure_esxi_vsphere_alb_wo_nsx" {
-  depends_on = [null_resource.delete_vswitch_vsan]
+  depends_on = [null_resource.shutdown_vcsa_vcsa_final]
   count = var.deployment == "vsphere_alb_wo_nsx" && var.vsphere_underlay.networks_vsphere_dual_attached == false  ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
@@ -329,7 +367,7 @@ resource "null_resource" "reconfigure_esxi_vsphere_alb_wo_nsx" {
 }
 
 resource "null_resource" "reconfigure_esxi_nsx" {
-  depends_on = [null_resource.delete_vswitch_vsan]
+  depends_on = [null_resource.shutdown_vcsa_vcsa_final]
   count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
