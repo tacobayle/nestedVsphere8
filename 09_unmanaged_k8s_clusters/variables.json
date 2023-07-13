@@ -1,0 +1,15 @@
+{
+  "k8s": {
+    "folder_basename": "unmanaged-k8s-0",
+    "master_basename": "master-",
+    "master_cpu": 4,
+    "master_memory": 8192,
+    "master_disk": 20,
+    "worker_basename": "worker-",
+    "worker_cpu": 2,
+    "worker_memory": 4096,
+    "worker_disk": 20,
+    "username": "ubuntu",
+    "netplan_file": "/etc/netplan/50-cloud-init.yaml"
+  }
+}

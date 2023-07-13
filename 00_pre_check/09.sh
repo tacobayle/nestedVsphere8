@@ -10,6 +10,9 @@ echo "==> Creating /root/unmanaged_k8s_clusters.json file..."
 rm -f /root/unmanaged_k8s_clusters.json
 unmanaged_k8s_clusters_json=$(jq -c -r . $jsonFile | jq .)
 #
+echo "   +++ Adding k8s..."
+k8s=$(jq -c -r '.k8s' $localJsonFile)
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"k8s": '$(echo $k8s)'}')
 #
 unmanaged_k8s_masters_ips=[]
 unmanaged_k8s_masters_segments=[]
