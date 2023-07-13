@@ -10,8 +10,8 @@ vcenter_domain=$(jq -r .vsphere_nested.sso.domain_name $jsonFile)
 vsphere_nested_password=$TF_VAR_vsphere_nested_password
 #
 token=$(/bin/bash /nestedVsphere8/bash/create_vcenter_api_session.sh "$vsphere_nested_username" "$vcenter_domain" "$vsphere_nested_password" "$api_host")
-retry_a=10
-pause_a=10
+retry_a=60
+pause_a=20
 attempt_a=0
 #
 while true ; do
