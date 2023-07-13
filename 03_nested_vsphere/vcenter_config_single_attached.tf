@@ -103,7 +103,7 @@ resource "null_resource" "shutdown_vcsa_vcsa" {
   provisioner "remote-exec" {
     inline      = [
       "vim-cmd vmsvc/power.shutdown 1",
-      "count=1 ; while [ $(vim-cmd vmsvc/power.getstate 1 | tail -1 | awk '{print $2}') != \"off\" ] ; do echo \"Attempt $count: Waiting for VCSA to be shutdown\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" == 30 ]; then echo \"ERROR: Unable to get VCSA poweredOff\" ; exit 1 ; fi ; done"
+      "count=1 ; while [ $(vim-cmd vmsvc/power.getstate 1 | tail -1 | awk '{print $2}') != \"off\" ] ; do echo \"Attempt $count: Waiting for VCSA to be shutdown\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to get VCSA poweredOff\" ; exit 1 ; fi ; done"
     ]
   }
 }
@@ -323,7 +323,7 @@ resource "null_resource" "shutdown_vcsa_vcsa_final" {
   provisioner "remote-exec" {
     inline      = [
       "vim-cmd vmsvc/power.shutdown 1",
-      "count=1 ; while [ $(vim-cmd vmsvc/power.getstate 1 | tail -1 | awk '{print $2}') != \"off\" ] ; do echo \"Attempt $count: Waiting for VCSA to be shutdown\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" == 30 ]; then echo \"ERROR: Unable to get VCSA poweredOff\" ; exit 1 ; fi ; done"
+      "count=1 ; while [ $(vim-cmd vmsvc/power.getstate 1 | tail -1 | awk '{print $2}') != \"off\" ] ; do echo \"Attempt $count: Waiting for VCSA to be shutdown\"; sleep 40 ; count=$((count+1)) ;  if [ \"$count\" = 30 ]; then echo \"ERROR: Unable to get VCSA poweredOff\" ; exit 1 ; fi ; done"
     ]
   }
 }
