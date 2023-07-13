@@ -152,8 +152,14 @@ resource "null_resource" "wait_esxi_after_esxi_restart" {
   }
 }
 
-resource "null_resource" "restart_vcsa" {
+resource "time_sleep" "wait_before_restart_vcsa" {
   depends_on = [null_resource.wait_esxi_after_esxi_restart]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
+  create_duration = "60s"
+}
+
+resource "null_resource" "restart_vcsa" {
+  depends_on = [time_sleep.wait_before_restart_vcsa]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[0]
@@ -350,8 +356,14 @@ resource "null_resource" "wait_esxi_after_esxi_reconfig" {
   }
 }
 
-resource "null_resource" "restart_vcsa_after_esxi_reconfigure" {
+resource "time_sleep" "wait_before_restart_vcsa_after_esxi_reconfigure" {
   depends_on = [null_resource.wait_esxi_after_esxi_reconfig]
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
+  create_duration = "60s"
+}
+
+resource "null_resource" "restart_vcsa_after_esxi_reconfigure" {
+  depends_on = [time_sleep.wait_before_restart_vcsa_after_esxi_reconfigure]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.esxi_ips[0]

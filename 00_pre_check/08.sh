@@ -52,14 +52,14 @@ fi
 #
 if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   #
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" ]] ; then
-    for ip in $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips[] $jsonFile)
-    do
-      app_ips=$(echo $app_ips | jq '. += ["'$(echo $ip)'"]')
-      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .networks.alb.se.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"]')
-      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.se.cidr $jsonFile)'"]')
-    done
-  fi
+#  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" ]] ; then
+#    for ip in $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips[] $jsonFile)
+#    do
+#      app_ips=$(echo $app_ips | jq '. += ["'$(echo $ip)'"]')
+#      app_segments=$(echo $app_segments | jq '. += ["'$(jq -c -r .networks.alb.se.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"]')
+#      app_cidr=$(echo $app_cidr | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.se.cidr $jsonFile)'"]')
+#    done
+#  fi
   #
   if [[ $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips $jsonFile) != "null" ]] ; then
     for ip in $(jq -c -r .vsphere_underlay.networks.alb.backend.app_ips[] $jsonFile)
