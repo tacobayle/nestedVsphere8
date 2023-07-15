@@ -259,7 +259,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.se.cidr $jsonFile)" "   "
   test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.se.netmask $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.se.external_gw_ip $jsonFile)" "   "
-  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" || $(jq -c -r .vsphere_underlay.networks.alb.se.k8s_clusters $jsonFile) == "null" ]] ; then
+  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" || $(jq -c -r .vsphere_underlay.networks.alb.se.k8s_clusters $jsonFile) != "null" ]] ; then
     echo "app_ips or k8s_clusters is not supported on Port Group SE - because NAT is disabled hence no Internet Access"
     exit 255
   fi
