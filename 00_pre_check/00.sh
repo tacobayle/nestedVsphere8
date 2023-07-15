@@ -156,6 +156,7 @@ if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
   if [ -z "$TF_VAR_avi_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_password' is not empty" ; exit 255 ; fi
   if [ -z "$TF_VAR_avi_old_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_old_password' is not empty" ; exit 255 ; fi
 fi
+# see docker username and docker password!! // move the above for each scenario
 #
 #
 #
