@@ -288,7 +288,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
       test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.backend.k8s_clusters[] have a cni_version defined"
       test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.backend.k8s_clusters[] have a cluster_ips defined"
       if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
-      for ip in $(echo $cluster | jq -c .cluster_ips)
+      for ip in $(echo $cluster | jq -c -r .cluster_ips[])
       do
         test_if_variable_is_valid_ip "$ip" "   "
       done
@@ -320,7 +320,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
       test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.vip.k8s_clusters[] have a cni_version defined"
       test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.vip.k8s_clusters[] have a cluster_ips defined"
       if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
-      for ip in $(echo $cluster | jq -c .cluster_ips)
+      for ip in $(echo $cluster | jq -c -r .cluster_ips[])
       do
         test_if_variable_is_valid_ip "$ip" "   "
       done
@@ -353,7 +353,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
       test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.tanzu.k8s_clusters[] have a cni_version defined"
       test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.tanzu.k8s_clusters[] have a cluster_ips defined"
       if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
-      for ip in $(echo $cluster | jq -c .cluster_ips)
+      for ip in $(echo $cluster | jq -c -r .cluster_ips[])
       do
         test_if_variable_is_valid_ip "$ip" "   "
       done
