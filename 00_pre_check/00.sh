@@ -162,16 +162,29 @@ test_if_json_variable_is_defined .vsphere_underlay.datastore $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_underlay.folder $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_underlay.vcsa $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_underlay.networks_vsphere_dual_attached $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.name $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.netmask $jsonFile "   "
+#
+vsphere_networks='["management", "vmotion", "vsan"]'
+for network in $(echo $vsphere_networks | jq -c -r .[])
+do
+  test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.$network.name $jsonFile "   "
+  test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.vsphere.$network.netmask $jsonFile)" "   "
+  test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.$network.esxi_ips $jsonFile "   "
+  for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.$network.esxi_ips[] $jsonFile)
+  do
+    test_if_variable_is_valid_ip $ip "   "
+  done
+done
+#test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.name $jsonFile "   "
+#test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.netmask $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.gateway $jsonFile "   "
+test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.gateway $jsonFile) "   "
 test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile "   "
 test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) "   "
-test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.esxi_ips $jsonFile "   "
-for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
-do
-  test_if_variable_is_valid_ip $ip "   "
-done
+#test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.esxi_ips $jsonFile "   "
+#for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
+#do
+#  test_if_variable_is_valid_ip $ip "   "
+#done
 test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.esxi_ips_temp $jsonFile "   "
 for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.management.esxi_ips_temp[] $jsonFile)
 do
@@ -179,18 +192,19 @@ do
 done
 test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.vcsa_nested_ip $jsonFile "   "
 test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.vcsa_nested_ip $jsonFile) "   "
-test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.vmotion.name $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.vmotion.esxi_ips $jsonFile "   "
-for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.vmotion.esxi_ips[] $jsonFile)
-do
-  test_if_variable_is_valid_ip $ip "   "
-done
-test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.vsan.name $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.vsan.esxi_ips $jsonFile "   "
-for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.vsan.esxi_ips[] $jsonFile)
-do
-  test_if_variable_is_valid_ip $ip "   "
-done
+#
+#test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.vmotion.name $jsonFile "   "
+#test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.vmotion.esxi_ips $jsonFile "   "
+#for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.vmotion.esxi_ips[] $jsonFile)
+#do
+#  test_if_variable_is_valid_ip $ip "   "
+#done
+#test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.vsan.name $jsonFile "   "
+#test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.vsan.esxi_ips $jsonFile "   "
+#for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.vsan.esxi_ips[] $jsonFile)
+#do
+#  test_if_variable_is_valid_ip $ip "   "
+#done
 #
 #
 #
