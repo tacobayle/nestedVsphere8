@@ -116,7 +116,7 @@ resource "vsphere_distributed_port_group" "sa_pg_alb_backend" {
 }
 
 resource "vsphere_distributed_virtual_switch" "sa_alb_vip" {
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
   name = var.networks.alb.vip.name
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
   version = var.vds_version
@@ -139,7 +139,7 @@ resource "vsphere_distributed_port_group" "sa_pg_alb_vip" {
 }
 
 resource "vsphere_distributed_virtual_switch" "sa_alb_tanzu" {
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
   name = var.networks.alb.tanzu.name
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
   version = var.vds_version
