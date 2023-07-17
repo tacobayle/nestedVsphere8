@@ -38,6 +38,10 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ||  $(jq -c
   /bin/bash /nestedVsphere8/00_pre_check/08.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
+  /bin/bash /nestedVsphere8/00_pre_check/09.sh
+   if [ $? -ne 0 ] ; then exit 1 ; fi
+fi
 if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/11.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi

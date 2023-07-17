@@ -28,7 +28,6 @@ write_files:
       echo "            match:" | sudo tee -a ${netplan_file}
       echo "                macaddress: $macFirst" | sudo tee -a ${netplan_file}
       echo "            set-name: $ifaceFirstName" | sudo tee -a ${netplan_file}
-      echo "            mtu: ${mtu}" | sudo tee -a ${netplan_file}
       echo "            gateway4: ${default_gw}" | sudo tee -a ${netplan_file}
       echo "            nameservers:" | sudo tee -a ${netplan_file}
       echo "              addresses: [${dns}]" | sudo tee -a ${netplan_file}

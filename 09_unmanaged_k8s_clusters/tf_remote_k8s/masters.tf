@@ -1,22 +1,4 @@
-resource "vsphere_folder" "k8s" {
-  count = length(var.unmanaged_k8s_masters_ips)
-  path          = "${var.k8s.folder_basename}-${var.unmanaged_k8s_masters_cluster_name[count.index]}"
-  type          = "vm"
-  datacenter_id = data.vsphere_datacenter.dc_nested.id
-}
-
-resource "vsphere_content_library" "nested_library_k8s_unmanaged" {
-  name            = "k8s_unmanaged"
-  storage_backing = [data.vsphere_datastore.datastore_nested.id]
-}
-
-resource "vsphere_content_library_item" "nested_library_k8s_unmanaged_item" {
-  name        = "ubuntu.ova"
-  library_id  = vsphere_content_library.nested_library_k8s_unmanaged.id
-  file_url = "/home/ubuntu/${basename(var.ubuntu_ova_path)}"
-}
-
-data "template_file" "k8s_userdata" {
+data "template_file" "k8s_masters_userdata" {
   count = length(var.unmanaged_k8s_masters_ips)
   template = file("${path.module}/userdata/k8s.userdata")
   vars = {
@@ -29,21 +11,6 @@ data "template_file" "k8s_userdata" {
     ip = var.unmanaged_k8s_masters_ips[count.index]
     default_gw = var.unmanaged_k8s_masters_gw[count.index]
     dns = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
-  }
-}
-
-data "template_file" "k8s_bootstrap_master" {
-  count = length(var.unmanaged_k8s_masters_ips)
-  template = file("${path.module}/templates/k8s_bootstrap_master.template")
-  vars = {
-    net_plan_file = var.k8s.netplan_file
-    docker_registry_username = var.docker_registry_username
-    K8s_pod_cidr = var.k8s.pod_cidr
-    K8s_version = var.unmanaged_k8s_masters_version[count.index]
-    Docker_version = var.k8s.docker_version
-    docker_registry_password = var.docker_registry_password
-    cni_name = var.unmanaged_k8s_masters_cni[count.index]
-    cni_version = var.unmanaged_k8s_masters_cni_version[count.index]
   }
 }
 
@@ -81,7 +48,7 @@ resource "vsphere_virtual_machine" "masters" {
     properties = {
       hostname    = "${var.k8s.master_basename}-cluster-${count.index + 1}"
       public-keys = file("/home/ubuntu/.ssh/id_rsa.pub")
-      user-data   = base64encode(data.template_file.k8s_userdata[count.index].rendered)
+      user-data   = base64encode(data.template_file.k8s_masters_userdata[count.index].rendered)
     }
   }
 
@@ -100,16 +67,17 @@ resource "vsphere_virtual_machine" "masters" {
   }
 }
 
-data "template_file" "k8s_bootstrap_workers" {
-  template = file("${path.module}/templates/k8s_bootstrap_workers.template")
-  count = 2
+data "template_file" "k8s_bootstrap_master" {
+  count = length(var.unmanaged_k8s_masters_ips)
+  template = file("${path.module}/templates/k8s_bootstrap_master.template")
   vars = {
     net_plan_file = var.k8s.netplan_file
-    K8s_version = var.unmanaged_k8s_workers_version[count.index]
-    Docker_version = var.k8s.docker_version
     docker_registry_username = var.docker_registry_username
+    K8s_pod_cidr = var.k8s.pod_cidr
+    K8s_version = var.unmanaged_k8s_masters_version[count.index]
+    Docker_version = var.k8s.docker_version
     docker_registry_password = var.docker_registry_password
-    cni_name = var.unmanaged_k8s_workers_cni[count.index]
-    cni_version = var.unmanaged_k8s_workers_cni_version[count.index]
+    cni_name = var.unmanaged_k8s_masters_cni[count.index]
+    cni_version = var.unmanaged_k8s_masters_cni_version[count.index]
   }
 }

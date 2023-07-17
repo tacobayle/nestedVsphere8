@@ -31,7 +31,7 @@ resource "null_resource" "tf_k8s" {
 
   provisioner "file" {
     source = "tf_remote_k8s"
-    destination = "tf_remote_ks"
+    destination = "tf_remote_k8s"
   }
 
   provisioner "file" {
