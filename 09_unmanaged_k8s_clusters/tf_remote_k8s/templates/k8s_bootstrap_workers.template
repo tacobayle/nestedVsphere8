@@ -61,12 +61,12 @@ run_cmd "docker pull tacobayle/busybox-v1; docker image ls | grep tacobayle/busy
 #
 cni=${cni_name}
 if [ "$cni" == "calico" ] ; then
-  sudo -u ubuntu docker pull docker.io/calico/node:{cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/pod2daemon-flexvol:{cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/typha:{cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/cni:{cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/kube-controllers:{cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/csi:{cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/apiserver:{cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/node-driver-registrar:{cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/node:${cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/pod2daemon-flexvol:${cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/typha:${cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/cni:${cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/kube-controllers:${cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/csi:${cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/apiserver:${cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/node-driver-registrar:${cni_version}
 fi

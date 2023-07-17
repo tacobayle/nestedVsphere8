@@ -23,7 +23,7 @@ data "template_file" "k8s_workers_userdata" {
 
 resource "vsphere_virtual_machine" "workers" {
   count = length(var.unmanaged_k8s_workers_ips)
-  name             = "${var.k8s.worker_basename}-cluster-${count.index + 1}"
+  name             = "${var.k8s.worker_basename}-${count.index + 1}"
   datastore_id     = data.vsphere_datastore.datastore_nested.id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
   folder           = data.vsphere_folder.k8s_workers_folders[count.index].path
@@ -93,7 +93,7 @@ resource "null_resource" "k8s_bootstrap_workers" {
   depends_on = [vsphere_virtual_machine.workers]
 
   connection {
-    host = vsphere_virtual_machine.workers.default_ip_address
+    host = vsphere_virtual_machine.workers[count.index].default_ip_address
     type = "ssh"
     agent = false
     user = "ubuntu"

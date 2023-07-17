@@ -94,7 +94,7 @@ resource "null_resource" "k8s_bootstrap_master" {
     private_key = file("/home/ubuntu/.ssh/id_rsa")
   }
   provisioner "file" {
-    content = data.template_file.k8s_bootstrap_master.rendered
+    content = data.template_file.k8s_bootstrap_master[count.index].rendered
     destination = "k8s_bootstrap_master.sh"
   }
 
@@ -118,7 +118,7 @@ data "template_file" "K8s_sanity_check" {
 
   template = file("templates/K8s_check.sh.template")
   vars = {
-    nodes = var.unmanaged_k8s_clusters_nodes
+    nodes = var.unmanaged_k8s_clusters_nodes[count.index]
   }
 }
 
