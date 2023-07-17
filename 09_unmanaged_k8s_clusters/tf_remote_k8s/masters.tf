@@ -109,6 +109,11 @@ resource "null_resource" "copy_join_command_to_tf" {
   count = length(var.unmanaged_k8s_masters_ips)
 
   provisioner "local-exec" {
+    command = "ssh-keygen -f \"/home/ubuntu/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_masters_ips[count.index]}\""
+  }
+}
+
+  provisioner "local-exec" {
     command = "scp -o StrictHostKeyChecking=no ubuntu@${vsphere_virtual_machine.masters[count.index].default_ip_address}:/home/ubuntu/join-command join-command-${var.unmanaged_k8s_masters_ips[count.index]}"
   }
 }

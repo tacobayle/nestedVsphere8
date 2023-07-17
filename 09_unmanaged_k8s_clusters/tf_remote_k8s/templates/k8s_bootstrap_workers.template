@@ -47,10 +47,10 @@ sudo systemctl restart containerd docker
 docker_registry_username=${docker_registry_username}
 docker_registry_password=${docker_registry_password}
 if [[ -z "$docker_registry_username" || -z "$docker_registry_password" ]]; then
-echo "docker_registry_username and docker_registry_password are not defined"
+  echo "docker_registry_username and docker_registry_password are not defined"
 else
-ping -c 1 foo
-while [ $? -ne 0 ] ; do sleep 5 ; docker login --username $docker_registry_username --password $docker_registry_password ; done
+  ping -c 1 foo
+  while [ $? -ne 0 ] ; do sleep 5 ; docker login --username $docker_registry_username --password $docker_registry_password ; done
 fi
 #
 # Download docker images
@@ -61,12 +61,12 @@ run_cmd "docker pull tacobayle/busybox-v1; docker image ls | grep tacobayle/busy
 #
 cni=${cni_name}
 if [ "$cni" == "calico" ] ; then
-  sudo -u ubuntu docker pull docker.io/calico/node:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/pod2daemon-flexvol:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/typha:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/cni:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/kube-controllers:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/csi:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/apiserver:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/node-driver-registrar:${cni_version}
+  docker pull docker.io/calico/node:${cni_version}
+  docker pull docker.io/calico/pod2daemon-flexvol:${cni_version}
+  docker pull docker.io/calico/typha:${cni_version}
+  docker pull docker.io/calico/cni:${cni_version}
+  docker pull docker.io/calico/kube-controllers:${cni_version}
+  docker pull docker.io/calico/csi:${cni_version}
+  docker pull docker.io/calico/apiserver:${cni_version}
+  docker pull docker.io/calico/node-driver-registrar:${cni_version}
 fi

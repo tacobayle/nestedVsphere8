@@ -80,14 +80,14 @@ if [ "$cni" == "antrea" ] ; then
   run_cmd 'kubectl apply -f /tmp/antrea.yml'
 fi
 if [ "$cni" == "calico" ] ; then
-  sudo -u ubuntu docker pull docker.io/calico/node:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/pod2daemon-flexvol:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/typha:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/cni:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/kube-controllers:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/csi:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/apiserver:${cni_version}
-  sudo -u ubuntu docker pull docker.io/calico/node-driver-registrar:${cni_version}
+  docker pull docker.io/calico/node:${cni_version}
+  docker pull docker.io/calico/pod2daemon-flexvol:${cni_version}
+  docker pull docker.io/calico/typha:${cni_version}
+  docker pull docker.io/calico/cni:${cni_version}
+  docker pull docker.io/calico/kube-controllers:${cni_version}
+  docker pull docker.io/calico/csi:${cni_version}
+  docker pull docker.io/calico/apiserver:${cni_version}
+  docker pull docker.io/calico/node-driver-registrar:${cni_version}
   kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/${cni_version}/manifests/tigera-operator.yaml
   curl https://raw.githubusercontent.com/projectcalico/calico/${cni_version}/manifests/custom-resources.yaml
   kubectl create -f custom-resources.yaml
