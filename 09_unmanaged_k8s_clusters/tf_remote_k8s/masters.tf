@@ -71,7 +71,6 @@ data "template_file" "k8s_bootstrap_master" {
   count = length(var.unmanaged_k8s_masters_ips)
   template = file("${path.module}/templates/k8s_bootstrap_master.template")
   vars = {
-    net_plan_file = var.k8s.netplan_file
     docker_registry_username = var.docker_registry_username
     K8s_pod_cidr = var.k8s.pod_cidr
     K8s_version = var.unmanaged_k8s_masters_version[count.index]
@@ -79,5 +78,70 @@ data "template_file" "k8s_bootstrap_master" {
     docker_registry_password = var.docker_registry_password
     cni_name = var.unmanaged_k8s_masters_cni[count.index]
     cni_version = var.unmanaged_k8s_masters_cni_version[count.index]
+  }
+}
+
+resource "null_resource" "k8s_bootstrap_master" {
+  depends_on = [vsphere_virtual_machine.masters]
+  count = length(var.unmanaged_k8s_masters_ips)
+
+
+  connection {
+    host        = var.unmanaged_k8s_masters_ips[count.index]
+    type = "ssh"
+    agent = false
+    user        = var.k8s.username
+    private_key = file("/home/ubuntu/.ssh/id_rsa")
+  }
+  provisioner "file" {
+    content = data.template_file.k8s_bootstrap_master.rendered
+    destination = "k8s_bootstrap_master.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = ["sudo /bin/bash k8s_bootstrap_master.sh"]
+  }
+}
+
+resource "null_resource" "copy_join_command_to_tf" {
+
+  depends_on = [null_resource.k8s_bootstrap_master]
+  count = length(var.unmanaged_k8s_masters_ips)
+
+  provisioner "local-exec" {
+    command = "scp -o StrictHostKeyChecking=no ubuntu@${vsphere_virtual_machine.masters[count.index].default_ip_address}:/home/ubuntu/join-command join-command-${var.unmanaged_k8s_masters_ips[count.index]}"
+  }
+}
+
+data "template_file" "K8s_sanity_check" {
+  count = length(var.unmanaged_k8s_clusters_nodes)
+
+  template = file("templates/K8s_check.sh.template")
+  vars = {
+    nodes = var.unmanaged_k8s_clusters_nodes
+  }
+}
+
+resource "null_resource" "K8s_sanity_check" {
+  depends_on = [null_resource.join_cluster]
+  count = length(var.unmanaged_k8s_masters_ips)
+
+  connection {
+    host = vsphere_virtual_machine.masters[count.index].default_ip_address
+    type = "ssh"
+    agent = false
+    user = var.k8s.username
+    private_key = file("/home/ubuntu/.ssh/id_rsa")
+  }
+
+  provisioner "file" {
+    content = data.template_file.K8s_sanity_check[count.index].rendered
+    destination = "K8s_sanity_check.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "/bin/bash K8s_sanity_check.sh",
+    ]
   }
 }

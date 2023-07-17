@@ -76,7 +76,7 @@ resource "vsphere_virtual_machine" "workers" {
 
 data "template_file" "k8s_bootstrap_workers" {
   template = file("${path.module}/templates/k8s_bootstrap_workers.template")
-  count = 2
+  count = length(var.unmanaged_k8s_workers_ips)
   vars = {
     net_plan_file = var.k8s.netplan_file
     K8s_version = var.unmanaged_k8s_workers_version[count.index]
@@ -85,5 +85,54 @@ data "template_file" "k8s_bootstrap_workers" {
     docker_registry_password = var.docker_registry_password
     cni_name = var.unmanaged_k8s_workers_cni[count.index]
     cni_version = var.unmanaged_k8s_workers_cni_version[count.index]
+  }
+}
+
+resource "null_resource" "k8s_bootstrap_workers" {
+  count = length(var.unmanaged_k8s_workers_ips)
+  depends_on = [vsphere_virtual_machine.workers]
+
+  connection {
+    host = vsphere_virtual_machine.workers.default_ip_address
+    type = "ssh"
+    agent = false
+    user = "ubuntu"
+    private_key = file("/home/ubuntu/.ssh/id_rsa")
+  }
+
+  provisioner "file" {
+    content = data.template_file.k8s_bootstrap_workers[count.index].rendered
+    destination = "k8s_bootstrap_workers.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = ["sudo /bin/bash k8s_bootstrap_workers.sh"]
+  }
+
+}
+
+resource "null_resource" "copy_join_command_to_workers" {
+  count = length(var.unmanaged_k8s_workers_ips)
+  depends_on = [null_resource.copy_join_command_to_tf, null_resource.k8s_bootstrap_workers]
+  provisioner "local-exec" {
+    command = "scp -o StrictHostKeyChecking=no join-command-${var.unmanaged_k8s_workers_associated_master_ips[count.index]} ubuntu@${vsphere_virtual_machine.workers[count.index].default_ip_address}:/home/ubuntu/join-command"
+  }
+}
+
+resource "null_resource" "join_cluster" {
+  depends_on = [null_resource.copy_join_command_to_workers]
+  count = length(var.unmanaged_k8s_workers_ips)
+  connection {
+    host        = vsphere_virtual_machine.workers[count.index].default_ip_address
+    type        = "ssh"
+    agent       = false
+    user = "ubuntu"
+    private_key = file("/home/ubuntu/.ssh/id_rsa")
+  }
+
+  provisioner "remote-exec" {
+    inline      = [
+      "sudo /bin/bash /home/ubuntu/join-command-${var.unmanaged_k8s_workers_associated_master_ips[count.index]}"
+    ]
   }
 }

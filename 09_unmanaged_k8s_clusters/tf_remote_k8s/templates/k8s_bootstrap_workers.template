@@ -31,18 +31,7 @@ run_cmd '! sudo add-apt-repository  "deb [arch=amd64] https://download.docker.co
 run_cmd 'apt-get install -y docker-ce=${Docker_version}; ls /usr/bin/docker'
 run_cmd 'apt-get install -y kubeadm=${K8s_version} kubectl=${K8s_version} kubelet=${K8s_version}; ls /usr/bin/kubeadm /usr/bin/kubectl /usr/bin/kubelet'
 run_cmd 'apt-get install -y helm; ls /usr/bin/helm'
-if_secondary_name=$(sudo dmesg | grep eth0 | tail -1 | awk -F' ' '{print $5}' | sed 's/://')
-if [[ ${dhcp} == true ]] ; then
-  sudo sed -i -e "s/if_name_secondary_to_be_replaced/"$if_secondary_name"/g" /tmp/50-cloud-init.yaml
-  sudo cp /tmp/50-cloud-init.yaml ${net_plan_file}
-fi
-if [[ ${dhcp} == false ]] ; then
-  sudo sed -i -e "s/if_name_secondary_to_be_replaced/"$if_secondary_name"/g" ${net_plan_file}
-fi
-sudo netplan apply
-sleep 10
-sudo usermod -a -G docker ubuntu
-#sudo rm /etc/containerd/config.toml
+#
 sudo  bash -c cat << EOF > /etc/containerd/config.toml
 version = 2
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
@@ -50,7 +39,7 @@ version = 2
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
     SystemdCgroup = true
 EOF
-
+sudo usermod -a -G docker ubuntu
 sudo systemctl restart containerd docker
 #
 # docker login if docker_registry_username and docker_registry_password are defined
@@ -72,18 +61,12 @@ run_cmd "docker pull tacobayle/busybox-v1; docker image ls | grep tacobayle/busy
 #
 cni=${cni_name}
 if [ "$cni" == "calico" ] ; then
-  run_cmd 'wget -O /tmp/calico.yml https://docs.projectcalico.org/manifests/calico.yaml; test $(ls -l /tmp/calico.yml | awk '"'"'{print $5}'"'"') -gt 0'
-  for image in $(cat /tmp/calico.yml | grep 'image: ' | awk -F 'image: ' '{print $2}'); do image_to_search=$(echo $image | sed -e "s/docker.io\///g" | awk -F':' '{print $1}') ; run_cmd "docker pull $image; docker image ls | grep $image_to_search" ; done
+  sudo -u ubuntu docker pull docker.io/calico/node:{cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/pod2daemon-flexvol:{cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/typha:{cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/cni:{cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/kube-controllers:{cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/csi:{cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/apiserver:{cni_version}
+  sudo -u ubuntu docker pull docker.io/calico/node-driver-registrar:{cni_version}
 fi
-if [ "$cni" == "flannel" ] ; then
-  run_cmd 'wget -O /tmp/flannel.yml https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml; test $(ls -l /tmp/flannel.yml | awk '"'"'{print $5}'"'"') -gt 0'
-  for image in $(cat /tmp/flannel.yml | grep -vE '^\s*(#)' | grep 'image: ' | awk -F 'image: ' '{print $2}'); do image_to_search=$(echo $image | awk -F':' '{print $1}') ; run_cmd "docker pull $image; docker image ls | grep $image_to_search" ; done
-fi
-#
-# Change kubelet IP
-#
-sudo cp /etc/systemd/system/kubelet.service.d/10-kubeadm.conf /etc/systemd/system/kubelet.service.d/10-kubeadm.conf.old
-ip=$(ip -f inet addr show $if_secondary_name | awk '/inet / {print $2}' | awk -F/ '{print $1}')
-sudo sed '$${s/$/ --node-ip '$ip'/}' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf.old | sudo tee /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-sudo systemctl daemon-reload
-sudo systemctl restart kubelet
