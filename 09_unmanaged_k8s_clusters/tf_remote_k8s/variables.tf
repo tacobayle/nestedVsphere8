@@ -17,6 +17,7 @@ variable "unmanaged_k8s_masters_version" {}
 variable "unmanaged_k8s_masters_cni" {}
 variable "unmanaged_k8s_masters_cni_version" {}
 #
+variable "unmanaged_k8s_workers_count" {}
 variable "unmanaged_k8s_workers_associated_master_ips" {}
 variable "unmanaged_k8s_workers_ips" {}
 variable "unmanaged_k8s_workers_cidr" {}

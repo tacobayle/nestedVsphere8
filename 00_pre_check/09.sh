@@ -25,6 +25,7 @@ unmanaged_k8s_masters_cidr=[]
 unmanaged_k8s_masters_gw=[]
 unmanaged_k8s_masters_cluster_name=[]
 unmanaged_k8s_masters_version=[]
+unmanaged_k8s_workers_count=[]
 unmanaged_k8s_workers_associated_master_ips=[]
 unmanaged_k8s_workers_ips=[]
 unmanaged_k8s_workers_segments=[]
@@ -52,8 +53,11 @@ do
       unmanaged_k8s_masters_version=$(echo $unmanaged_k8s_masters_version | jq '. += ["'$(echo $cluster | jq -c -r .version)'"]')
       unmanaged_k8s_masters_cni=$(echo $unmanaged_k8s_masters_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
       unmanaged_k8s_masters_cni_version=$(echo $unmanaged_k8s_masters_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version)'"]')
+      count=0
       for ip in $(echo $cluster | jq -c -r '.cluster_ips[1:][]')
       do
+        ((count++))
+        unmanaged_k8s_workers_count=$(echo $unmanaged_k8s_workers_count | jq '. += ["'$(echo $count)'"]')
         unmanaged_k8s_workers_associated_master_ips=$(echo $unmanaged_k8s_workers_associated_master_ips | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ips[0])'"]')
         unmanaged_k8s_workers_ips=$(echo $unmanaged_k8s_workers_ips  | jq '. += ["'$(echo $ip)'"]')
         unmanaged_k8s_workers_segments=$(echo $unmanaged_k8s_workers_segments | jq '. += ["'$(jq -c -r .networks.alb.$network.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"]')
@@ -89,6 +93,8 @@ unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unm
 echo "   +++ Adding unmanaged_k8s_masters_cni_version..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_cni_version": '$(echo $unmanaged_k8s_masters_cni_version)'}')
 #
+echo "   +++ Adding unmanaged_k8s_workers_count..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_count": '$(echo $unmanaged_k8s_workers_count)'}')
 echo "   +++ Adding unmanaged_k8s_workers_associated_master_ips..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_associated_master_ips": '$(echo $unmanaged_k8s_workers_associated_master_ips)'}')
 echo "   +++ Adding unmanaged_k8s_workers_ips..."

@@ -10,7 +10,7 @@ data "template_file" "k8s_workers_userdata" {
   template = file("${path.module}/userdata/k8s.userdata")
   vars = {
     username     = var.k8s.username
-    hostname     = "${var.k8s.worker_basename}-cluster-${count.index + 1}"
+    hostname     = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_cluster_name[count.index + 1]}"
     password      = var.ubuntu_password
     pubkey       = file("/home/ubuntu/.ssh/id_rsa.pub")
     netplan_file  = var.k8s.netplan_file
@@ -23,7 +23,7 @@ data "template_file" "k8s_workers_userdata" {
 
 resource "vsphere_virtual_machine" "workers" {
   count = length(var.unmanaged_k8s_workers_ips)
-  name             = "${var.k8s.worker_basename}-${count.index + 1}"
+  name             = "${var.k8s.worker_basename}-${unmanaged_k8s_workers_count[count.index]}"
   datastore_id     = data.vsphere_datastore.datastore_nested.id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
   folder           = data.vsphere_folder.k8s_workers_folders[count.index].path
@@ -53,7 +53,7 @@ resource "vsphere_virtual_machine" "workers" {
 
   vapp {
     properties = {
-      hostname    = "${var.k8s.worker_basename}-cluster-${count.index + 1}"
+      hostname    = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_cluster_name[count.index + 1]}"
       public-keys = file("/home/ubuntu/.ssh/id_rsa.pub")
       user-data   = base64encode(data.template_file.k8s_workers_userdata[count.index].rendered)
     }
