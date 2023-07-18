@@ -67,6 +67,16 @@ resource "vsphere_virtual_machine" "masters" {
   }
 }
 
+resource "null_resource" "clear_ssh_keys_masters" {
+
+  depends_on = [vsphere_virtual_machine.masters]
+  count = length(var.unmanaged_k8s_masters_ips)
+
+  provisioner "local-exec" {
+    command = "ssh-keygen -f \"/home/${var.k8s.username}/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_masters_ips[count.index]}\""
+  }
+}
+
 data "template_file" "k8s_bootstrap_master" {
   count = length(var.unmanaged_k8s_masters_ips)
   template = file("${path.module}/templates/k8s_bootstrap_master.template")
@@ -82,7 +92,7 @@ data "template_file" "k8s_bootstrap_master" {
 }
 
 resource "null_resource" "k8s_bootstrap_master" {
-  depends_on = [vsphere_virtual_machine.masters]
+  depends_on = [null_resource.clear_ssh_keys_masters]
   count = length(var.unmanaged_k8s_masters_ips)
 
 
@@ -107,11 +117,6 @@ resource "null_resource" "copy_join_command_to_tf" {
 
   depends_on = [null_resource.k8s_bootstrap_master]
   count = length(var.unmanaged_k8s_masters_ips)
-
-  provisioner "local-exec" {
-    command = "ssh-keygen -f \"/home/ubuntu/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_masters_ips[count.index]}\""
-  }
-}
 
   provisioner "local-exec" {
     command = "scp -o StrictHostKeyChecking=no ubuntu@${vsphere_virtual_machine.masters[count.index].default_ip_address}:/home/ubuntu/join-command join-command-${var.unmanaged_k8s_masters_ips[count.index]}"

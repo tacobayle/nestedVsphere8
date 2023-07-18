@@ -60,10 +60,10 @@ export KUBECONFIG=/etc/kubernetes/admin.conf
 docker_registry_username=${docker_registry_username}
 docker_registry_password=${docker_registry_password}
 if [[ -z "$docker_registry_username" || -z "$docker_registry_password" ]]; then
-echo "docker_registry_username and docker_registry_password are not defined"
+  echo "docker_registry_username and docker_registry_password are not defined"
 else
-ping -c 1 foo
-while [ $? -ne 0 ] ; do sleep 5 ; docker login --username $docker_registry_username --password $docker_registry_password ; done
+  ping -c 1 foo
+  while [ $? -ne 0 ] ; do sleep 5 ; docker login --username $docker_registry_username --password $docker_registry_password ; done
 fi
 #
 # Download docker images
@@ -88,9 +88,11 @@ if [ "$cni" == "calico" ] ; then
   docker pull docker.io/calico/csi:${cni_version}
   docker pull docker.io/calico/apiserver:${cni_version}
   docker pull docker.io/calico/node-driver-registrar:${cni_version}
-  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/${cni_version}/manifests/tigera-operator.yaml
-  curl https://raw.githubusercontent.com/projectcalico/calico/${cni_version}/manifests/custom-resources.yaml
+  kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/${cni_version}/manifests/tigera-operator.yaml
+  kubectl replace -f https://raw.githubusercontent.com/projectcalico/calico/${cni_version}/manifests/tigera-operator.yaml
+  curl https://raw.githubusercontent.com/projectcalico/calico/${cni_version}/manifests/custom-resources.yaml -O
   kubectl create -f custom-resources.yaml
+  kubectl replace -f custom-resources.yaml
 fi
 #
 # K8s generate join command

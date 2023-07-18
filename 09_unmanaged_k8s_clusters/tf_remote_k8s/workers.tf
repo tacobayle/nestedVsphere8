@@ -10,7 +10,7 @@ data "template_file" "k8s_workers_userdata" {
   template = file("${path.module}/userdata/k8s.userdata")
   vars = {
     username     = var.k8s.username
-    hostname     = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_cluster_name[count.index + 1]}"
+    hostname     = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_count[count.index]}"
     password      = var.ubuntu_password
     pubkey       = file("/home/ubuntu/.ssh/id_rsa.pub")
     netplan_file  = var.k8s.netplan_file
@@ -23,7 +23,7 @@ data "template_file" "k8s_workers_userdata" {
 
 resource "vsphere_virtual_machine" "workers" {
   count = length(var.unmanaged_k8s_workers_ips)
-  name             = "${var.k8s.worker_basename}-${unmanaged_k8s_workers_count[count.index]}"
+  name             = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_count[count.index]}"
   datastore_id     = data.vsphere_datastore.datastore_nested.id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
   folder           = data.vsphere_folder.k8s_workers_folders[count.index].path
@@ -39,7 +39,7 @@ resource "vsphere_virtual_machine" "workers" {
 
   disk {
     size             = var.k8s.worker_disk
-    label            = "${var.k8s.worker_basename}-cluster-${count.index + 1}.lab_vmdk"
+    label            = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_count[count.index]}.lab_vmdk"
     thin_provisioned = true
   }
 
@@ -53,7 +53,7 @@ resource "vsphere_virtual_machine" "workers" {
 
   vapp {
     properties = {
-      hostname    = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_cluster_name[count.index + 1]}"
+      hostname    = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_count[count.index]}"
       public-keys = file("/home/ubuntu/.ssh/id_rsa.pub")
       user-data   = base64encode(data.template_file.k8s_workers_userdata[count.index].rendered)
     }
@@ -71,6 +71,16 @@ resource "vsphere_virtual_machine" "workers" {
     inline      = [
       "while [ ! -f /tmp/cloudInitDone.log ]; do sleep 1; done"
     ]
+  }
+}
+
+resource "null_resource" "clear_ssh_keys_workers" {
+
+  depends_on = [vsphere_virtual_machine.workers]
+  count = length(var.unmanaged_k8s_workers_ips)
+
+  provisioner "local-exec" {
+    command = "ssh-keygen -f \"/home/${var.k8s.username}/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_workers_ips[count.index]}\""
   }
 }
 
@@ -116,11 +126,6 @@ resource "null_resource" "copy_join_command_to_workers" {
   depends_on = [null_resource.copy_join_command_to_tf, null_resource.k8s_bootstrap_workers]
 
   provisioner "local-exec" {
-    command = "ssh-keygen -f \"/home/ubuntu/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_workers_ips[count.index]}\""
-  }
-}
-
-  provisioner "local-exec" {
     command = "scp -o StrictHostKeyChecking=no join-command-${var.unmanaged_k8s_workers_associated_master_ips[count.index]} ubuntu@${vsphere_virtual_machine.workers[count.index].default_ip_address}:/home/ubuntu/join-command"
   }
 }
@@ -138,7 +143,7 @@ resource "null_resource" "join_cluster" {
 
   provisioner "remote-exec" {
     inline      = [
-      "sudo /bin/bash /home/ubuntu/join-command-${var.unmanaged_k8s_workers_associated_master_ips[count.index]}"
+      "sudo /bin/bash /home/ubuntu/join-command"
     ]
   }
 }
