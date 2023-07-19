@@ -155,3 +155,89 @@ resource "null_resource" "K8s_sanity_check" {
     ]
   }
 }
+
+#data "template_file" "values_ako" {
+#  count = length(var.unmanaged_k8s_masters_ips)
+#  template = file("templates/values.yml.${var.ako_version}.template")
+#  vars = {
+#    disableStaticRouteSync = "false"
+#    clusterName  = var.clustername
+#    cniPlugin    = var.K8s_cni_name
+#    subnetIP     = split("/", var.vcenter_network_vip_cidr)[0]
+#    subnetPrefix = split("/", var.vcenter_network_vip_cidr)[1]
+#    networkName  = var.vcenter_network_vip_name
+#    serviceType  = local.ako_service_type
+#    shardVSSize  = var.shardVSSize
+#    loglevel     = var.loglevel
+#    serviceEngineGroupName = "Default-Group"
+#    controllerVersion = var.avi_version
+#    cloudName    = "dc1_vCenter"
+#    controllerHost = var.vcenter_network_mgmt_dhcp == true ? vsphere_virtual_machine.controller_dhcp[0].default_ip_address : split(",", replace(var.vcenter_network_mgmt_ip4_addresses, " ", ""))[0]
+#  }
+#}
+#
+#
+#resource "null_resource" "ako_prerequisites" {
+#  count = length(var.unmanaged_k8s_masters_ips)
+#  connection {
+#    host = vsphere_virtual_machine.masters[count.index].default_ip_address
+#    type = "ssh"
+#    agent = false
+#    user = var.k8s.username
+#    private_key = file("/home/ubuntu/.ssh/id_rsa")
+#  }
+#
+#  provisioner "file" {
+#    content = data.template_file.values[count.index].rendered
+#    destination = "values.yml"
+#  }
+#
+#  provisioner "file" {
+#    source = "templates/deployment.yml"
+#    destination = "deployment.yml"
+#  }
+#
+#  provisioner "file" {
+#    source = "templates/service_clusterIP.yml"
+#    destination = "service_clusterIP.yml"
+#  }
+#
+#  provisioner "file" {
+#    source = "templates/service_loadBalancer.yml"
+#    destination = "service_loadBalancer.yml"
+#  }
+#
+#  provisioner "file" {
+#    content = data.template_file.ingress[count.index].rendered
+#    destination = "ingress.yml"
+#  }
+#
+#  provisioner "file" {
+#    content = data.template_file.secure_ingress[count.index].rendered
+#    destination = "secure_ingress.yml"
+#  }
+#
+#  provisioner "file" {
+#    content = data.template_file.avi_crd_hostrule_waf[count.index].rendered
+#    destination = "avi_crd_hostrule_waf.yml"
+#  }
+#
+#  provisioner "file" {
+#    content = data.template_file.avi_crd_hostrule_tls_cert[count.index].rendered
+#    destination = "avi_crd_hostrule_tls_cert.yml"
+#  }
+#
+#  provisioner "remote-exec" {
+#    inline = [
+#      "echo \"export avi_password='${random_string.password.result}'\" | sudo tee -a /home/ubuntu/.profile",
+#      "helm repo add ako ${var.ako_helm_url}",
+#      "kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${var.docker_registry_username} --docker-password=${var.docker_registry_password} --docker-email=${var.docker_registry_email}",
+#      "kubectl patch serviceaccount default -p \"{\\\"imagePullSecrets\\\": [{\\\"name\\\": \\\"docker\\\"}]}\"",
+#      "kubectl create ns avi-system",
+#      "kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${var.docker_registry_username} --docker-password=${var.docker_registry_password} --docker-email=${var.docker_registry_email} -n avi-system",
+#      "kubectl patch serviceaccount default -p \"{\\\"imagePullSecrets\\\": [{\\\"name\\\": \\\"docker\\\"}]}\" -n avi-system",
+#      "openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out ssl.crt -keyout ssl.key -subj \"/C=US/ST=CA/L=Palo Alto/O=VMWARE/OU=IT/CN=ingress.${var.avi_domain}\"",
+#      "kubectl create secret tls cert01 --key=ssl.key --cert=ssl.crt",
+#    ]
+#  }
+#}
