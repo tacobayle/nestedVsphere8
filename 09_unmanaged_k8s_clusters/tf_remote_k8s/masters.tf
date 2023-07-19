@@ -3,7 +3,7 @@ data "template_file" "k8s_masters_userdata" {
   template = file("${path.module}/userdata/k8s.userdata")
   vars = {
     username     = var.k8s.username
-    hostname     = "${var.k8s.master_basename}-cluster-${count.index + 1}"
+    hostname     = "${var.k8s.master_basename}-1"
     password      = var.ubuntu_password
     pubkey       = file("/home/ubuntu/.ssh/id_rsa.pub")
     netplan_file  = var.k8s.netplan_file
@@ -16,7 +16,7 @@ data "template_file" "k8s_masters_userdata" {
 
 resource "vsphere_virtual_machine" "masters" {
   count = length(var.unmanaged_k8s_masters_ips)
-  name             = "${var.k8s.master_basename}-cluster-${count.index + 1}"
+  name             = "${var.k8s.master_basename}-1"
   datastore_id     = data.vsphere_datastore.datastore_nested.id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
   folder           = vsphere_folder.k8s[count.index].path
@@ -32,7 +32,7 @@ resource "vsphere_virtual_machine" "masters" {
 
   disk {
     size             = var.k8s.master_disk
-    label            = "${var.k8s.master_basename}-cluster-${count.index + 1}.lab_vmdk"
+    label            = "${var.k8s.master_basename}-1.lab_vmdk"
     thin_provisioned = true
   }
 
@@ -46,7 +46,7 @@ resource "vsphere_virtual_machine" "masters" {
 
   vapp {
     properties = {
-      hostname    = "${var.k8s.master_basename}-cluster-${count.index + 1}"
+      hostname    = "${var.k8s.master_basename}-1"
       public-keys = file("/home/ubuntu/.ssh/id_rsa.pub")
       user-data   = base64encode(data.template_file.k8s_masters_userdata[count.index].rendered)
     }
