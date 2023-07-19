@@ -279,17 +279,17 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
         test_if_variable_is_defined $(echo $cluster | jq -c .version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a version defined"
         test_if_variable_is_defined $(echo $cluster | jq -c .cni) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cni defined"
         if [[ $(echo $cluster | jq -c -r .cni) == "antrea" || $(echo $cluster | jq -c -r .cni) == "calico" ]] ; then
-          echo "   cni is $(echo $cluster | jq -c -r .cni)"
+          echo "   +++ cni is $(echo $cluster | jq -c -r .cni)"
         else
-          echo "   cni $(echo $cluster | jq -c -r .cni) is not supported - cni should be either \"calico\" or \"antrea\""
+          echo "   +++ cni $(echo $cluster | jq -c -r .cni) is not supported - cni should be either \"calico\" or \"antrea\""
           exit 255
         fi
         test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cni_version defined"
         test_if_variable_is_defined $(echo $cluster | jq -c .ako_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a ako_version defined"
-        if [[ $(echo $cluster | jq -c -r .ako_version) == "10.1.1" ]] ; then
-          echo "   ako_version is $(echo $cluster | jq -c -r .ako_version)"
+        if [[ $(echo $cluster | jq -c -r .ako_version) == "1.10.1" ]] ; then
+          echo "   +++ ako_version is $(echo $cluster | jq -c -r .ako_version)"
         else
-          echo "   ako_version $(echo $cluster | jq -c -r .ako_version) is not supported"
+          echo "   +++ ako_version $(echo $cluster | jq -c -r .ako_version) is not supported"
           exit 255
         fi
         test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cluster_ips defined"
