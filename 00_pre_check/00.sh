@@ -276,7 +276,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
       for cluster in $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters[] $jsonFile)
       do
         test_if_variable_is_defined $(echo $cluster | jq -c .cluster_name) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cluster_name defined"
-        test_if_variable_is_defined $(echo $cluster | jq -c .version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a version defined"
+        test_if_variable_is_defined $(echo $cluster | jq -c .k8s_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a k8s_version defined"
         test_if_variable_is_defined $(echo $cluster | jq -c .cni) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cni defined"
         if [[ $(echo $cluster | jq -c -r .cni) == "antrea" || $(echo $cluster | jq -c -r .cni) == "calico" ]] ; then
           echo "   +++ cni is $(echo $cluster | jq -c -r .cni) which is supported"
