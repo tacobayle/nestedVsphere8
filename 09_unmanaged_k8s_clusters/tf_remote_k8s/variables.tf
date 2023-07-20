@@ -8,6 +8,7 @@ variable "docker_registry_username" {}
 variable "docker_registry_password" {}
 #
 variable "unmanaged_k8s_clusters_nodes" {}
+variable "unmanaged_k8s_clusters_ako_version" {}
 variable "unmanaged_k8s_masters_ips" {}
 variable "unmanaged_k8s_masters_segments" {}
 variable "unmanaged_k8s_masters_cidr" {}

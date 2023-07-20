@@ -158,14 +158,14 @@ resource "null_resource" "K8s_sanity_check" {
 
 #data "template_file" "values_ako" {
 #  count = length(var.unmanaged_k8s_masters_ips)
-#  template = file("templates/values.yml.${var.ako_version}.template")
+#  template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
 #  vars = {
 #    disableStaticRouteSync = "false"
-#    clusterName  = var.clustername
-#    cniPlugin    = var.K8s_cni_name
-#    subnetIP     = split("/", var.vcenter_network_vip_cidr)[0]
-#    subnetPrefix = split("/", var.vcenter_network_vip_cidr)[1]
-#    networkName  = var.vcenter_network_vip_name
+#    clusterName  = var.unmanaged_k8s_masters_cluster_name[count.index]
+#    cniPlugin    = var.unmanaged_k8s_masters_cni[count.index]
+#    subnetIP     = split("/", var.unmanaged_k8s_masters_cidr[count.index])[0]
+#    subnetPrefix = split("/", var.unmanaged_k8s_masters_cidr[count.index])[1]
+#    networkName  = var.unmanaged_k8s_masters_segments[count.index]
 #    serviceType  = local.ako_service_type
 #    shardVSSize  = var.shardVSSize
 #    loglevel     = var.loglevel

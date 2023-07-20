@@ -19,6 +19,7 @@ ubuntu_ova_path=$(jq -c -r '.ubuntu_ova_path' /nestedVsphere8/02_external_gatewa
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
 #
 unmanaged_k8s_clusters_nodes=[]
+unmanaged_k8s_clusters_ako_version=[]
 unmanaged_k8s_masters_ips=[]
 unmanaged_k8s_masters_segments=[]
 unmanaged_k8s_masters_cidr=[]
@@ -45,6 +46,7 @@ do
     for cluster in $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters[] $jsonFile)
     do
       unmanaged_k8s_clusters_nodes=$(echo $unmanaged_k8s_clusters_nodes | jq '. += ["'$(echo $cluster | jq -c -r '.cluster_ips | length')'"]')
+      unmanaged_k8s_clusters_ako_version=$(echo $unmanaged_k8s_clusters_ako_version | jq '. += ["'$(echo $cluster | jq -c -r .ako_version )'"]')
       unmanaged_k8s_masters_ips=$(echo $unmanaged_k8s_masters_ips | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ips[0])'"]')
       unmanaged_k8s_masters_cluster_name=$(echo $unmanaged_k8s_masters_cluster_name | jq '. += ["'$(echo $cluster | jq -c -r .cluster_name)'"]')
       unmanaged_k8s_masters_segments=$(echo $unmanaged_k8s_masters_segments | jq '. += ["'$(jq -c -r .networks.alb.$network.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"]')
@@ -76,6 +78,8 @@ done
 #
 echo "   +++ Adding unmanaged_k8s_clusters_nodes..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_clusters_nodes": '$(echo $unmanaged_k8s_clusters_nodes)'}')
+echo "   +++ Adding unmanaged_k8s_clusters_ako_version..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_clusters_ako_version": '$(echo $unmanaged_k8s_clusters_ako_version)'}')
 echo "   +++ Adding unmanaged_k8s_masters_ips..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_ips": '$(echo $unmanaged_k8s_masters_ips)'}')
 echo "   +++ Adding unmanaged_k8s_masters_cluster_name..."
