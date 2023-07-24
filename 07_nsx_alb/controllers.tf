@@ -1,5 +1,5 @@
 resource "vsphere_folder" "avi" {
-  path          = "avi-controllers"
+  path          = "alb-controllers"
   type          = "vm"
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }

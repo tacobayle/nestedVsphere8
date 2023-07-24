@@ -156,26 +156,26 @@ resource "null_resource" "K8s_sanity_check" {
   }
 }
 
-#data "template_file" "values_ako" {
-#  count = length(var.unmanaged_k8s_masters_ips)
-#  template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
-#  vars = {
-#    disableStaticRouteSync = "false"
-#    clusterName  = var.unmanaged_k8s_masters_cluster_name[count.index]
-#    cniPlugin    = var.unmanaged_k8s_masters_cni[count.index]
-#    subnetIP     = split("/", var.unmanaged_k8s_masters_cidr[count.index])[0]
-#    subnetPrefix = split("/", var.unmanaged_k8s_masters_cidr[count.index])[1]
-#    networkName  = var.unmanaged_k8s_masters_segments[count.index]
-#    serviceType  = local.ako_service_type
-#    shardVSSize  = var.shardVSSize
-#    loglevel     = var.loglevel
-#    serviceEngineGroupName = "Default-Group"
-#    controllerVersion = var.avi_version
-#    cloudName    = "dc1_vCenter"
-#    controllerHost = var.vcenter_network_mgmt_dhcp == true ? vsphere_virtual_machine.controller_dhcp[0].default_ip_address : split(",", replace(var.vcenter_network_mgmt_ip4_addresses, " ", ""))[0]
-#  }
-#}
-#
+data "template_file" "values_ako" {
+  count = var.deployment == length(var.unmanaged_k8s_masters_ips)
+  template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
+  vars = {
+    disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
+    clusterName  = var.unmanaged_k8s_masters_cluster_name[count.index]
+    cniPlugin    = var.unmanaged_k8s_masters_cni[count.index]
+    subnetIP     = split("/", var.unmanaged_k8s_masters_cidr[count.index])[0]
+    subnetPrefix = split("/", var.unmanaged_k8s_masters_cidr[count.index])[1]
+    networkName  = var.unmanaged_k8s_masters_vip_networks[count.index]
+    serviceType  = var.unmanaged_k8s_masters_ako_serviceType[count.index]
+    shardVSSize  = var.k8s.ako_shardVSSize
+    loglevel     = var.k8s.ako_loglevel
+    serviceEngineGroupName = "${var.k8s.ako_seg_basename}-${var.unmanaged_k8s_masters_cluster_name[count.index]}"
+    controllerVersion = var.avi.version
+    cloudName    = var.avi.config.cloud.name
+    controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
+  }
+}
+
 #
 #resource "null_resource" "ako_prerequisites" {
 #  count = length(var.unmanaged_k8s_masters_ips)
