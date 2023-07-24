@@ -58,10 +58,10 @@ write_files:
       run_cmd 'sudo rm -f /tmp/apt-key.gpg; wget https://packages.cloud.google.com/apt/doc/apt-key.gpg -O /tmp/apt-key.gpg; test $(ls -l /tmp/apt-key.gpg | awk '"'"'{print $5}'"'"') -gt 0'
       run_cmd 'sudo apt-key add /tmp/apt-key.gpg'
       run_cmd '! sudo add-apt-repository "deb https://apt.kubernetes.io/ kubernetes-xenial main" | grep Err:'
+      run_cmd 'apt-get install -y kubectl=${K8s_version}; ls /usr/bin/kubectl'
       echo "alias k=kubectl" | sudo tee -a /home/ubuntu/.profile
       echo "source <(kubectl completion bash | sed s/kubectl/k/g)" | sudo tee -a /home/ubuntu/.profile
       #
-      run_cmd 'apt-get install -y kubectl=${K8s_version}; ls /usr/bin/kubectl'
       run_cmd 'sudo apt install -y python3-pip; ls /usr/bin/pip3'
       run_cmd 'sudo apt install -y jq; ls /usr/bin/jq'
       run_cmd 'sudo apt install -y expect; ls /usr/bin/expect'
