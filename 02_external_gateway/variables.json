@@ -51,5 +51,6 @@
         "port_group_name": "tanzu-pg"
       }
     }
-  }
+  },
+  "default_kubectl_version": "1.26.6-00"
 }

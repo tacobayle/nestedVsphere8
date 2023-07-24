@@ -170,6 +170,11 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
       vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile)
     fi
   fi
+  #
+  echo "   +++ Adding .default_kubectl_version... from local variables.json"
+  default_kubectl_version=$(jq -c -r '.default_kubectl_version' $localJsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '. += {"default_kubectl_version": "'$(echo $default_kubectl_version)'"}')
+  #
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
@@ -177,33 +182,54 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
 fi
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" ]]; then
-  echo "   +++ Adding prefix for alb se network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.se.netmask' $jsonFile) "   ++++++")
-  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.se += {"prefix": "'$(echo $prefix)'"}')
-  #
-  echo "   +++ Adding prefix for alb backend network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.backend.netmask' $jsonFile) "   ++++++")
-  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.backend += {"prefix": "'$(echo $prefix)'"}')
-  #
-  echo "   +++ Adding prefix for alb vip network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.vip.netmask' $jsonFile) "   ++++++")
-  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.vip += {"prefix": "'$(echo $prefix)'"}')
-  #
-  echo "   +++ Adding prefix for alb tanzu network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.tanzu.netmask' $jsonFile) "   ++++++")
-  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.tanzu += {"prefix": "'$(echo $prefix)'"}')
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+  alb_networks='["se", "backend", "vip", "tanzu"]'
+  ip_table_prefixes="[]"
+  for network in $(echo $alb_networks | jq -c -r .[])
+  do
+    echo "   +++ Adding prefix for alb $network network..."
+    prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.'$network'.netmask' $jsonFile) "   ++++++")
+    external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.'$network' += {"prefix": "'$(echo $prefix)'"}')
+    if [[ $network != "se" ]] ; then ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ['$(jq .vsphere_underlay.networks.alb.$network.cidr $jsonFile)']') ; fi
+    #
+    if [[ $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters $jsonFile) != "null" ]] ; then
+      echo "   +++ Adding .default_kubectl_version... from the first k8s cluster version"
+      default_kubectl_version=$(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters[0].k8s_version $jsonFile)
+      external_gw_json=$(echo $external_gw_json | jq '. += {"default_kubectl_version": "'$(echo $default_kubectl_version)'"}')
+    fi
+  done
+#  echo "   +++ Adding prefix for alb se network..."
+#  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.se.netmask' $jsonFile) "   ++++++")
+#  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.se += {"prefix": "'$(echo $prefix)'"}')
+#  #
+#  echo "   +++ Adding prefix for alb backend network..."
+#  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.backend.netmask' $jsonFile) "   ++++++")
+#  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.backend += {"prefix": "'$(echo $prefix)'"}')
+#  #
+#  echo "   +++ Adding prefix for alb vip network..."
+#  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.vip.netmask' $jsonFile) "   ++++++")
+#  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.vip += {"prefix": "'$(echo $prefix)'"}')
+#  #
+#  echo "   +++ Adding prefix for alb tanzu network..."
+#  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.tanzu.netmask' $jsonFile) "   ++++++")
+#  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.tanzu += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding Networks MTU details"
   networks_details=$(jq -c -r .networks $localJsonFile)
   external_gw_json=$(echo $external_gw_json | jq '. += {"networks": '$(echo $networks_details)'}')
   #
   echo "   +++ Creating External ip_table_prefixes..."
-  ip_table_prefixes="[]"
-  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)'"]')
-  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)'"]')
-  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)'"]')
+#  ip_table_prefixes="[]"
+#  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)'"]')
+#  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)'"]')
+#  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)'"]')
   external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
+  #
+  if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) != "true" ]]; then
+    echo "   +++ Adding .default_kubectl_version... from local variables.json"
+    default_kubectl_version=$(jq -c -r '.default_kubectl_version' $localJsonFile)
+    external_gw_json=$(echo $external_gw_json | jq '. += {"default_kubectl_version": "'$(echo $default_kubectl_version)'"}')
+  fi
   #
 fi
 #

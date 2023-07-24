@@ -14,3 +14,4 @@ variable "memory" {}
 variable "disk" {}
 variable "vcd_ip" {}
 variable "deployment" {}
+variable "default_kubectl_version" {}

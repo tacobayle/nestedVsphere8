@@ -52,5 +52,6 @@ data "template_file" "external_gw_userdata" {
     vcenter_name = var.vsphere_nested.vcsa_name
     vcd_ip = var.vcd_ip
     nfs_path = var.external_gw.nfs_path
+    K8s_version = var.default_kubectl_version
   }
 }

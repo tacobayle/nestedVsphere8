@@ -80,7 +80,7 @@ resource "null_resource" "clear_ssh_keys_workers" {
   count = length(var.unmanaged_k8s_workers_ips)
 
   provisioner "local-exec" {
-    command = "ssh-keygen -f \"/home/${var.k8s.username}/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_workers_ips[count.index]}\""
+    command = "ssh-keygen -f \"/home/${var.k8s.username}/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_workers_ips[count.index]}\" || true"
   }
 }
 

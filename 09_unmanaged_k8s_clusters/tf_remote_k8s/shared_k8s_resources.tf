@@ -18,6 +18,3 @@ resource "vsphere_content_library_item" "nested_library_k8s_unmanaged_item" {
 
 
 
-
-
-

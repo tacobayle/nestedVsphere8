@@ -73,7 +73,7 @@ resource "null_resource" "clear_ssh_keys_masters" {
   count = length(var.unmanaged_k8s_masters_ips)
 
   provisioner "local-exec" {
-    command = "ssh-keygen -f \"/home/${var.k8s.username}/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_masters_ips[count.index]}\""
+    command = "ssh-keygen -f \"/home/${var.k8s.username}/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_masters_ips[count.index]}\" || true"
   }
 }
 
@@ -163,18 +163,28 @@ data "template_file" "values_ako" {
     disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
     clusterName  = var.unmanaged_k8s_masters_cluster_name[count.index]
     cniPlugin    = var.unmanaged_k8s_masters_cni[count.index]
-    subnetIP     = split("/", var.unmanaged_k8s_masters_cidr[count.index])[0]
-    subnetPrefix = split("/", var.unmanaged_k8s_masters_cidr[count.index])[1]
+    subnetIP     = split("/", var.vsphere_underlay.networks.alb.vip.cidr)[0]
+    subnetPrefix = split("/", var.vsphere_underlay.networks.alb.vip.cidr)[1]
     networkName  = var.unmanaged_k8s_masters_vip_networks[count.index]
     serviceType  = var.unmanaged_k8s_masters_ako_serviceType[count.index]
     shardVSSize  = var.k8s.ako_shardVSSize
     loglevel     = var.k8s.ako_loglevel
-    serviceEngineGroupName = "${var.k8s.ako_seg_basename}-${var.unmanaged_k8s_masters_cluster_name[count.index]}"
+    serviceEngineGroupName = "${var.ako_seg_basename}-${var.unmanaged_k8s_masters_cluster_name[count.index]}"
     controllerVersion = var.avi.version
     cloudName    = var.avi.config.cloud.name
     controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
   }
 }
+
+resource "null_resource" "copy_k8s_config_file_to_external_gw" {
+  depends_on = [null_resource.K8s_sanity_check]
+  count = length(var.unmanaged_k8s_masters_ips)
+
+  provisioner "local-exec" {
+    command = "scp -o StrictHostKeyChecking=no ubuntu@${vsphere_virtual_machine.masters[count.index].default_ip_address}:/home/ubuntu/.kube/config .kube/config-${count.index + 1}"
+  }
+}
+
 
 #
 #resource "null_resource" "ako_prerequisites" {
