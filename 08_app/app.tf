@@ -22,7 +22,7 @@ resource "null_resource" "tf_app" {
 
   provisioner "file" {
     source = "tf_remote"
-    destination = "tf_remote"
+    destination = "tf_remote_app"
   }
 
   provisioner "file" {
@@ -32,7 +32,7 @@ resource "null_resource" "tf_app" {
 
   provisioner "remote-exec" {
     inline = [
-      "cd tf_remote",
+      "cd tf_remote_app",
       "terraform init",
       "terraform apply -auto-approve -var-file=/home/ubuntu/app.json -var-file=/home/ubuntu/.environment_variables.json"
     ]

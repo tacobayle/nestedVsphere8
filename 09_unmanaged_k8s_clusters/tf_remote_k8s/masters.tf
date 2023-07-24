@@ -176,6 +176,13 @@ data "template_file" "values_ako" {
   }
 }
 
+data "template_file" "kube_config_script" {
+  template = file("templates/kubeconfig.sh.template")
+  vars = {
+    cluster = length(var.unmanaged_k8s_masters_ips)
+  }
+}
+
 resource "null_resource" "copy_k8s_config_file_to_external_gw" {
   depends_on = [null_resource.K8s_sanity_check]
   count = length(var.unmanaged_k8s_masters_ips)
@@ -183,7 +190,17 @@ resource "null_resource" "copy_k8s_config_file_to_external_gw" {
   provisioner "local-exec" {
     command = "scp -o StrictHostKeyChecking=no ubuntu@${vsphere_virtual_machine.masters[count.index].default_ip_address}:/home/ubuntu/.kube/config .kube/config-${count.index + 1}"
   }
+
 }
+
+resource "null_resource" "copying_kube_config_locally" {
+  depends_on = [null_resource.copy_k8s_config_file_to_external_gw]
+
+  provisioner "local-exec" {
+    command = "cat > kubeconfig.sh <<EOL\n${data.template_file.kube_config_script.rendered}\nEOL ; chmod u+x kubeconfig.sh ; /bin/bash kubeconfig.sh"
+  }
+}
+
 
 
 #
