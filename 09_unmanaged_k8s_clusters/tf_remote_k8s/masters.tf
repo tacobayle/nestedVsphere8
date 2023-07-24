@@ -201,7 +201,14 @@ resource "null_resource" "copying_kube_config_locally" {
   }
 }
 
+resource "null_resource" "ako_config_locally" {
+  depends_on = [null_resource.copying_kube_config_locally]
+  count = length(var.unmanaged_k8s_masters_ips)
 
+  provisioner "local-exec" {
+    command = "cat > ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako[count.index].rendered}\nEOL ; chmod u+x kubeconfig.sh ; /bin/bash kubeconfig.sh"
+  }
+}
 
 #
 #resource "null_resource" "ako_prerequisites" {

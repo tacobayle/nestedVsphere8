@@ -21,7 +21,7 @@ resource "null_resource" "tf_app" {
   }
 
   provisioner "file" {
-    source = "tf_remote"
+    source = "tf_remote_app"
     destination = "tf_remote_app"
   }
 

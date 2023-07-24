@@ -42,6 +42,7 @@ resource "null_resource" "tf_k8s" {
   provisioner "remote-exec" {
     inline = [
       "mkdir .kube",
+      "mkdir ako_config_maps",
       "cd tf_remote_k8s",
       "terraform init",
       "terraform apply -auto-approve -var-file=/home/ubuntu/unmanaged_k8s_clusters.json -var-file=/home/ubuntu/.environment_variables.json"
