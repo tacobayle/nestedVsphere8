@@ -1,6 +1,6 @@
 resource "vsphere_folder" "k8s" {
   count = length(var.unmanaged_k8s_masters_cluster_name)
-  path          = "${var.k8s.folder_basename}-${var.unmanaged_k8s_masters_cluster_name[count.index]}"
+  path          = "${var.ako_seg_basename}-${var.unmanaged_k8s_masters_cluster_name[count.index + 1]}"
   type          = "vm"
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }

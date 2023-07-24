@@ -8,7 +8,6 @@ data "template_file" "environment_variables" {
   }
 }
 
-
 resource "null_resource" "tf_k8s" {
 
   connection {
