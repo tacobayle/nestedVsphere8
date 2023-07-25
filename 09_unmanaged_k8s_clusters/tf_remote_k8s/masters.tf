@@ -157,7 +157,7 @@ resource "null_resource" "K8s_sanity_check" {
 }
 
 data "template_file" "values_ako" {
-  count = var.deployment == length(var.unmanaged_k8s_masters_ips)
+  count = length(var.unmanaged_k8s_masters_ips)
   template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
   vars = {
     disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
