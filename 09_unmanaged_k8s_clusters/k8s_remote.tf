@@ -41,6 +41,7 @@ resource "null_resource" "tf_k8s" {
   provisioner "remote-exec" {
     inline = [
       "mkdir .kube",
+      "mkdir yaml",
       "mkdir ako_config_maps",
       "cd tf_remote_k8s",
       "terraform init",

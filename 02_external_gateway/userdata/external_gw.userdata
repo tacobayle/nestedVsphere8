@@ -62,6 +62,12 @@ write_files:
       echo "alias k=kubectl" | sudo tee -a /home/ubuntu/.profile
       echo "source <(kubectl completion bash | sed s/kubectl/k/g)" | sudo tee -a /home/ubuntu/.profile
       #
+      # helm install
+      run_cmd 'sudo rm -f /tmp/signing.asc; wget https://baltocdn.com/helm/signing.asc -O /tmp/signing.asc; test $(ls -l /tmp/signing.asc | awk '"'"'{print $5}'"'"') -gt 0'
+      run_cmd 'sudo apt-key add /tmp/signing.asc'
+      run_cmd '! sudo add-apt-repository "deb https://baltocdn.com/helm/stable/debian/ all main" | grep Err:'
+      run_cmd 'apt-get install -y helm; ls /usr/bin/helm'
+      #
       run_cmd 'sudo apt install -y python3-pip; ls /usr/bin/pip3'
       run_cmd 'sudo apt install -y jq; ls /usr/bin/jq'
       run_cmd 'sudo apt install -y expect; ls /usr/bin/expect'
