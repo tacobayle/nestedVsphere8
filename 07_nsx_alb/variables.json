@@ -7,5 +7,6 @@
   "playbook_env_nsx_cloud": "nsx.yml",
   "avi_config_tag_vcenter_cloud": "v1.97",
   "playbook_env_vcenter_cloud": "vcenter.yml",
-  "seg_folder_basename": "SEG"
+  "seg_folder_basename": "SEG",
+  "ako_url": "https://projects.registry.vmware.com/chartrepo/ako"
 }

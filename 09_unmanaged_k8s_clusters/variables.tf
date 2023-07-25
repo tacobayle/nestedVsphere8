@@ -4,3 +4,4 @@ variable "ubuntu_password" {}
 variable "docker_registry_username" {}
 variable "docker_registry_password" {}
 variable "vsphere_nested_password" {}
+variable "avi_password" {}

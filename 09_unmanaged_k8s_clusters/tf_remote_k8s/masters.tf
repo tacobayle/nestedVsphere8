@@ -210,8 +210,17 @@ resource "null_resource" "ako_config_locally" {
   }
 }
 
-resource "null_resource" "ako_prerequisites" {
+resource "null_resource" "helm_prerequisites" {
   depends_on = [null_resource.ako_config_locally]
+  count = length(var.unmanaged_k8s_masters_ips)
+
+  provisioner "local-exec" {
+    command = "helm repo add ako ${var.ako_url}; echo \"export avi_password='${var.avi_password}'\" | sudo tee -a /home/ubuntu/.profile"
+  }
+}
+
+resource "null_resource" "ako_prerequisites" {
+  depends_on = [null_resource.helm_prerequisites]
   count = length(var.unmanaged_k8s_masters_ips)
 
   provisioner "local-exec" {

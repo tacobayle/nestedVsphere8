@@ -18,6 +18,10 @@ echo "   +++ Adding ubuntu_ova_path..."
 ubuntu_ova_path=$(jq -c -r '.ubuntu_ova_path' /nestedVsphere8/02_external_gateway/variables.json)
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
 #
+echo "   +++ Adding ako_url..."
+ako_url=$(jq -c -r '.ako_url' /nestedVsphere8/07_nsx_alb/variables.json)
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"ako_url": "'$(echo $ako_url)'"}')
+#
 unmanaged_k8s_clusters_nodes=[]
 unmanaged_k8s_clusters_ako_version=[]
 unmanaged_k8s_masters_ips=[]
