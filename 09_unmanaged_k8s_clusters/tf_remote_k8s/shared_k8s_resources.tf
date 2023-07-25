@@ -8,3 +8,10 @@ resource "vsphere_content_library_item" "nested_library_k8s_unmanaged_item" {
   library_id  = vsphere_content_library.nested_library_k8s_unmanaged.id
   file_url = "/home/ubuntu/${basename(var.ubuntu_ova_path)}"
 }
+
+resource "vsphere_folder" "k8s" {
+  count         = length(var.unmanaged_k8s_masters_cluster_name)
+  path          = var.unmanaged_k8s_masters_cluster_name[count.index]
+  type          = "vm"
+  datacenter_id = data.vsphere_datacenter.dc_nested.id
+}
