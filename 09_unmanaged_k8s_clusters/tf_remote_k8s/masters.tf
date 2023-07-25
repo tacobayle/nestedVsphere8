@@ -227,13 +227,35 @@ resource "null_resource" "helm_prerequisites" {
   }
 }
 
+
+resource "null_resource" "set_initial_state_ako_prerequisites" {
+  count = 1
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "echo \"0\" > current_state_ip_tables.txt"
+  }
+}
+
 resource "null_resource" "ako_prerequisites" {
-  depends_on = [null_resource.helm_prerequisites]
+  depends_on = [null_resource.helm_prerequisites, null_resource.set_initial_state_ako_prerequisites]
   count = length(var.unmanaged_k8s_masters_ips)
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "while [[ $(cat current_state_ip_tables.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
+  }
+
 
   provisioner "local-exec" {
     command = "kubectl config use-context context${count.index + 1}; kubectl create ns avi-system"
   }
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "echo \"${count.index+1}\" > current_state_ip_tables.txt"
+  }
+
 }
 
 #
