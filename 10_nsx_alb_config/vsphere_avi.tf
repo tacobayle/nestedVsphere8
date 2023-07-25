@@ -18,8 +18,8 @@ data "vsphere_resource_pool" "resource_pool_nested" {
 }
 
 resource "vsphere_folder" "se_groups_folders" {
-  count            = length(var.avi.config.cloud.service_engine_groups)
-  path          = var.avi.config.cloud.service_engine_groups[count.index].vcenter_folder
+  count = length(var.avi.config.cloud.service_engine_groups)
+  path          = "${var.avi.config.seg_folder_basename}-${var.avi.config.cloud.service_engine_groups[count.index].name}"
   type          = "vm"
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }

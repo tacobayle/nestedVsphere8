@@ -15,6 +15,10 @@ IFS=$'\n'
   alb_controller_name=$(jq -c -r .alb_controller_name /nestedVsphere8/02_external_gateway/variables.json)
   avi_json=$(echo $avi_json | jq '.external_gw += {"alb_controller_name": "'$(echo $alb_controller_name)'"}')
   #
+  echo "   +++ seg_folder_basename"
+  seg_folder_basename=$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)
+  avi_json=$(echo $avi_json | jq '.avi.config += {"seg_folder_basename": "'$(echo $seg_folder_basename)'"}')
+  #
   echo "   +++ Adding avi.config.avi_config_repo..."
   avi_config_repo=$(jq -c -r '.avi_config_repo' $localJsonFile)
   avi_json=$(echo $avi_json | jq '.avi.config += {"avi_config_repo": "'$(echo $avi_config_repo)'"}')
@@ -244,7 +248,7 @@ IFS=$'\n'
       if [[ $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters $jsonFile) != "null" ]]; then
         for cluster in $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters[] $jsonFile)
           do
-            seg_list=$(echo $seg_list | jq '. += [{"name": "'$(jq -c -r .ako_seg_basename /nestedVsphere8/07_nsx_alb/variables.json)'-'$(echo $cluster | jq -c -r .cluster_name)'", "ha_mode": "HA_MODE_SHARED_PAIR", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcenter_folder": "'$(jq -c -r .ako_seg_basename /nestedVsphere8/07_nsx_alb/variables.json)'-'$(echo $cluster | jq -c -r .cluster_name)'", "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+            seg_list=$(echo $seg_list | jq '. += [{"name": "'$(echo $cluster | jq -c -r .cluster_name)'", "ha_mode": "HA_MODE_SHARED_PAIR", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
           done
       fi
       #

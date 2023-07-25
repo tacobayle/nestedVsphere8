@@ -18,10 +18,6 @@ echo "   +++ Adding ubuntu_ova_path..."
 ubuntu_ova_path=$(jq -c -r '.ubuntu_ova_path' /nestedVsphere8/02_external_gateway/variables.json)
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
 #
-echo "   +++ Adding seg_base_name..."
-ako_seg_basename=$(jq -c -r '.ako_seg_basename' /nestedVsphere8/07_nsx_alb/variables.json)
-unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"ako_seg_basename": "'$(echo $ako_seg_basename)'"}')
-#
 unmanaged_k8s_clusters_nodes=[]
 unmanaged_k8s_clusters_ako_version=[]
 unmanaged_k8s_masters_ips=[]
@@ -68,7 +64,7 @@ do
         unmanaged_k8s_masters_ako_disableStaticRouteSync=$(echo $unmanaged_k8s_masters_ako_disableStaticRouteSync | jq '. += [true]')
         unmanaged_k8s_masters_ako_serviceType=$(echo $unmanaged_k8s_masters_ako_serviceType | jq '. += ["NodePortLocal"]')
       fi
-      if [[ $(echo $cluster | jq -c -r .cni) == "calico" ]] ; then
+      if [[ $(echo $cluster | jq -c -r .cni) == "calico" || $(echo $cluster | jq -c -r .cni) == "cilium" ]] ; then
         unmanaged_k8s_masters_ako_disableStaticRouteSync=$(echo $unmanaged_k8s_masters_ako_disableStaticRouteSync | jq '. += [false]')
         unmanaged_k8s_masters_ako_serviceType=$(echo $unmanaged_k8s_masters_ako_serviceType | jq '. += ["ClusterIP"]')
       fi
@@ -147,5 +143,10 @@ echo "   +++ Adding unmanaged_k8s_workers_cni..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_cni": '$(echo $unmanaged_k8s_workers_cni)'}')
 echo "   +++ Adding unmanaged_k8s_workers_cni_version..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_cni_version": '$(echo $unmanaged_k8s_workers_cni_version)'}')
+#
+echo "   +++ Adding avi.config.cloud.name..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.avi.config.cloud += {"name": "Default-Cloud"}')
+#
+
 #
 echo $unmanaged_k8s_clusters_json | jq . | tee /root/unmanaged_k8s_clusters.json > /dev/null

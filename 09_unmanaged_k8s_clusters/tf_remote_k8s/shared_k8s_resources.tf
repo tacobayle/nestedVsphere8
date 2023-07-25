@@ -1,10 +1,3 @@
-resource "vsphere_folder" "k8s" {
-  count = length(var.unmanaged_k8s_masters_cluster_name)
-  path          = "${var.ako_seg_basename}-${var.unmanaged_k8s_masters_cluster_name[count.index + 1]}"
-  type          = "vm"
-  datacenter_id = data.vsphere_datacenter.dc_nested.id
-}
-
 resource "vsphere_content_library" "nested_library_k8s_unmanaged" {
   name            = "k8s_unmanaged"
   storage_backing = [data.vsphere_datastore.datastore_nested.id]

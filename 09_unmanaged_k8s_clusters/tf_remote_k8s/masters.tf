@@ -169,7 +169,7 @@ data "template_file" "values_ako" {
     serviceType  = var.unmanaged_k8s_masters_ako_serviceType[count.index]
     shardVSSize  = var.k8s.ako_shardVSSize
     loglevel     = var.k8s.ako_loglevel
-    serviceEngineGroupName = "${var.ako_seg_basename}-${var.unmanaged_k8s_masters_cluster_name[count.index]}"
+    serviceEngineGroupName = var.unmanaged_k8s_masters_cluster_name[count.index]
     controllerVersion = var.avi.version
     cloudName    = var.avi.config.cloud.name
     controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
