@@ -197,7 +197,7 @@ resource "null_resource" "copying_kube_config_locally" {
   depends_on = [null_resource.copy_k8s_config_file_to_external_gw]
 
   provisioner "local-exec" {
-    command = "cat > kubeconfig.sh <<EOL\n${data.template_file.kube_config_script.rendered}\nEOL ; chmod u+x kubeconfig.sh ; /bin/bash kubeconfig.sh"
+    command = "cat > kubeconfig.sh <<'EOF'\n${data.template_file.kube_config_script.rendered}\nEOF ; chmod u+x kubeconfig.sh ; /bin/bash kubeconfig.sh"
   }
 }
 
