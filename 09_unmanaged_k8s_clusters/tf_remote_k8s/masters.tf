@@ -188,7 +188,7 @@ resource "null_resource" "copy_k8s_config_file_to_external_gw" {
   count = length(var.unmanaged_k8s_masters_ips)
 
   provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no ubuntu@${vsphere_virtual_machine.masters[count.index].default_ip_address}:/home/ubuntu/.kube/config .kube/config-${count.index + 1}"
+    command = "scp -o StrictHostKeyChecking=no ubuntu@${vsphere_virtual_machine.masters[count.index].default_ip_address}:/home/ubuntu/.kube/config /home/ubuntu/.kube/config-${count.index + 1}"
   }
 
 }
@@ -206,7 +206,16 @@ resource "null_resource" "ako_config_locally" {
   count = length(var.unmanaged_k8s_masters_ips)
 
   provisioner "local-exec" {
-    command = "cat > ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako[count.index].rendered}\nEOL ; chmod u+x kubeconfig.sh ; /bin/bash kubeconfig.sh"
+    command = "cat > /home/ubuntu/ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako[count.index].rendered}\nEOL"
+  }
+}
+
+resource "null_resource" "ako_prerequisites" {
+  depends_on = [null_resource.ako_config_locally]
+  count = length(var.unmanaged_k8s_masters_ips)
+
+  provisioner "local-exec" {
+    command = "kubectl config use-context context${count.index + 1}; kubectl create ns avi-system"
   }
 }
 
