@@ -7,4 +7,4 @@
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/destroy.sh
 cd /
 rm -fr nestedVsphere8
-git clone -b dual_attached https://github.com/tacobayle/nestedVsphere8
+git clone https://github.com/tacobayle/nestedVsphere8
