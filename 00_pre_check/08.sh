@@ -36,15 +36,15 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     fi
   done
   #
-  echo "   +++ Adding variable nsx_password in /nestedVsphere8/08_app/tf_remote/variables.tf"
-  echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/08_app/tf_remote/variables.tf > /dev/null
+  echo "   +++ Adding variable nsx_password in /nestedVsphere8/08_app/tf_remote_app/variables.tf"
+  echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/08_app/tf_remote_app/variables.tf > /dev/null
   #
   echo "   +++ Adding variable nsx_password in /nestedVsphere8/08_app/variables.tf"
   echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/08_app/variables.tf > /dev/null
   #
-  mv /nestedVsphere8/08_app/tf_remote/version.tf.disabled /nestedVsphere8/08_app/tf_remote/version.tf
-  mv /nestedVsphere8/08_app/tf_remote/nsx_tag.tf.disabled /nestedVsphere8/08_app/tf_remote/nsx_tag.tf
-  mv /nestedVsphere8/08_app/tf_remote/provider_nsx.tf.disabled /nestedVsphere8/08_app/tf_remote/provider_nsx.tf
+  mv /nestedVsphere8/08_app/tf_remote_app/version.tf.disabled /nestedVsphere8/08_app/tf_remote_app/version.tf
+  mv /nestedVsphere8/08_app/tf_remote_app/nsx_tag.tf.disabled /nestedVsphere8/08_app/tf_remote_app/nsx_tag.tf
+  mv /nestedVsphere8/08_app/tf_remote_app/provider_nsx.tf.disabled /nestedVsphere8/08_app/tf_remote_app/provider_nsx.tf
   mv /nestedVsphere8/08_app/template_file_nsx.tf.disabled /nestedVsphere8/08_app/template_file_nsx.tf
   mv /nestedVsphere8/08_app/template_file.tf /nestedVsphere8/08_app/template_file.tf.disabled
   #

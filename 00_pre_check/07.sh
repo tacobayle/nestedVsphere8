@@ -5,7 +5,7 @@ localJsonFile="/nestedVsphere8/07_nsx_alb/variables.json"
 #
 IFS=$'\n'
 #
-  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   echo ""
   echo "==> Creating /root/avi.json file..."
   rm -f /root/avi.json
@@ -18,6 +18,8 @@ IFS=$'\n'
   echo "   +++ seg_folder_basename"
   seg_folder_basename=$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)
   avi_json=$(echo $avi_json | jq '.avi.config += {"seg_folder_basename": "'$(echo $seg_folder_basename)'"}')
+  #
+  # add here a section to add vcenter_folder on each seg
   #
   echo "   +++ Adding avi.config.avi_config_repo..."
   avi_config_repo=$(jq -c -r '.avi_config_repo' $localJsonFile)

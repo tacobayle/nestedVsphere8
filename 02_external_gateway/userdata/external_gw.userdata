@@ -67,6 +67,7 @@ write_files:
       run_cmd 'sudo apt-key add /tmp/signing.asc'
       run_cmd '! sudo add-apt-repository "deb https://baltocdn.com/helm/stable/debian/ all main" | grep Err:'
       run_cmd 'apt-get install -y helm; ls /usr/bin/helm'
+      echo "source <(helm completion bash)" | sudo tee -a /home/ubuntu/.profile
       #
       run_cmd 'sudo apt install -y python3-pip; ls /usr/bin/pip3'
       run_cmd 'sudo apt install -y jq; ls /usr/bin/jq'
