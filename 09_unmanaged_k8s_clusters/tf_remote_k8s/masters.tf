@@ -156,26 +156,6 @@ resource "null_resource" "K8s_sanity_check" {
   }
 }
 
-data "template_file" "values_ako" {
-  count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
-  template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
-  vars = {
-    disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
-    clusterName  = var.unmanaged_k8s_masters_cluster_name[count.index]
-    cniPlugin    = var.unmanaged_k8s_masters_cni[count.index]
-    subnetIP     = split("/", var.vsphere_underlay.networks.alb.vip.cidr)[0]
-    subnetPrefix = split("/", var.vsphere_underlay.networks.alb.vip.cidr)[1]
-    networkName  = var.unmanaged_k8s_masters_vip_networks[count.index]
-    serviceType  = var.unmanaged_k8s_masters_ako_serviceType[count.index]
-    shardVSSize  = var.k8s.ako_shardVSSize
-    loglevel     = var.k8s.ako_loglevel
-    serviceEngineGroupName = var.unmanaged_k8s_masters_cluster_name[count.index]
-    controllerVersion = var.avi.version
-    cloudName    = var.avi.config.cloud.name
-    controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
-  }
-}
-
 data "template_file" "values_ako_wo_nsx" {
   count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
   template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
@@ -280,7 +260,7 @@ resource "null_resource" "helm_prerequisites" {
 
 resource "null_resource" "set_initial_state_ako_prerequisites" {
   count = 1
-
+  depends_on = [null_resource.helm_prerequisites]
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
     command = "echo \"0\" > masters.txt"
