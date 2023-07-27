@@ -283,7 +283,7 @@ resource "null_resource" "set_initial_state_ako_prerequisites" {
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
-    command = "echo \"0\" > current_state_ip_tables.txt"
+    command = "echo \"0\" > masters.txt"
   }
 }
 
@@ -293,7 +293,7 @@ resource "null_resource" "ako_prerequisites" {
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
-    command = "while [[ $(cat current_state_ip_tables.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
+    command = "while [[ $(cat masters.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
   }
 
 
@@ -303,7 +303,7 @@ resource "null_resource" "ako_prerequisites" {
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
-    command = "echo \"${count.index+1}\" > current_state_ip_tables.txt"
+    command = "echo \"${count.index+1}\" > masters.txt"
   }
 
 }
