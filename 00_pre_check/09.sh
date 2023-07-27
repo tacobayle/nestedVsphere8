@@ -98,7 +98,7 @@ fi
 #
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
-  for item in $(jq -c -r .nsx.config.segments_overlay[] "$1")
+  for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
   do
     if [[ $(echo $item | jq -c -r .k8s_clusters) != "null" ]] ; then
       for cluster in $(echo $item | jq -c -r .k8s_clusters[])
