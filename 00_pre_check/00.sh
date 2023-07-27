@@ -515,6 +515,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb"}')
     test_nsx_alb_variables "/etc/config/variables.json"
     test_nsx_app_variables "/etc/config/variables.json"
+    test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_nsx_cloud "/etc/config/variables.json"
   fi
   #
@@ -527,6 +528,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_vcd"}')
     test_nsx_alb_variables "/etc/config/variables.json"
     test_nsx_app_variables "/etc/config/variables.json"
+    test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_nsx_cloud "/etc/config/variables.json"
     echo ""
     echo "==> Checking VCD Variables"
