@@ -35,7 +35,6 @@ unmanaged_k8s_masters_cni_version=[]
 unmanaged_k8s_masters_ako_disableStaticRouteSync=[]
 unmanaged_k8s_masters_ako_serviceType=[]
 unmanaged_k8s_masters_vip_networks=[]
-unmanaged_k8s_masters_vip_cidr=[]
 #
 unmanaged_k8s_workers_count=[]
 unmanaged_k8s_workers_associated_master_ips=[]
@@ -47,6 +46,8 @@ unmanaged_k8s_workers_cluster_name=[]
 unmanaged_k8s_workers_version=[]
 unmanaged_k8s_workers_cni=[]
 unmanaged_k8s_workers_cni_version=[]
+#
+# vSphere use cases
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
   networks='["backend", "vip", "tanzu"]'
@@ -74,7 +75,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
           unmanaged_k8s_masters_ako_serviceType=$(echo $unmanaged_k8s_masters_ako_serviceType | jq '. += ["ClusterIP"]')
         fi
         unmanaged_k8s_masters_vip_networks=$(echo $unmanaged_k8s_masters_vip_networks | jq '. += ["'$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"]')
-        unmanaged_k8s_masters_vip_cidr=$(echo $unmanaged_k8s_masters_vip_cidr | jq '. += ["'$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)'"]')
         count=0
         for ip in $(echo $cluster | jq -c -r '.cluster_ips[1:][]')
         do
@@ -95,7 +95,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   done
 fi
 #
-#
+# NSX use cases
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
@@ -122,7 +122,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
           unmanaged_k8s_masters_ako_serviceType=$(echo $unmanaged_k8s_masters_ako_serviceType | jq '. += ["ClusterIP"]')
         fi
         unmanaged_k8s_masters_vip_networks=$(echo $unmanaged_k8s_masters_vip_networks | jq '. += ["'$(jq -c -r .avi.config.cloud.networks_data[0].name $jsonFile)'"]')
-        unmanaged_k8s_masters_vip_cidr=$(echo $unmanaged_k8s_masters_vip_cidr | jq '. += ["'$(jq -c -r .avi.config.cloud.networks_data[0].avi_ipam_vip.cidr $jsonFile)'"]')
         count=0
         for ip in $(echo $cluster | jq -c -r '.cluster_ips[1:][]')
         do
@@ -171,8 +170,6 @@ echo "   +++ Adding unmanaged_k8s_masters_ako_serviceType..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_ako_serviceType": '$(echo $unmanaged_k8s_masters_ako_serviceType)'}')
 echo "   +++ Adding unmanaged_k8s_masters_vip_networks..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_vip_networks": '$(echo $unmanaged_k8s_masters_vip_networks)'}')
-echo "   +++ Adding unmanaged_k8s_masters_vip_cidr..."
-unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_vip_cidr": '$(echo $unmanaged_k8s_masters_vip_cidr)'}')
 #
 echo "   +++ Adding unmanaged_k8s_workers_count..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_count": '$(echo $unmanaged_k8s_workers_count)'}')

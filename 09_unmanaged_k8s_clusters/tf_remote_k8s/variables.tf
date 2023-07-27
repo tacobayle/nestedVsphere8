@@ -24,7 +24,6 @@ variable "unmanaged_k8s_masters_cni_version" {}
 variable "unmanaged_k8s_masters_ako_disableStaticRouteSync" {}
 variable "unmanaged_k8s_masters_ako_serviceType" {}
 variable "unmanaged_k8s_masters_vip_networks" {}
-variable "unmanaged_k8s_masters_vip_cidr" {}
 #
 variable "unmanaged_k8s_workers_count" {}
 variable "unmanaged_k8s_workers_associated_master_ips" {}

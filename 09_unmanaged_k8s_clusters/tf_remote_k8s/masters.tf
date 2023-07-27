@@ -157,7 +157,7 @@ resource "null_resource" "K8s_sanity_check" {
 }
 
 data "template_file" "values_ako" {
-  count = length(var.unmanaged_k8s_masters_ips)
+  count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
   template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
   vars = {
     disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
@@ -175,6 +175,48 @@ data "template_file" "values_ako" {
     controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
   }
 }
+
+data "template_file" "values_ako_wo_nsx" {
+  count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
+  template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
+  vars = {
+    disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
+    clusterName  = var.unmanaged_k8s_masters_cluster_name[count.index]
+    cniPlugin    = var.unmanaged_k8s_masters_cni[count.index]
+    subnetIP     = split("/", var.vsphere_underlay.networks.alb.vip.cidr)[0]
+    subnetPrefix = split("/", var.vsphere_underlay.networks.alb.vip.cidr)[1]
+    networkName  = var.unmanaged_k8s_masters_vip_networks[count.index]
+    serviceType  = var.unmanaged_k8s_masters_ako_serviceType[count.index]
+    shardVSSize  = var.k8s.ako_shardVSSize
+    loglevel     = var.k8s.ako_loglevel
+    serviceEngineGroupName = var.unmanaged_k8s_masters_cluster_name[count.index]
+    controllerVersion = var.avi.version
+    cloudName    = var.avi.config.cloud.name
+    controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
+  }
+}
+
+data "template_file" "values_ako_nsx" {
+  count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s_masters_ips) : 0
+  template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
+  vars = {
+    disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
+    clusterName  = var.unmanaged_k8s_masters_cluster_name[count.index]
+    cniPlugin    = var.unmanaged_k8s_masters_cni[count.index]
+    subnetIP     = split("/", var.avi.config.cloud.networks_data[0].avi_ipam_vip.cidr)[0]
+    subnetPrefix = split("/", var.avi.config.cloud.networks_data[0].avi_ipam_vip.cidr)[1]
+    networkName  = var.unmanaged_k8s_masters_vip_networks[count.index]
+    serviceType  = var.unmanaged_k8s_masters_ako_serviceType[count.index]
+    shardVSSize  = var.k8s.ako_shardVSSize
+    loglevel     = var.k8s.ako_loglevel
+    serviceEngineGroupName = var.unmanaged_k8s_masters_cluster_name[count.index]
+    controllerVersion = var.avi.version
+    cloudName    = var.avi.config.cloud.name
+    controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
+  }
+}
+
+
 
 data "template_file" "kube_config_script" {
   template = file("templates/kubeconfig.sh.template")
@@ -209,17 +251,26 @@ resource "null_resource" "generating_kube_config_locally" {
   }
 }
 
-resource "null_resource" "ako_config_locally" {
+resource "null_resource" "ako_config_locally_wo_nsx" {
   depends_on = [null_resource.generating_kube_config_locally]
-  count = length(var.unmanaged_k8s_masters_ips)
+  count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
 
   provisioner "local-exec" {
-    command = "cat > /home/ubuntu/ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako[count.index].rendered}\nEOL"
+    command = "cat > /home/ubuntu/ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako_wo_nsx[count.index].rendered}\nEOL"
+  }
+}
+
+resource "null_resource" "ako_config_locally_nsx" {
+  depends_on = [null_resource.generating_kube_config_locally]
+  count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
+
+  provisioner "local-exec" {
+    command = "cat > /home/ubuntu/ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako_nsx[count.index].rendered}\nEOL"
   }
 }
 
 resource "null_resource" "helm_prerequisites" {
-  depends_on = [null_resource.ako_config_locally]
+  depends_on = [null_resource.ako_config_locally_wo_nsx, null_resource.ako_config_locally_nsx]
 
   provisioner "local-exec" {
     command = "helm repo add ako ${var.ako_url}; echo \"export avi_password='${var.avi_password}'\" | sudo tee -a /home/ubuntu/.profile"
