@@ -21,168 +21,168 @@ test_nsx_alb_variables () {
 #
 #
 test_nsx_app_variables () {
-    echo ""
-    echo "==> Checking NSX Apps with NSX"
-    # .nsx.config.segments_overlay[].app_ips
-    count=0
-    for item in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-    do
-      if [[ $(echo $item | jq -c .app_ips) != "null" ]] ; then
-        if [[ $(echo $item | jq -r -c .display_name) == $(jq -c -r .avi.config.cloud.network_management.name "$1") ]] ; then
-          echo "app_ips is not supported on overlay segment $(echo $item | jq -r -c .display_name) because it's defined at .avi.config.cloud.network_management.name - NAT is disabled hence no Internet Access"
-          exit 255
-        fi
-        ((count++))
-        for ip in $(echo $item | jq .app_ips[] -c -r)
-        do
-          test_if_variable_is_valid_ip "$ip" "   "
-        done
+  echo ""
+  echo "==> Checking NSX Apps with NSX"
+  # .nsx.config.segments_overlay[].app_ips
+  count=0
+  for item in $(jq -c -r .nsx.config.segments_overlay[] "$1")
+  do
+    if [[ $(echo $item | jq -c .app_ips) != "null" ]] ; then
+      if [[ $(echo $item | jq -r -c .display_name) == $(jq -c -r .avi.config.cloud.network_management.name "$1") ]] ; then
+        echo "app_ips is not supported on overlay segment $(echo $item | jq -r -c .display_name) because it's defined at .avi.config.cloud.network_management.name - NAT is disabled hence no Internet Access"
+        exit 255
       fi
-    done
-    if [[ $count -eq 0 ]] ; then echo "   +++ .nsx.config.segments_overlay[].app_ips has to be defined at least once to locate where the App servers will be installed" ; exit 255 ; fi
+      ((count++))
+      for ip in $(echo $item | jq .app_ips[] -c -r)
+      do
+        test_if_variable_is_valid_ip "$ip" "   "
+      done
+    fi
+  done
+  if [[ $count -eq 0 ]] ; then echo "   +++ .nsx.config.segments_overlay[].app_ips has to be defined at least once to locate where the App servers will be installed" ; exit 255 ; fi
 }
 #
 #
 #
 test_nsx_k8s_variables () {
-    echo ""
-    echo "==> Checking unmanaged_k8s with NSX"
-    # .nsx.config.segments_overlay[].k8s_clusters
-    for item in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-    do
-      if [[ $(echo $item | jq -c .k8s_clusters) != "null" ]] ; then
-        if [[ $(echo $item | jq -r -c .display_name) == $(jq -c -r .avi.config.cloud.network_management.name "$1") ]] ; then
-          echo "app_ips is not supported on overlay segment $(echo $item | jq -r -c .display_name) because it's defined at .avi.config.cloud.network_management.name - NAT is disabled hence no Internet Access"
+  echo ""
+  echo "==> Checking unmanaged_k8s with NSX"
+  # .nsx.config.segments_overlay[].k8s_clusters
+  for item in $(jq -c -r .nsx.config.segments_overlay[] "$1")
+  do
+    if [[ $(echo $item | jq -c .k8s_clusters) != "null" ]] ; then
+      if [[ $(echo $item | jq -r -c .display_name) == $(jq -c -r .avi.config.cloud.network_management.name "$1") ]] ; then
+        echo "app_ips is not supported on overlay segment $(echo $item | jq -r -c .display_name) because it's defined at .avi.config.cloud.network_management.name - NAT is disabled hence no Internet Access"
+        exit 255
+      fi
+      variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": true}')
+      for cluster in $(echo $item | jq -c -r .k8s_clusters[])
+      do
+        test_if_variable_is_defined $(echo $cluster | jq -c .cluster_name) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cluster_name defined"
+        test_if_variable_is_defined $(echo $cluster | jq -c .k8s_version) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a k8s_version defined"
+        test_if_variable_is_defined $(echo $cluster | jq -c .cni) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cni defined"
+        if [[ $(echo $cluster | jq -c -r .cni) == "antrea" || $(echo $cluster | jq -c -r .cni) == "calico" || $(echo $cluster | jq -c -r .cni) == "cilium" ]] ; then
+          echo "   +++ cni is $(echo $cluster | jq -c -r .cni) which is supported"
+        else
+          echo "   +++ cni $(echo $cluster | jq -c -r .cni) is not supported - cni should be either \"calico\" or \"antrea\" or \"cilium\""
           exit 255
         fi
-        variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": true}')
-        for cluster in $(echo $item | jq -c -r .k8s_clusters[] $jsonFile)
+        test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cni_version defined"
+        test_if_variable_is_defined $(echo $cluster | jq -c .ako_version) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a ako_version defined"
+        if [[ $(echo $cluster | jq -c -r .ako_version) == "1.10.1" ]] ; then
+          echo "   +++ ako_version is $(echo $cluster | jq -c -r .ako_version) which is supported"
+        else
+          echo "   +++ ako_version $(echo $cluster | jq -c -r .ako_version) is not supported"
+          exit 255
+        fi
+        test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " ".nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cluster_ips defined"
+        if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
+        for ip in $(echo $cluster | jq -c -r .cluster_ips[])
         do
-          test_if_variable_is_defined $(echo $cluster | jq -c .cluster_name) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cluster_name defined"
-          test_if_variable_is_defined $(echo $cluster | jq -c .k8s_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a k8s_version defined"
-          test_if_variable_is_defined $(echo $cluster | jq -c .cni) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cni defined"
-          if [[ $(echo $cluster | jq -c -r .cni) == "antrea" || $(echo $cluster | jq -c -r .cni) == "calico" || $(echo $cluster | jq -c -r .cni) == "cilium" ]] ; then
-            echo "   +++ cni is $(echo $cluster | jq -c -r .cni) which is supported"
-          else
-            echo "   +++ cni $(echo $cluster | jq -c -r .cni) is not supported - cni should be either \"calico\" or \"antrea\" or \"cilium\""
-            exit 255
-          fi
-          test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cni_version defined"
-          test_if_variable_is_defined $(echo $cluster | jq -c .ako_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a ako_version defined"
-          if [[ $(echo $cluster | jq -c -r .ako_version) == "1.10.1" ]] ; then
-            echo "   +++ ako_version is $(echo $cluster | jq -c -r .ako_version) which is supported"
-          else
-            echo "   +++ ako_version $(echo $cluster | jq -c -r .ako_version) is not supported"
-            exit 255
-          fi
-          test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cluster_ips defined"
-          if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
-          for ip in $(echo $cluster | jq -c -r .cluster_ips[])
-          do
-            test_if_variable_is_valid_ip "$ip" "   "
-          done
+          test_if_variable_is_valid_ip "$ip" "   "
         done
-      fi
-    done
+      done
+    fi
+  done
 }
 #
 #
 #
 test_alb_variables_if_nsx_cloud () {
-    echo ""
-    echo "==> Checking ALB with NSX Cloud type"
-    if [[ $(jq -c -r .avi.config.cloud.type "$1") == "CLOUD_NSXT" ]]; then
-      test_if_json_variable_is_defined .avi.config.cloud.networks_data "$1" "   "
-      test_if_json_variable_is_defined .avi.config.cloud.type "$1" "   "
-      test_if_json_variable_is_defined .avi.config.cloud.obj_name_prefix "$1" "   "
-      # .avi.config.cloud.network_management
-      test_if_json_variable_is_defined .avi.config.cloud.network_management.name "$1" "   "
-      avi_cloud_network=0
-      for segment in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-      do
-        if [[ $(echo $segment | jq -r .display_name) == $(jq -c -r .avi.config.cloud.network_management.name "$1") ]] ; then
-          avi_cloud_network=1
-          echo "   ++++++ Avi cloud network found in NSX overlay segments: $(echo $segment | jq -r .display_name), OK"
-        fi
-      done
-      if [[ $avi_cloud_network -eq 0 ]] ; then
-        echo "   ++++++ERROR++++++ $(echo $network | jq -c -r .name) segment not found!!"
-        exit 255
+  echo ""
+  echo "==> Checking ALB with NSX Cloud type"
+  if [[ $(jq -c -r .avi.config.cloud.type "$1") == "CLOUD_NSXT" ]]; then
+    test_if_json_variable_is_defined .avi.config.cloud.networks_data "$1" "   "
+    test_if_json_variable_is_defined .avi.config.cloud.type "$1" "   "
+    test_if_json_variable_is_defined .avi.config.cloud.obj_name_prefix "$1" "   "
+    # .avi.config.cloud.network_management
+    test_if_json_variable_is_defined .avi.config.cloud.network_management.name "$1" "   "
+    avi_cloud_network=0
+    for segment in $(jq -c -r .nsx.config.segments_overlay[] "$1")
+    do
+      if [[ $(echo $segment | jq -r .display_name) == $(jq -c -r .avi.config.cloud.network_management.name "$1") ]] ; then
+        avi_cloud_network=1
+        echo "   ++++++ Avi cloud network found in NSX overlay segments: $(echo $segment | jq -r .display_name), OK"
       fi
-      test_if_variable_is_valid_ip "$(jq -c -r .avi.config.cloud.network_management.avi_ipam_pool_se "$1" | cut -d"-" -f1 )" "   "
-      test_if_variable_is_valid_ip "$(jq -c -r .avi.config.cloud.network_management.avi_ipam_pool_se "$1" | cut -d"-" -f2 )" "   "
-      # .avi.config.cloud.networks_data[]
-      for item in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
-      do
-        test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.networks_data[] have a name defined"
-        test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool_se | cut -d"-" -f1 )" "   "
-        test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool_se | cut -d"-" -f2 )" "   "
-        test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .avi_ipam_vip.cidr)" "   "
-        test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f1 )" "   "
-        test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f2 )" "   "
-      done
-      test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.networks_data[].name" \
-                                                   ".nsx.config.segments_overlay[].display_name" \
-                                                   "$1" \
-                                                   "   +++ Checking name in .avi.config.cloud.networks_data" \
-                                                   "   ++++++ Segment " \
-                                                   "   ++++++ERROR++++++ Segment not found: "
-      # checking that there is a network data with the proper tier1 for each .nsx.config.segments_overlay[].app_ips
-      echo "   +++ Checking that there is a network data with the proper tier1 for each .nsx.config.segments_overlay[].app_ips"
-      for segment in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-      do
-        if [[ $(echo $segment | jq -c .app_ips) != "null" ]] ; then
-          tier1_app_ips=$(echo $segment | jq -c -r .tier1)
-          tier1_app_ips_segment_data=0
-          for network_data in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
-          do
-            for segment_data in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-            do
-              if [[ $(echo $network_data | jq -c .name) == $(echo $segment_data | jq -c .display_name) ]] ; then
-                tier1_segment_data=$(echo $segment_data | jq -c -r .tier1)
-                if [[ $tier1_segment_data == $tier1_app_ips ]] ; then
-                  echo "   ++++++ Avi network data found for pool segment $(echo $segment | jq -c .display_name), tier1 $tier1_app_ips: $(echo $network_data | jq -c .name) with tier1: $tier1_segment_data"
-                  tier1_app_ips_segment_data=1
-                fi
-              fi
-            done
-          done
-        fi
-      done
-      if [[ $tier1_app_ips_segment_data -eq 0 ]] ; then echo "   ++++++ERROR++++++ no Avi network_data found for $(echo $segment | jq -c .display_name)" ; exit 255 ; fi
-      # .avi.config.cloud.service_engine_groups[]
-      for item in $(jq -c -r .avi.config.cloud.service_engine_groups[] "$1")
-      do
-        test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.service_engine_groups[] have a name defined"
-      done
-      #
-      if [[ $(jq -c -r .avi.config.cloud.virtual_services.dns "$1") != "null" ]]; then
-        for item in $(jq -c -r .avi.config.cloud.virtual_services.dns[] "$1")
+    done
+    if [[ $avi_cloud_network -eq 0 ]] ; then
+      echo "   ++++++ERROR++++++ $(echo $network | jq -c -r .name) segment not found!!"
+      exit 255
+    fi
+    test_if_variable_is_valid_ip "$(jq -c -r .avi.config.cloud.network_management.avi_ipam_pool_se "$1" | cut -d"-" -f1 )" "   "
+    test_if_variable_is_valid_ip "$(jq -c -r .avi.config.cloud.network_management.avi_ipam_pool_se "$1" | cut -d"-" -f2 )" "   "
+    # .avi.config.cloud.networks_data[]
+    for item in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
+    do
+      test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.networks_data[] have a name defined"
+      test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool_se | cut -d"-" -f1 )" "   "
+      test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool_se | cut -d"-" -f2 )" "   "
+      test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .avi_ipam_vip.cidr)" "   "
+      test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f1 )" "   "
+      test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f2 )" "   "
+    done
+    test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.networks_data[].name" \
+                                                 ".nsx.config.segments_overlay[].display_name" \
+                                                 "$1" \
+                                                 "   +++ Checking name in .avi.config.cloud.networks_data" \
+                                                 "   ++++++ Segment " \
+                                                 "   ++++++ERROR++++++ Segment not found: "
+    # checking that there is a network data with the proper tier1 for each .nsx.config.segments_overlay[].app_ips
+    echo "   +++ Checking that there is a network data with the proper tier1 for each .nsx.config.segments_overlay[].app_ips"
+    for segment in $(jq -c -r .nsx.config.segments_overlay[] "$1")
+    do
+      if [[ $(echo $segment | jq -c .app_ips) != "null" ]] ; then
+        tier1_app_ips=$(echo $segment | jq -c -r .tier1)
+        tier1_app_ips_segment_data=0
+        for network_data in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
         do
-          test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a name defined"
-          test_if_variable_is_defined $(echo $item | jq -c .network_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a network_ref defined"
-
-          test_if_variable_is_defined $(echo $item | jq -c .se_group_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a se_group_ref defined"
-          for service in $(echo $item | jq -c -r .services[])
+          for segment_data in $(jq -c -r .nsx.config.segments_overlay[] "$1")
           do
-            test_if_variable_is_defined $(echo $service | jq -c .port) "   " "testing if each .avi.config.cloud.virtual_services.dns[].services have a port defined"
+            if [[ $(echo $network_data | jq -c .name) == $(echo $segment_data | jq -c .display_name) ]] ; then
+              tier1_segment_data=$(echo $segment_data | jq -c -r .tier1)
+              if [[ $tier1_segment_data == $tier1_app_ips ]] ; then
+                echo "   ++++++ Avi network data found for pool segment $(echo $segment | jq -c .display_name), tier1 $tier1_app_ips: $(echo $network_data | jq -c .name) with tier1: $tier1_segment_data"
+                tier1_app_ips_segment_data=1
+              fi
+            fi
           done
         done
-        test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].se_group_ref" \
-                                                     ".avi.config.cloud.service_engine_groups[].name" \
-                                                     "$1" \
-                                                     "   +++ Checking se_group_ref in .avi.config.cloud.virtual_services.dns" \
-                                                     "   ++++++ Service Engine Group " \
-                                                     "   ++++++ERROR++++++ ervice Engine Group not found: "
-        #
-        test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].network_ref" \
-                                                     ".nsx.config.segments_overlay[].display_name" \
-                                                     "$1" \
-                                                     "   +++ Checking network_ref in .avi.config.cloud.virtual_services.dns" \
-                                                     "   ++++++ Segment " \
-                                                     "   ++++++ERROR++++++ Segment not found: "
       fi
+    done
+    if [[ $tier1_app_ips_segment_data -eq 0 ]] ; then echo "   ++++++ERROR++++++ no Avi network_data found for $(echo $segment | jq -c .display_name)" ; exit 255 ; fi
+    # .avi.config.cloud.service_engine_groups[]
+    for item in $(jq -c -r .avi.config.cloud.service_engine_groups[] "$1")
+    do
+      test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.service_engine_groups[] have a name defined"
+    done
+    #
+    if [[ $(jq -c -r .avi.config.cloud.virtual_services.dns "$1") != "null" ]]; then
+      for item in $(jq -c -r .avi.config.cloud.virtual_services.dns[] "$1")
+      do
+        test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a name defined"
+        test_if_variable_is_defined $(echo $item | jq -c .network_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a network_ref defined"
+
+        test_if_variable_is_defined $(echo $item | jq -c .se_group_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a se_group_ref defined"
+        for service in $(echo $item | jq -c -r .services[])
+        do
+          test_if_variable_is_defined $(echo $service | jq -c .port) "   " "testing if each .avi.config.cloud.virtual_services.dns[].services have a port defined"
+        done
+      done
+      test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].se_group_ref" \
+                                                   ".avi.config.cloud.service_engine_groups[].name" \
+                                                   "$1" \
+                                                   "   +++ Checking se_group_ref in .avi.config.cloud.virtual_services.dns" \
+                                                   "   ++++++ Service Engine Group " \
+                                                   "   ++++++ERROR++++++ ervice Engine Group not found: "
+      #
+      test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].network_ref" \
+                                                   ".nsx.config.segments_overlay[].display_name" \
+                                                   "$1" \
+                                                   "   +++ Checking network_ref in .avi.config.cloud.virtual_services.dns" \
+                                                   "   ++++++ Segment " \
+                                                   "   ++++++ERROR++++++ Segment not found: "
     fi
+  fi
 }
 #
 #
@@ -193,6 +193,7 @@ variables_json=$(jq -c -r . $jsonFile | jq .)
 #
 #
 IFS=$'\n'
+#
 if [ -z "$TF_VAR_vsphere_underlay_username" ] ; then  echo "   +++ testing if '$TF_VAR_vsphere_underlay_username' is not empty" ; exit 255 ; fi
 if [ -z "$TF_VAR_vsphere_underlay_password" ] ; then  echo "   +++ testing if '$TF_VAR_vsphere_underlay_password' is not empty" ; exit 255 ; fi
 if [ -z "$TF_VAR_ubuntu_password" ] ; then  echo "   +++ testing if '$TF_VAR_ubuntu_password' is not empty" ; exit 255 ; fi
