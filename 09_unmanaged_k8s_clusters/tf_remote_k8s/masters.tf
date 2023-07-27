@@ -242,7 +242,7 @@ resource "null_resource" "ako_config_locally_wo_nsx" {
 
 resource "null_resource" "ako_config_locally_nsx" {
   depends_on = [null_resource.generating_kube_config_locally]
-  count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
+  count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s_masters_ips) : 0
 
   provisioner "local-exec" {
     command = "cat > /home/ubuntu/ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako_nsx[count.index].rendered}\nEOL"
