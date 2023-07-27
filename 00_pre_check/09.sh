@@ -200,6 +200,6 @@ unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unm
 echo "   +++ Adding avi.config.cloud.name..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.avi.config.cloud += {"name": "Default-Cloud"}')
 #
-
+#
 #
 echo $unmanaged_k8s_clusters_json | jq . | tee /root/unmanaged_k8s_clusters.json > /dev/null
