@@ -30,7 +30,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/06.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
-if [[ $(jq -c -r .avi $jsonFile) != "null" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/07.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
