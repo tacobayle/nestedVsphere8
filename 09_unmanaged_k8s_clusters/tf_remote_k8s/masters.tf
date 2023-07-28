@@ -275,7 +275,7 @@ resource "null_resource" "ako_prerequisites" {
     interpreter = ["bash", "-c"]
     command = "while [[ $(cat masters.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
   }
-  
+
   provisioner "local-exec" {
     command = "kubectl config use-context context${count.index + 1}; kubectl create ns avi-system ; kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${var.docker_registry_username} --docker-password=${var.docker_registry_password} --docker-email=${var.docker_registry_email}; kubectl patch serviceaccount default -p \"{\\\"imagePullSecrets\\\": [{\\\"name\\\": \\\"docker\\\"}]}\""
   }

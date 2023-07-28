@@ -26,8 +26,6 @@ echo "   +++ seg_folder_basename"
 seg_folder_basename=$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)
 avi_json=$(echo $avi_json | jq '.avi.config += {"seg_folder_basename": "'$(echo $seg_folder_basename)'"}')
 #
-# add here a section to add vcenter_folder on each seg
-#
 echo "   +++ Adding avi.config.avi_config_repo..."
 avi_config_repo=$(jq -c -r '.avi_config_repo' $localJsonFile)
 avi_json=$(echo $avi_json | jq '.avi.config += {"avi_config_repo": "'$(echo $avi_config_repo)'"}')
@@ -80,6 +78,15 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
     do
       static_routes=$(echo $static_routes | jq '. += [{"prefix": "'$(echo $segment | jq -c -r .cidr)'", "next_hop": "'$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)'", "if_name": "'$(jq -c -r .nsx_alb_controller_if_name $localJsonFile)'", "route_id": "'$(echo $count)'"}]')
       ((count++))
+      #
+      if [[ $(echo $segment | jq -c -r .k8s_clusters) != "null" ]] ; then
+        for cluster in $(echo $segment | jq -c -r .k8s_clusters[])
+        do
+          echo "   +++ Updating avi.config.cloud.service_engine_groups for unmanaged k8s cluster(s)..."
+          seg_list=$(echo $seg_list | jq '. += [{"name": "'$(echo $cluster | jq -c -r .cluster_name)'", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-'$(echo $cluster | jq -c -r .cluster_name)'", "ha_mode": "HA_MODE_SHARED_PAIR", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+        done
+      fi
+      #
     done
     avi_json=$(echo $avi_json | jq '.avi.config += {"static_routes": '$(echo $static_routes)'}')
   fi
@@ -252,6 +259,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     if [[ $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters $jsonFile) != "null" ]]; then
       for cluster in $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters[] $jsonFile)
         do
+          echo "   +++ Updating avi.config.cloud.service_engine_groups for unmanaged k8s cluster(s)..."
           seg_list=$(echo $seg_list | jq '. += [{"name": "'$(echo $cluster | jq -c -r .cluster_name)'", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-'$(echo $cluster | jq -c -r .cluster_name)'", "ha_mode": "HA_MODE_SHARED_PAIR", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
         done
     fi
@@ -297,12 +305,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   echo "   +++ Adding avi.config.cloud.name..."
   avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "Default-Cloud"}')
   #
-  if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == "true" ]]; then
-    echo "   +++ Updating avi.config.cloud.service_engine_groups for unmanaged k8s cluster(s)..."
-    avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.service_engine_groups)')
-    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"service_engine_groups": '$(echo $seg_list)'}')
-  fi
-  #
   if [[ $(echo $avi_pools | jq '. | length') -gt 0 ]] ; then
     echo "   ++++++ Adding Avi pools..."
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
@@ -315,6 +317,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   echo "   ++++++ Adding Avi DNS virtual services..."
   avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"dns": '$(echo $avi_virtual_services_dns)'}')
 fi
+#
+echo "   +++ Updating avi.config.cloud.service_engine_groups..."
+avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.service_engine_groups)')
+avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"service_engine_groups": '$(echo $seg_list)'}')
 #
 echo $avi_json | jq . | tee /root/avi.json > /dev/null
 #
