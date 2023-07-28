@@ -202,6 +202,8 @@ if [ -z "$TF_VAR_nested_esxi_root_password" ] ; then  echo "   +++ testing if '$
 if [ -z "$TF_VAR_vsphere_nested_password" ] ; then  echo "   +++ testing if '$TF_VAR_vsphere_nested_password' is not empty" ; exit 255 ; fi
 if [ -z "$TF_VAR_docker_registry_username" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_username' is not empty" ; exit 255 ; fi
 if [ -z "$TF_VAR_docker_registry_password" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_password' is not empty" ; exit 255 ; fi
+if [ -z "$TF_VAR_docker_registry_email" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_email' is not empty" ; exit 255 ; fi
+
 echo ""
 echo "==> Checking vSphere Underlay Variables"
 test_if_json_variable_is_defined .vsphere_underlay.datacenter $jsonFile "   "

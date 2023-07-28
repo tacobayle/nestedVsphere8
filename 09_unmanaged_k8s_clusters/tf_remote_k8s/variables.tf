@@ -6,6 +6,7 @@ variable "ubuntu_ova_path" {}
 variable "ubuntu_password" {}
 variable "docker_registry_username" {}
 variable "docker_registry_password" {}
+variable "docker_registry_email" {}
 variable "deployment" {}
 variable "avi" {}
 variable "avi_password" {}
