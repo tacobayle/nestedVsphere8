@@ -36,11 +36,19 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
     fi
   done
   #
-  echo "   +++ Adding variable nsx_password in /nestedVsphere8/08_app/tf_remote_app/variables.tf"
-  echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/08_app/tf_remote_app/variables.tf > /dev/null
+  if grep -q "nsx_password" /nestedVsphere8/08_app/tf_remote_app/variables.tf ; then
+    echo "   +++ variable nsx_password is already in /nestedVsphere8/08_app/tf_remote_app/variables.tf"
+  else
+    echo "   +++ Adding variable nsx_password in /nestedVsphere8/08_app/tf_remote_app/variables.tf"
+    echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/08_app/tf_remote_app/variables.tf > /dev/null
+  fi
   #
-  echo "   +++ Adding variable nsx_password in /nestedVsphere8/08_app/variables.tf"
-  echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/08_app/variables.tf > /dev/null
+  if grep -q "nsx_password" /nestedVsphere8/08_app/variables.tf ; then
+    echo "   +++ variable nsx_password is already in /nestedVsphere8/08_app/variables.tf"
+  else
+    echo "   +++ Adding variable nsx_password in /nestedVsphere8/08_app/variables.tf"
+    echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/08_app/variables.tf > /dev/null
+  fi
   #
   mv /nestedVsphere8/08_app/tf_remote_app/version.tf.disabled /nestedVsphere8/08_app/tf_remote_app/version.tf
   mv /nestedVsphere8/08_app/tf_remote_app/nsx_tag.tf.disabled /nestedVsphere8/08_app/tf_remote_app/nsx_tag.tf

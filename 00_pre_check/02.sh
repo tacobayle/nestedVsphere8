@@ -89,11 +89,19 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
   #
-  echo "   +++ Adding variable nsx in /nestedVsphere8/02_external_gateway/variables.tf"
-  echo 'variable "nsx" {}' | tee -a /nestedVsphere8/02_external_gateway/variables.tf > /dev/null
+  if grep -q "nsx" /nestedVsphere8/02_external_gateway/variables.tf ; then
+    echo "   +++ variable nsx is already in /nestedVsphere8/02_external_gateway/variables.tf"
+  else
+    echo "   +++ Adding variable nsx in /nestedVsphere8/02_external_gateway/variables.tf"
+    echo 'variable "nsx" {}' | tee -a /nestedVsphere8/02_external_gateway/variables.tf > /dev/null
+  fi
   #
-  echo "   +++ Adding variable networks in /nestedVsphere8/02_external_gateway/variables.tf"
-  echo 'variable "networks" {}' | tee -a /nestedVsphere8/02_external_gateway/variables.tf > /dev/null
+  if grep -q "networks" /nestedVsphere8/02_external_gateway/variables.tf ; then
+    echo "   +++ variable networks is already in /nestedVsphere8/02_external_gateway/variables.tf"
+  else
+    echo "   +++ Adding variable networks in /nestedVsphere8/02_external_gateway/variables.tf"
+    echo 'variable "networks" {}' | tee -a /nestedVsphere8/02_external_gateway/variables.tf > /dev/null
+  fi
   #
   mv /nestedVsphere8/02_external_gateway/external_gw_nsx.tf.disabled /nestedVsphere8/02_external_gateway/external_gw_nsx.tf
   mv /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf.disabled

@@ -20,9 +20,13 @@ networks_json=$(echo $networks_json | jq '. += {"vds_version": "'$(echo $vds_ver
 #
 if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   #
-  echo "   +++ Adding variable nsx in /nestedVsphere8/04_networks/variables.tf"
-  echo 'variable "nsx" {}' | tee -a /nestedVsphere8/04_networks/variables.tf > /dev/null
+  if grep -q "nsx" /nestedVsphere8/04_networks/variables.tf ; then
+    echo "   +++ variable nsx is already in /nestedVsphere8/08_app/variables.tf"
+  else
+    echo "   +++ Adding variable nsx in /nestedVsphere8/04_networks/variables.tf"
+    echo 'variable "nsx" {}' | tee -a /nestedVsphere8/04_networks/variables.tf > /dev/null
   #
+  fi
 fi
 #
 echo $networks_json | jq . | tee /root/networks.json > /dev/null

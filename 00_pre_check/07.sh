@@ -46,11 +46,19 @@ avi_json=$(echo $avi_json | jq '. += {"avi_port_group": "'$(echo $avi_port_group
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
-  echo "   +++ Adding variable nsx_password in /nestedVsphere8/10_nsx_alb_config/variables.tf"
-  echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/10_nsx_alb_config/variables.tf > /dev/null
+  if grep -q "nsx_password" /nestedVsphere8/10_nsx_alb_config/variables.tf ; then
+    echo "   +++ variable nsx_password is already in /nestedVsphere8/10_nsx_alb_config/variables.tf"
+  else
+    echo "   +++ Adding variable nsx_password in /nestedVsphere8/10_nsx_alb_config/variables.tf"
+    echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/10_nsx_alb_config/variables.tf > /dev/null
+  fi
   #
-  echo "   +++ Adding variable transport_zone in /nestedVsphere8/10_nsx_alb_config/variables.tf"
-  echo 'variable "transport_zone" {}' | tee -a /nestedVsphere8/10_nsx_alb_config/variables.tf > /dev/null
+  if grep -q "transport_zone" /nestedVsphere8/10_nsx_alb_config/variables.tf ; then
+    echo "   +++ variable transport_zone is already in /nestedVsphere8/10_nsx_alb_config/variables.tf"
+  else
+    echo "   +++ Adding variable transport_zone in /nestedVsphere8/10_nsx_alb_config/variables.tf"
+    echo 'variable "transport_zone" {}' | tee -a /nestedVsphere8/10_nsx_alb_config/variables.tf > /dev/null
+  fi
   #
   mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf.disabled /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf
   mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf..disabled

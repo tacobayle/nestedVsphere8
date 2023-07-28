@@ -122,7 +122,11 @@ if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi
 #
 if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
   #
-  echo "   +++ Adding variable nsx in /nestedVsphere8/03_nested_vsphere/variables.tf"
-  echo 'variable "nsx" {}' | tee -a /nestedVsphere8/03_nested_vsphere/variables.tf > /dev/null
+  if grep -q "nsx" /nestedVsphere8/03_nested_vsphere/variables.tf ; then
+    echo "   +++ variable nsx is already in /nestedVsphere8/03_nested_vsphere/variables.tf"
+  else
+    echo "   +++ Adding variable nsx in /nestedVsphere8/03_nested_vsphere/variables.tf"
+    echo 'variable "nsx" {}' | tee -a /nestedVsphere8/03_nested_vsphere/variables.tf > /dev/null
+  fi
   #
 fi
