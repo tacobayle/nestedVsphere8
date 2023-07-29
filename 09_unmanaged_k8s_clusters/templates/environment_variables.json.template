@@ -3,5 +3,6 @@
   "ubuntu_password": "${ubuntu_password}",
   "docker_registry_username": "${docker_registry_username}",
   "docker_registry_password": "${docker_registry_password}",
+  "docker_registry_email": "${docker_registry_email}",
   "avi_password": "${avi_password}"
 }
