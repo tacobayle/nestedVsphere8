@@ -248,7 +248,6 @@ resource "null_resource" "update_ip_tables" {
     interpreter = ["bash", "-c"]
     command = "echo \"${count.index+1}\" > current_state_ip_tables.txt"
   }
-
 }
 
 resource "null_resource" "end" {

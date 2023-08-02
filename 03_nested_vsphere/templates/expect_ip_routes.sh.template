@@ -1,0 +1,15 @@
+#!/usr/bin/expect
+
+set timeout 60
+
+spawn ssh -oStrictHostKeyChecking=no root@${vcenter_fqdn}
+
+expect "assword:"
+send "${vsphere_nested_password}\r"
+
+expect "and>"
+
+send "shell \r"
+
+expect " ]# "
+

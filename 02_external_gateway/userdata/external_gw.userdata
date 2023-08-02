@@ -38,7 +38,9 @@ write_files:
       mac=`ip -o link show | awk -F'link/ether ' '{print $2}' | awk -F' ' '{print $1}' | tail -1`
       hostname=`hostname`
       echo "${ip} $hostname" | sudo tee -a /etc/hosts
+      echo "${ip} external-gw" | sudo tee -a /etc/hosts
       echo "${ip_vcenter} ${vcenter_name}.${dns_domain}" | sudo tee -a /etc/hosts
+      echo "${ip_vcenter} vcsa" | sudo tee -a /etc/hosts
       cp ${netplanFile} ${netplanFile}.old
       echo "network:" | sudo tee ${netplanFile}
       echo "    ethernets:" | sudo tee -a ${netplanFile}
@@ -51,6 +53,7 @@ write_files:
       echo "            gateway4: ${defaultGw}" | sudo tee -a ${netplanFile}
       echo "            nameservers:" | sudo tee -a ${netplanFile}
       echo "              addresses: [${dns}]" | sudo tee -a ${netplanFile}
+      echo "              search: [${dns_domain}]" | sudo tee -a ${netplanFile}
       echo "    version: 2" | sudo tee -a ${netplanFile}
       sudo netplan apply
       run_cmd '! sudo apt update | grep Err'

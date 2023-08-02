@@ -108,6 +108,40 @@ done
 nested_vsphere_json=$(echo $nested_vsphere_json | jq '. | del (.vsphere_nested.esxi.disks)')
 nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vsphere_nested.esxi += {"disks": '$(echo $new_disks)'}')
 #
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+  alb_networks='["se", "backend", "vip", "tanzu"]'
+  ip_routes_vcenter="[]"
+  for network in $(echo $alb_networks | jq -c -r .[])
+  do
+    if [[ $network != "se" ]] ; then
+      echo "   +++ Adding vcenter ip route prefix $(jq .vsphere_underlay.networks.alb.$network.cidr $jsonFile)..."
+      ip_routes_vcenter=$(echo $ip_routes_vcenter | jq '. += ['$(jq .vsphere_underlay.networks.alb.$network.cidr $jsonFile)']')
+    fi
+  done
+  nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vsphere_nested  += {"ip_routes_vcenter": '$(echo $ip_routes_vcenter)'}')
+fi
+#
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+  #
+  if grep -q "nsx" /nestedVsphere8/03_nested_vsphere/variables.tf ; then
+    echo "   +++ variable nsx is already in /nestedVsphere8/03_nested_vsphere/variables.tf"
+  else
+    echo "   +++ Adding variable nsx in /nestedVsphere8/03_nested_vsphere/variables.tf"
+    echo 'variable "nsx" {}' | tee -a /nestedVsphere8/03_nested_vsphere/variables.tf > /dev/null
+  fi
+  #
+  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
+    ip_routes_vcenter="[]"
+    if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
+      for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
+      do
+        echo "   +++ Adding vcenter ip route prefix $(echo $segment | jq -c -r .cidr)..."
+        ip_routes_vcenter=$(echo $ip_routes_vcenter | jq '. += ['$(echo $segment | jq -c -r .cidr)']')
+      done
+    fi
+    nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vsphere_nested  += {"ip_routes_vcenter": '$(echo $ip_routes_vcenter)'}')
+  fi
+fi
 echo $nested_vsphere_json | jq . | tee /root/nested_vsphere.json > /dev/null
 #
 echo ""
@@ -120,13 +154,3 @@ echo "==> Downloading vSphere ISO file"
 if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .vcenter_iso_path $localJsonFile) $(jq -c -r .vsphere_nested.iso_url $jsonFile) ; fi
 if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else echo "   +++ vSphere ova $(jq -c -r .vcenter_iso_path $localJsonFile) is empty" ; exit 255 ; fi
 #
-if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then # with NSX
-  #
-  if grep -q "nsx" /nestedVsphere8/03_nested_vsphere/variables.tf ; then
-    echo "   +++ variable nsx is already in /nestedVsphere8/03_nested_vsphere/variables.tf"
-  else
-    echo "   +++ Adding variable nsx in /nestedVsphere8/03_nested_vsphere/variables.tf"
-    echo 'variable "nsx" {}' | tee -a /nestedVsphere8/03_nested_vsphere/variables.tf > /dev/null
-  fi
-  #
-fi
