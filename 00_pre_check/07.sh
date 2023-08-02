@@ -326,6 +326,14 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"dns": '$(echo $avi_virtual_services_dns)'}')
 fi
 #
+sslkeyandcertificate="[]"
+avi_fqdn="$(jq -c -r .alb_controller_name /nestedVsphere8/02_external_gateway/variables.json).$(jq -c -r .external_gw.bind.domain $jsonFile)"
+sslkeyandcertificate=$(echo $sslkeyandcertificate | jq '. += [{"name": "'$(jq -c -r .tanzu_cert_name /nestedVsphere8/07_nsx_alb/variables.json)'", "format": "SSL_PEM", "certificate_base64": true, "enable_ocsp_stapling": false, "import_key_to_hsm": false, "is_federated": false, "key_base64": true, "type": "SSL_CERTIFICATE_TYPE_SYSTEM", "certificate": {"days_until_expire": 365, "self_signed": true, "version": "2", "signature_algorithm":"sha256WithRSAEncryption", "subject_alt_names": ["'$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)'"], "issuer": {"common_name": "https://'$(echo $avi_fqdn)'", "distinguished_name": "CN='$(echo $avi_fqdn)'"}, "subject": {"common_name": "'$(echo $avi_fqdn)'", "distinguished_name": "CN='$(echo $avi_fqdn)'"}}, "key_params": {"algorithm": "SSL_KEY_ALGORITHM_RSA", "rsa_params": {"exponent": 65537, "key_size": "SSL_KEY_2048_BITS"}}, "ocsp_config": {"failed_ocsp_jobs_retry_interval": 3600, "max_tries": 10, "ocsp_req_interval": 86400, "url_action": "OCSP_RESPONDER_URL_FAILOVER"} }]')
+echo "   +++ Adding avi.config.sslkeyandcertificate... for tanzu deployment"
+avi_json=$(echo $avi_json | jq '.avi.config += {"sslkeyandcertificate": '$(echo $sslkeyandcertificate)'}')
+echo "   +++ Adding avi.config.portal_configuration.sslkeyandcertificate_ref... for tanzu deployment"
+avi_json=$(echo $avi_json | jq '.avi.config += {"portal_configuration": {"sslkeyandcertificate_ref": "'$(jq -c -r .tanzu_cert_name /nestedVsphere8/07_nsx_alb/variables.json)'"}}')
+#
 echo "   +++ Updating avi.config.cloud.service_engine_groups..."
 avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.service_engine_groups)')
 avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"service_engine_groups": '$(echo $seg_list)'}')

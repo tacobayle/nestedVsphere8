@@ -17,6 +17,8 @@ controller:
 nsx_username: admin
 nsx_password: ${nsx_password}
 nsx_server: ${nsx_server}
+sslkeyandcertificate: |
+  ${sslkeyandcertificate}
 nsxt:
   cloud:
     name: ${cloud_name}

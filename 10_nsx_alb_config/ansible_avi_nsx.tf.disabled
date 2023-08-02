@@ -11,6 +11,7 @@ data "template_file" "values" {
     dns = jsonencode(var.vsphere_underlay.networks.vsphere.management.external_gw_ip)
     nsx_password = var.nsx_password
     nsx_server = var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip
+    sslkeyandcertificate = jsonencode(var.avi.config.sslkeyandcertificate)
     domain = var.external_gw.bind.domain
     cloud_name = var.avi.config.cloud.name
     cloud_obj_name_prefix = var.avi.config.cloud.obj_name_prefix
