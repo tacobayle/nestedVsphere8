@@ -12,6 +12,7 @@ data "template_file" "values" {
     nsx_password = var.nsx_password
     nsx_server = var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip
     sslkeyandcertificate = jsonencode(var.avi.config.sslkeyandcertificate)
+    sslkeyandcertificate_ref = var.avi.config.portal_configuration.sslkeyandcertificate_ref
     domain = var.external_gw.bind.domain
     cloud_name = var.avi.config.cloud.name
     cloud_obj_name_prefix = var.avi.config.cloud.obj_name_prefix

@@ -19,6 +19,8 @@ nsx_password: ${nsx_password}
 nsx_server: ${nsx_server}
 sslkeyandcertificate: |
   ${sslkeyandcertificate}
+portal_configuration:
+  sslkeyandcertificate_ref: ${sslkeyandcertificate_ref}
 nsxt:
   cloud:
     name: ${cloud_name}
