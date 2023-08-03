@@ -70,7 +70,7 @@ resource "vsphere_distributed_port_group" "sa_pg_nsx_overlay_edge" {
 }
 
 resource "vsphere_distributed_virtual_switch" "sa_alb_se" {
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && (var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx") ? 1 : 0
   name = var.networks.alb.se.name
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
   version = var.vds_version
@@ -86,14 +86,14 @@ resource "vsphere_distributed_virtual_switch" "sa_alb_se" {
 }
 
 resource "vsphere_distributed_port_group" "sa_pg_alb_se" {
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && (var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx") ? 1 : 0
   name                            = var.networks.alb.se.port_group_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.sa_alb_se[0].id
   vlan_id = 0
 }
 
 resource "vsphere_distributed_virtual_switch" "sa_alb_backend" {
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && (var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx") ? 1 : 0
   name = var.networks.alb.backend.name
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
   version = var.vds_version
@@ -109,14 +109,14 @@ resource "vsphere_distributed_virtual_switch" "sa_alb_backend" {
 }
 
 resource "vsphere_distributed_port_group" "sa_pg_alb_backend" {
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && (var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx") ? 1 : 0
   name                            = var.networks.alb.backend.port_group_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.sa_alb_backend[0].id
   vlan_id = 0
 }
 
 resource "vsphere_distributed_virtual_switch" "sa_alb_vip" {
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && (var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx") ? 1 : 0
   name = var.networks.alb.vip.name
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
   version = var.vds_version
@@ -132,14 +132,14 @@ resource "vsphere_distributed_virtual_switch" "sa_alb_vip" {
 }
 
 resource "vsphere_distributed_port_group" "sa_pg_alb_vip" {
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && (var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx") ? 1 : 0
   name                            = var.networks.alb.vip.port_group_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.sa_alb_vip[0].id
   vlan_id = 0
 }
 
 resource "vsphere_distributed_virtual_switch" "sa_alb_tanzu" {
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && (var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx") ? 1 : 0
   name = var.networks.alb.tanzu.name
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
   version = var.vds_version
@@ -155,7 +155,7 @@ resource "vsphere_distributed_virtual_switch" "sa_alb_tanzu" {
 }
 
 resource "vsphere_distributed_port_group" "sa_pg_alb_tanzu" {
-  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.vsphere_underlay.networks_vsphere_dual_attached == false && (var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx") ? 1 : 0
   name                            = var.networks.alb.tanzu.port_group_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.sa_alb_tanzu[0].id
   vlan_id = 0

@@ -157,7 +157,7 @@ resource "null_resource" "K8s_sanity_check" {
 }
 
 data "template_file" "values_ako_wo_nsx" {
-  count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
   template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
   vars = {
     disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
@@ -233,7 +233,7 @@ resource "null_resource" "generating_kube_config_locally" {
 
 resource "null_resource" "ako_config_locally_wo_nsx" {
   depends_on = [null_resource.generating_kube_config_locally]
-  count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
 
   provisioner "local-exec" {
     command = "cat > /home/ubuntu/ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako_wo_nsx[count.index].rendered}\nEOL"

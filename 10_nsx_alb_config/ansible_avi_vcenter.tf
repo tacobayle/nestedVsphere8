@@ -1,5 +1,5 @@
 data "template_file" "values" {
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
   template = file("templates/values_vcenter.yml.template")
   vars = {
     controllerPrivateIp = jsonencode(var.vsphere_underlay.networks.vsphere.management.avi_nested_ip)
@@ -33,7 +33,7 @@ data "template_file" "values" {
 
 
 resource "null_resource" "alb_ansible_config_values" {
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
   provisioner "local-exec" {
     command = "cat > values.yml <<EOL\n${data.template_file.values[0].rendered}\nEOL"
@@ -42,7 +42,7 @@ resource "null_resource" "alb_ansible_config_values" {
 
 
 resource "null_resource" "alb_ansible_config" {
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
   depends_on = [null_resource.ansible_hosts_avi_controllers, null_resource.alb_ansible_config_values, null_resource.wait_https_controller]
   provisioner "local-exec" {
     command = "git clone ${var.avi.config.avi_config_repo} --branch ${var.avi.config.avi_config_tag} ; cd ${split("/", var.avi.config.avi_config_repo)[4]} ; ansible-playbook -i ../hosts_avi ${var.avi.config.playbook} --extra-vars @../values.yml"
