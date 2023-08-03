@@ -1,5 +1,5 @@
 resource "vsphere_virtual_machine" "external_gw_tanzu" {
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
   name             = "external-gw-${var.date_index}"
   datastore_id     = data.vsphere_datastore.datastore.id
   resource_pool_id = data.vsphere_resource_pool.pool.id
@@ -77,7 +77,7 @@ resource "vsphere_virtual_machine" "external_gw_tanzu" {
 
 resource "null_resource" "add_nic_to_gw_alb_se" {
   depends_on = [vsphere_virtual_machine.external_gw_tanzu]
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
   provisioner "local-exec" {
     command = <<-EOT
@@ -94,7 +94,7 @@ resource "null_resource" "add_nic_to_gw_alb_se" {
 
 resource "null_resource" "add_nic_to_gw_alb_backend" {
   depends_on = [null_resource.add_nic_to_gw_alb_se]
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
   provisioner "local-exec" {
     command = <<-EOT
@@ -111,7 +111,7 @@ resource "null_resource" "add_nic_to_gw_alb_backend" {
 
 resource "null_resource" "add_nic_to_gw_alb_vip" {
   depends_on = [null_resource.add_nic_to_gw_alb_backend]
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
   provisioner "local-exec" {
     command = <<-EOT
@@ -128,7 +128,7 @@ resource "null_resource" "add_nic_to_gw_alb_vip" {
 
 resource "null_resource" "add_nic_to_gw_alb_tanzu" {
   depends_on = [null_resource.add_nic_to_gw_alb_vip]
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
   provisioner "local-exec" {
     command = <<-EOT
@@ -145,7 +145,7 @@ resource "null_resource" "add_nic_to_gw_alb_tanzu" {
 
 resource "null_resource" "add_ips_to_gw_alb_tanzu" {
   depends_on = [null_resource.add_nic_to_gw_alb_tanzu]
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
@@ -211,7 +211,7 @@ resource "null_resource" "add_ips_to_gw_alb_tanzu" {
 
 
 resource "null_resource" "set_initial_state_ip_tables" {
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
     command = "echo \"0\" > current_state_ip_tables.txt"
@@ -221,7 +221,7 @@ resource "null_resource" "set_initial_state_ip_tables" {
 
 resource "null_resource" "update_ip_tables" {
   depends_on = [null_resource.add_ips_to_gw_alb_tanzu, null_resource.set_initial_state_ip_tables]
-  count = var.deployment == "vsphere_alb_wo_nsx" ? length(var.external_gw.ip_table_prefixes) : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.external_gw.ip_table_prefixes) : 0
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
@@ -252,7 +252,7 @@ resource "null_resource" "update_ip_tables" {
 
 resource "null_resource" "end" {
   depends_on = [null_resource.update_ip_tables]
-  count = var.deployment == "vsphere_alb_wo_nsx" ? 1 : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
