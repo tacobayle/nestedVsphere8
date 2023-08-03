@@ -16,6 +16,11 @@ test_nsx_alb_variables () {
   test_if_json_variable_is_defined .avi.version "$1" "   "
   test_if_json_variable_is_defined .avi.config.cloud.service_engine_groups "$1" "   "
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip "$1") "   "
+  if [ -z "$TF_VAR_docker_registry_username" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_username' is not empty" ; exit 255 ; fi
+  if [ -z "$TF_VAR_docker_registry_password" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_password' is not empty" ; exit 255 ; fi
+  if [ -z "$TF_VAR_docker_registry_email" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_email' is not empty" ; exit 255 ; fi
+  if [ -z "$TF_VAR_avi_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_password' is not empty" ; exit 255 ; fi
+  if [ -z "$TF_VAR_avi_old_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_old_password' is not empty" ; exit 255 ; fi
 }
 #
 #
@@ -200,10 +205,7 @@ if [ -z "$TF_VAR_ubuntu_password" ] ; then  echo "   +++ testing if '$TF_VAR_ubu
 if [ -z "$TF_VAR_bind_password" ] ; then  echo "   +++ testing if '$TF_VAR_bind_password' is not empty" ; exit 255 ; fi
 if [ -z "$TF_VAR_nested_esxi_root_password" ] ; then  echo "   +++ testing if '$TF_VAR_nested_esxi_root_password' is not empty" ; exit 255 ; fi
 if [ -z "$TF_VAR_vsphere_nested_password" ] ; then  echo "   +++ testing if '$TF_VAR_vsphere_nested_password' is not empty" ; exit 255 ; fi
-if [ -z "$TF_VAR_docker_registry_username" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_username' is not empty" ; exit 255 ; fi
-if [ -z "$TF_VAR_docker_registry_password" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_password' is not empty" ; exit 255 ; fi
-if [ -z "$TF_VAR_docker_registry_email" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_email' is not empty" ; exit 255 ; fi
-
+#
 echo ""
 echo "==> Checking vSphere Underlay Variables"
 test_if_json_variable_is_defined .vsphere_underlay.datacenter $jsonFile "   "
@@ -356,15 +358,11 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   #
   # vSphere Avi networks with Avi config.
   if [[ $(jq -c -r .avi $jsonFile) != "null" && $(jq -c -r .tanzu $jsonFile) == "null" ]]; then
-    if [ -z "$TF_VAR_avi_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_password' is not empty" ; exit 255 ; fi
-    if [ -z "$TF_VAR_avi_old_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_old_password' is not empty" ; exit 255 ; fi
     echo "   +++ Adding .deployment: vsphere_alb_wo_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_alb_wo_nsx"}')
     test_nsx_alb_variables "/etc/config/variables.json"
   fi
   if [[ $(jq -c -r .avi $jsonFile) != "null" && $(jq -c -r .tanzu $jsonFile) != "null" ]]; then
-    if [ -z "$TF_VAR_avi_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_password' is not empty" ; exit 255 ; fi
-    if [ -z "$TF_VAR_avi_old_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_old_password' is not empty" ; exit 255 ; fi
     echo "   +++ Adding .deployment: vsphere_tanzu_alb_wo_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
     test_nsx_alb_variables "/etc/config/variables.json"
@@ -512,8 +510,6 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
   #
   #
   if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" && $(jq -c -r .vcd $jsonFile) == "null" ]]; then
-    if [ -z "$TF_VAR_avi_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_password' is not empty" ; exit 255 ; fi
-    if [ -z "$TF_VAR_avi_old_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_old_password' is not empty" ; exit 255 ; fi
     echo "   +++ Adding .deployment: vsphere_nsx_alb"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb"}')
     test_nsx_alb_variables "/etc/config/variables.json"
@@ -525,8 +521,6 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
   #
   #
   if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" && $(jq -c -r .vcd $jsonFile) != "null" ]]; then
-    if [ -z "$TF_VAR_avi_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_password' is not empty" ; exit 255 ; fi
-    if [ -z "$TF_VAR_avi_old_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_old_password' is not empty" ; exit 255 ; fi
     echo "   +++ Adding .deployment: vsphere_nsx_alb_vcd"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_vcd"}')
     test_nsx_alb_variables "/etc/config/variables.json"
