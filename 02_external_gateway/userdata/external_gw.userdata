@@ -58,6 +58,7 @@ write_files:
       sudo netplan apply
       run_cmd '! sudo apt update | grep Err'
       # kubectl install
+      #
       run_cmd 'sudo rm -f /tmp/apt-key.gpg; wget https://packages.cloud.google.com/apt/doc/apt-key.gpg -O /tmp/apt-key.gpg; test $(ls -l /tmp/apt-key.gpg | awk '"'"'{print $5}'"'"') -gt 0'
       run_cmd 'sudo apt-key add /tmp/apt-key.gpg'
       run_cmd '! sudo add-apt-repository "deb https://apt.kubernetes.io/ kubernetes-xenial main" | grep Err:'
@@ -74,6 +75,7 @@ write_files:
       #
       run_cmd 'sudo apt install -y python3-pip; ls /usr/bin/pip3'
       run_cmd 'sudo apt install -y jq; ls /usr/bin/jq'
+      run_cmd 'sudo apt install -y docker.io; ls /usr/bin/docker'
       run_cmd 'sudo apt install -y expect; ls /usr/bin/expect'
       run_cmd 'sudo apt install -y python3-jmespath; pip3 list | grep jmespath'
       run_cmd 'sudo apt -y install nfs-kernel-server; ls /usr/share/nfs-kernel-server'

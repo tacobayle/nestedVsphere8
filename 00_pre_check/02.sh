@@ -71,7 +71,7 @@ external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(ech
 nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
   echo "   +++ Adding Networks MTU details"
   networks_details=$(jq -c -r .networks $localJsonFile)
@@ -106,9 +106,9 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   mv /nestedVsphere8/02_external_gateway/external_gw_nsx.tf.disabled /nestedVsphere8/02_external_gateway/external_gw_nsx.tf
   mv /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf.disabled
   #
-  echo "   +++ Creating External gateway routes to subnet segments..."
   new_routes="[]"
   if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
+    echo "   +++ Creating External gateway routes to subnet segments..."
     for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
     do
       for tier1 in $(jq -c -r .nsx.config.tier1s[] $jsonFile)
@@ -127,6 +127,30 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
       done
     done
   fi
+  #
+  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
+    if [[ $(jq -c -r '.avi.config.cloud.additional_subnets | length' $jsonFile) -gt 0 ]] ; then
+      echo "   +++ Creating External gateway routes to .avi.config.cloud.additional_subnets..."
+      for network in $(jq -c -r .avi.config.cloud.additional_subnets[] $jsonFile)
+      do
+        for subnet in $(echo $network | jq -c -r '.subnets[]')
+        do
+          count=0
+          for tier0 in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
+          do
+            if [[ $(echo $tier0 | jq 'has("bgp")') == "true" ]] ; then
+              if [[ $(echo $subnet | jq -c -r .bgp_label) == $(echo $tier0 | jq -c -r .bgp.avi_peer_label) ]] ; then
+                new_routes=$(echo $new_routes | jq '. += [{"to": "'$(echo $subnet | jq -c -r .cidr)'", "via": "'$(jq -c -r .vcenter.dvs.portgroup.nsx_external.tier0_vips["$count"] $jsonFile)'"}]')
+                echo "   +++ Route to $(echo $subnet | jq -c -r .cidr) via $(jq -c -r .vcenter.dvs.portgroup.nsx_external.tier0_vips["$count"] $jsonFile) added: OK"
+              fi
+            fi
+            ((count++))
+          done
+        done
+      done
+    fi
+  fi
+  #
   if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
     #
     if [[ $(jq -c -r '.avi.config.cloud.networks_data | length' $jsonFile) -gt 0 ]] ; then
@@ -153,7 +177,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
           fi
         done
       done
-      external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"routes": '$(echo $new_routes)'}')
     fi
     #
     #
@@ -177,6 +200,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
       disk=$(jq -c -r '.disk_if_vcd' $localJsonFile)
       vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile)
     fi
+    external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"routes": '$(echo $new_routes)'}')
   fi
   #
   echo "   +++ Adding .default_kubectl_version... from local variables.json"
@@ -196,8 +220,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   for network in $(echo $alb_networks | jq -c -r .[])
   do
     echo "   +++ Adding prefix for alb $network network..."
-    prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.'$network'.netmask' $jsonFile) "   ++++++")
-    external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.'$network' += {"prefix": "'$(echo $prefix)'"}')
+    netmask=$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.'$network'.cidr'  $jsonFile| cut -d"/" -f2) "   ++++++")
+    external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.'$network' += {"netmask": "'$(echo $netmask)'"}')
     if [[ $network != "se" ]] ; then ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ['$(jq .vsphere_underlay.networks.alb.$network.cidr $jsonFile)']') ; fi
     #
     if [[ $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters $jsonFile) != "null" ]] ; then
@@ -206,31 +230,12 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
       external_gw_json=$(echo $external_gw_json | jq '. += {"default_kubectl_version": "'$(echo $default_kubectl_version)'"}')
     fi
   done
-#  echo "   +++ Adding prefix for alb se network..."
-#  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.se.netmask' $jsonFile) "   ++++++")
-#  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.se += {"prefix": "'$(echo $prefix)'"}')
-#  #
-#  echo "   +++ Adding prefix for alb backend network..."
-#  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.backend.netmask' $jsonFile) "   ++++++")
-#  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.backend += {"prefix": "'$(echo $prefix)'"}')
-#  #
-#  echo "   +++ Adding prefix for alb vip network..."
-#  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.vip.netmask' $jsonFile) "   ++++++")
-#  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.vip += {"prefix": "'$(echo $prefix)'"}')
-#  #
-#  echo "   +++ Adding prefix for alb tanzu network..."
-#  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.alb.tanzu.netmask' $jsonFile) "   ++++++")
-#  external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.alb.tanzu += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding Networks MTU details"
   networks_details=$(jq -c -r .networks $localJsonFile)
   external_gw_json=$(echo $external_gw_json | jq '. += {"networks": '$(echo $networks_details)'}')
   #
   echo "   +++ Creating External ip_table_prefixes..."
-#  ip_table_prefixes="[]"
-#  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.backend.cidr $jsonFile)'"]')
-#  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr $jsonFile)'"]')
-#  ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.tanzu.cidr $jsonFile)'"]')
   external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
   #
   if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) != "true" ]]; then

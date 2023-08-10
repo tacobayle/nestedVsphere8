@@ -1,0 +1,12 @@
+{
+  "tanzu_local": {
+    "content_library": {
+      "subscription_url": "https://wp-content.vmware.com/v2/latest/lib.json",
+      "name": "tanzu-cl",
+      "type": "SUBSCRIBED",
+      "automatic_sync_enabled": true,
+      "on_demand": false
+    },
+    "storage_policy_name": "vSAN Default Storage Policy"
+  }
+}

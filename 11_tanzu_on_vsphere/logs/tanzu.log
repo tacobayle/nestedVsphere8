@@ -1,0 +1,15 @@
+{"SizeHint":"SMALL","ServiceCidr":{"Address":"10.96.0.0","Prefix":23},"Netwo
+rkProvider":"VSPHERE_NETWORK","NcpClusterNetworkSpec":null,"WorkloadNetworksSpec":{"SupervisorPrimaryWorkloadNetwork":{"Network":"backend-pg","NetworkProvider":"VSPHERE_NETWORK","Vsphere
+Network":{"Portgroup":"dvportgroup-44","IpAssignmentMode":"STATICRANGE","AddressRanges":[{"Address":"10.0.118.51","Count":49}],"Gateway":"10.0.118.1","SubnetMask":"255.255.255.0"},"NsxNe
+twork":null},"NetworkList":null},"WorkloadNtpServers":["10.41.134.210"],"LoadBalancerConfigSpec":{"Id":"alb","AddressRanges":null,"Provider":"AVI","HaProxyConfigCreateSpec":null,"AviConf
+igCreateSpec":{"Server":{"Host":"10.41.134.215","Port":443},"Username":"admin","Password":"******","CertificateAuthorityChain":"-----BEGIN CERTIFICATE-----\nMIIC0zCCAbugAwIBAgIUGy2UCuFMx
+DHIBm3LUqP2uKR9fqYwDQYJKoZIhvcNAQEL\nBQAwGTEXMBUGA1UEAwwOYWxiLmFsYjEyMy5jb20wHhcNMjMwODAzMTE0MDM5WhcN\nMjQwODAyMTE0MDM5WjAZMRcwFQYDVQQDDA5hbGIuYWxiMTIzLmNvbTCCASIwDQYJ\nKoZIhvcNAQEBBQADg
+gEPADCCAQoCggEBAMsSqEFCyEvu5IyU/v3+EjH27Onuc92L\n+c1/dBobRo/Hw5acvH/HOaPLSdsvr7qGX2k6Ep6v0DIyGby6TgwAXUNbPSR63g5U\nqH19YHr14nyk0cXEV8xdrvV3c8um1X2o0U7RB8PEf5eckFjqYiZHtH+4HPR4E7s5\nj2VHe
+DtzBddZ6x2ppK18A+N7IjVnYLgzS78xa0Pv75I4yr89QB1I7ehUSoGzoPMt\nxn6Lu7Lwz1OUF8uQYOQirOXU4uBTQLxosBhzgUlRD8MFoBvW+qTyo1RBHIhJAxVs\nHR3O6snjUk/nUOHkHPR6JIRDXVSrW6txUmNLFTkXKICrk4iKsOdwLj0CAwE
+AAaMT\nMBEwDwYDVR0RBAgwBocECimG1zANBgkqhkiG9w0BAQsFAAOCAQEABeBdK5h/MgxY\nIbawz4Lt4OSxcamxMNKeRYOKMQN8RgEyGTL0TRZC3wMntVDxpoXE1vlOxYJcmTMW\nvvdHb8ulHQY3Vx7OXzisK7hJ5l0ycJyJlvPvyIR3aYKON0B
+qBxdoWCPvUrfybj79\n0gJBbkX6TBMB3+CuFj+Re+KdOHxiFvkZn6COejg+ozgrlIb+zg/TSscibPvhUo9j\nLB5ohLrFmpmnOsWP8JNX+5kcSj8uGSeLcLlneDjN9++cuyWrqoAExXj/YXkdfh5i\nIh+40XKEUTOrkFKDZslCRMBsuu+EshM2guh
+DMgbKq/1VDsOdJimYWSI/G64Nq3bj\nGBujokotZQ==\n-----END CERTIFICATE-----"}},"MasterManagementNetwork":{"FloatingIP":null,"Network":"dvportgroup-42","Mode":"STATICRANGE","AddressRange":{"St
+artingAddress":"10.0.120.21","AddressCount":5,"SubnetMask":"255.255.255.0","Gateway":"10.0.120.1"}},"MasterDNS":["10.41.134.210"],"WorkerDNS":["10.41.134.210"],"MasterDNSSearchDomains":n
+ull,"MasterNTPServers":["10.41.134.210"],"MasterStoragePolicy":"aa6d5a82-1c88-45da-85d3-3d74b91a5bad","EphemeralStoragePolicy":"aa6d5a82-1c88-45da-85d3-3d74b91a5bad","CnsFileConfig":null
+,"LoginBanner":null,"MasterDNSNames":["tanzu.alb123.com"],"ImageStorage":{"StoragePolicy":"aa6d5a82-1c88-45da-85d3-3d74b91a5bad"},"DefaultImageRegistry":null,"DefaultImageRepository":nul
+l,"DefaultKubernetesServiceContentLibrary":null,"ClusterProxyConfig":null,"ContentLibraries":null}

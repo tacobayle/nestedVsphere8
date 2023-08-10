@@ -1,58 +1,29 @@
 #!/bin/bash
 #
-source /nestedVsphere8/bash/ip.sh
-#
-jsonFile="/etc/config/variables.json"
-localJsonFile="/nestedVsphere8/11_vcd_appliance/variables.json"
+jsonFile="/root/variables.json"
+localJsonFile="/nestedVsphere8/11_tanzu_on_vsphere/variables.json"
+rm -f /root/tanzu_wo_nsx.json
+tanzu_wo_nsx_json=$(jq -c -r . $jsonFile | jq .)
 #
 IFS=$'\n'
 #
-if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
-  echo ""
-  echo "==> Creating /root/vcd.json file..."
-  rm -f /root/vcd.json
-  vcd_json=$(jq -c -r . $jsonFile | jq .)
-  #
-  echo "   +++ nsx_manager_name"
-  nsx_manager_name=$(jq -c -r .nsx_manager_name /nestedVsphere8/02_external_gateway/variables.json)
-  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_manager_name": "'$(echo $nsx_manager_name)'"}')
-  #
-  echo "   +++ alb_controller_name"
-  alb_controller_name=$(jq -c -r .alb_controller_name /nestedVsphere8/02_external_gateway/variables.json)
-  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"alb_controller_name": "'$(echo $alb_controller_name)'"}')
-  #
-  echo "   +++ Adding vcd_ova_path..."
-  vcd_ova_path=$(jq -c -r '.vcd_ova_path' $localJsonFile)
-  vcd_json=$(echo $vcd_json | jq '. += {"vcd_ova_path": "'$(echo $vcd_ova_path)'"}')
-  #
-  echo "   +++ Adding vcd_port_group_mgmt..."
-  vcd_port_group_mgmt=$(jq -c -r '.networks.vsphere.management.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
-  vcd_json=$(echo $vcd_json | jq '. += {"vcd_port_group_mgmt": "'$(echo $vcd_port_group_mgmt)'"}')
-  #
-  echo "   +++ Adding vcd_port_group_db..."
-  vcd_port_group_db=$(jq -c -r '.networks.vsphere.VSAN.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
-  vcd_json=$(echo $vcd_json | jq '. += {"vcd_port_group_db": "'$(echo $vcd_port_group_db)'"}')
-  #
-  echo "   +++ Adding prefix for management network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-  vcd_json=$(echo $vcd_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
-  #
-  echo "   +++ Adding prefix for db network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.vsan.netmask' $jsonFile) "   ++++++")
-  vcd_json=$(echo $vcd_json | jq '.vsphere_underlay.networks.vsphere.vsan += {"prefix": "'$(echo $prefix)'"}')
-  #
-  echo "   +++ Adding vcd_appliance..."
-  vcd_appliance=$(jq -c -r '.vcd_appliance' $localJsonFile)
-  vcd_json=$(echo $vcd_json | jq '. += {"vcd_appliance": '$(echo $vcd_appliance)'}')
-  #
-  nfs_path=$(jq -c -r '.nfs_path' /nestedVsphere8/02_external_gateway/variables.json)
-  vcd_json=$(echo $vcd_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
-  #
-  echo $vcd_json | jq . | tee /root/vcd.json > /dev/null
-  #
-  echo ""
-  echo "==> Downloading VCD ova file"
-  if [ -s "$(jq -c -r .vcd_ova_path $localJsonFile)" ]; then echo "   +++ VCD ova file $(jq -c -r .vcd_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .vcd_ova_path $localJsonFile) $(jq -c -r .vcd.ova_url $jsonFile) ; fi
-  if [ -s "$(jq -c -r .vcd_ova_path $localJsonFile)" ]; then echo "   +++ VCD ova file $(jq -c -r .vcd_ova_path $localJsonFile) is not empty" ; else echo "   +++ VCD ova $(jq -c -r .vcd_ova_path $localJsonFile) is empty" ; exit 255 ; fi
-  #
+echo "   +++ Adding Networks"
+networks_details=$(jq -c -r .networks "/nestedVsphere8/02_external_gateway/variables.json")
+tanzu_wo_nsx_json=$(echo $tanzu_wo_nsx_json | jq '. += {"networks": '$(echo $networks_details)'}')
+#
+echo "   +++ Adding tanzu_local"
+tanzu_local=$(jq -c -r .tanzu_local $localJsonFile)
+tanzu_wo_nsx_json=$(echo $tanzu_wo_nsx_json | jq '. += {"tanzu_local": '$(echo $tanzu_local)'}')
+#
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+  echo "   +++ Adding netmasks"
+  alb_networks='["se", "backend", "vip", "tanzu"]'
+  for network in $(echo $alb_networks | jq -c -r .[])
+  do
+    echo "   +++ Adding prefix for alb $network network..."
+    netmask=$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.'$network'.cidr'  $jsonFile| cut -d"/" -f2) "   ++++++")
+    tanzu_wo_nsx_json=$(echo $tanzu_wo_nsx_json | jq '.vsphere_underlay.networks.alb.'$network' += {"netmask": "'$(echo $netmask)'"}')
+  done
 fi
+#
+echo $tanzu_wo_nsx_json | jq . | tee /root/tanzu_wo_nsx.json > /dev/null

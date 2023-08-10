@@ -16,11 +16,11 @@ test_nsx_alb_variables () {
   test_if_json_variable_is_defined .avi.version "$1" "   "
   test_if_json_variable_is_defined .avi.config.cloud.service_engine_groups "$1" "   "
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip "$1") "   "
-  if [ -z "$TF_VAR_docker_registry_username" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_username' is not empty" ; exit 255 ; fi
-  if [ -z "$TF_VAR_docker_registry_password" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_password' is not empty" ; exit 255 ; fi
-  if [ -z "$TF_VAR_docker_registry_email" ] ; then  echo "   +++ testing if '$TF_VAR_docker_registry_email' is not empty" ; exit 255 ; fi
-  if [ -z "$TF_VAR_avi_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_password' is not empty" ; exit 255 ; fi
-  if [ -z "$TF_VAR_avi_old_password" ] ; then  echo "   +++ testing if '$TF_VAR_avi_old_password' is not empty" ; exit 255 ; fi
+  echo "   +++ testing if environment variable TF_VAR_docker_registry_username is not empty" ; if [ -z "$TF_VAR_docker_registry_username" ] ; then exit 255 ; fi
+  echo "   +++ testing if environment variable TF_VAR_docker_registry_password is not empty" ; if [ -z "$TF_VAR_docker_registry_password" ] ; then exit 255 ; fi
+  echo "   +++ testing if environment variable TF_VAR_docker_registry_email is not empty" ; if [ -z "$TF_VAR_docker_registry_email" ] ; then exit 255 ; fi
+  echo "   +++ testing if environment variable TF_VAR_avi_password is not empty" ; if [ -z "$TF_VAR_avi_password" ] ; then exit 255 ; fi
+  echo "   +++ testing if environment variable TF_VAR_avi_old_password is not empty" ; if [ -z "$TF_VAR_avi_old_password" ] ; then exit 255 ; fi
 }
 #
 #
@@ -199,12 +199,12 @@ variables_json=$(jq -c -r . $jsonFile | jq .)
 #
 IFS=$'\n'
 #
-if [ -z "$TF_VAR_vsphere_underlay_username" ] ; then  echo "   +++ testing if '$TF_VAR_vsphere_underlay_username' is not empty" ; exit 255 ; fi
-if [ -z "$TF_VAR_vsphere_underlay_password" ] ; then  echo "   +++ testing if '$TF_VAR_vsphere_underlay_password' is not empty" ; exit 255 ; fi
-if [ -z "$TF_VAR_ubuntu_password" ] ; then  echo "   +++ testing if '$TF_VAR_ubuntu_password' is not empty" ; exit 255 ; fi
-if [ -z "$TF_VAR_bind_password" ] ; then  echo "   +++ testing if '$TF_VAR_bind_password' is not empty" ; exit 255 ; fi
-if [ -z "$TF_VAR_nested_esxi_root_password" ] ; then  echo "   +++ testing if '$TF_VAR_nested_esxi_root_password' is not empty" ; exit 255 ; fi
-if [ -z "$TF_VAR_vsphere_nested_password" ] ; then  echo "   +++ testing if '$TF_VAR_vsphere_nested_password' is not empty" ; exit 255 ; fi
+echo "   +++ testing if environment variable TF_VAR_vsphere_underlay_username is not empty" ; if [ -z "$TF_VAR_vsphere_underlay_username" ] ; then exit 255 ; fi
+echo "   +++ testing if environment variable TF_VAR_vsphere_underlay_password is not empty" ; if [ -z "$TF_VAR_vsphere_underlay_password" ] ; then exit 255 ; fi
+echo "   +++ testing if environment variable TF_VAR_ubuntu_password is not empty" ; if [ -z "$TF_VAR_ubuntu_password" ] ; then exit 255 ; fi
+echo "   +++ testing if environment variable TF_VAR_bind_password is not empty" ; if [ -z "$TF_VAR_bind_password" ] ; then exit 255 ; fi
+echo "   +++ testing if environment variable TF_VAR_nested_esxi_root_password is not empty" ; if [ -z "$TF_VAR_nested_esxi_root_password" ] ; then exit 255 ; fi
+echo "   +++ testing if environment variable TF_VAR_vsphere_nested_password is not empty" ; if [ -z "$TF_VAR_vsphere_nested_password" ] ; then exit 255 ; fi
 #
 echo ""
 echo "==> Checking vSphere Underlay Variables"
@@ -312,7 +312,6 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   do
     test_if_json_variable_is_defined .vsphere_underlay.networks.alb.$network.name $jsonFile "   "
     test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.alb.$network.cidr $jsonFile)" "   "
-    test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.alb.$network.netmask $jsonFile)" "   "
     test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.$network.external_gw_ip $jsonFile)" "   "
     test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.$network.avi_ipam_pool $jsonFile | cut -d"-" -f1 )" "   "
     test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.$network.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
@@ -372,8 +371,8 @@ fi
 # Nested vSphere with NSX
 #
 if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c -r .nsx $jsonFile) != "null" ]]; then
-  if [ -z "$TF_VAR_nsx_password" ] ; then  echo "   +++ testing if '$TF_VAR_nsx_password' is not empty" ; exit 255 ; fi
-  if [ -z "$TF_VAR_nsx_license" ] ; then  echo "   +++ testing if '$TF_VAR_nsx_license' is not empty" ; exit 255 ; fi
+  echo "   +++ testing if environment variable TF_VAR_nsx_password is not empty" ; if [ -z "$TF_VAR_nsx_password" ] ; then  exit 255 ; fi
+  echo "   +++ testing if environment variable TF_VAR_nsx_license is not empty" ; if [ -z "$TF_VAR_nsx_license" ] ; then exit 255 ; fi
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile) "   "
   test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.nsx_edge_nested_ips $jsonFile "   "
   for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.management.nsx_edge_nested_ips[] $jsonFile)
@@ -505,6 +504,12 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
   if [[ $(jq -c -r .avi $jsonFile) == "null" ]]; then
     echo "   +++ Adding .deployment: vsphere_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx"}')
+  fi
+  if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_VCENTER" && $(jq -c -r .vcd $jsonFile) == "null" ]]; then
+    echo "   +++ Adding .deployment: vsphere_nsx_alb_telco"
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_telco"}')
+    test_nsx_alb_variables "/etc/config/variables.json"
+    test_nsx_k8s_variables "/etc/config/variables.json"
   fi
   #
   #
