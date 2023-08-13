@@ -169,3 +169,21 @@ test_if_ref_from_a_nested_of_nested_list_exists_in_another_list () {
   done
 }
 
+get_value_from_list_when_match () {
+  # $1 value to check
+  # $2 key to check
+  # $3 list + ref to check against
+  # $4 associated key to return
+  # $5 json file
+  # $6 message to display
+  # $7 message to display in case of success
+  # $8 message to display in case of failure
+  # $value_to_return
+  echo $6 ; check_status=0
+  for item in $(jq -c -r $3 $5)
+  do
+    if [[ $1 = $(echo $item | jq -c -r .$2) ]] ; then check_status=1 ; value_to_return=$(echo $item | jq -c -r .$4) ; fi
+  done
+  if [[ $check_status -eq 0 ]] || [[ $value_to_return == "null" ]] ; then echo $8 ; exit 255 ; fi
+  echo $7 $value_to_return
+}

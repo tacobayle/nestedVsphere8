@@ -19,6 +19,6 @@ data "vsphere_resource_pool" "resource_pool_nested" {
 
 
 data "vsphere_network" "vcenter_network_mgmt_nested" {
-  name = var.networks.vsphere.management.port_group_name
+  name = var.vsphere_networks.vsphere.management.port_group_name
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }

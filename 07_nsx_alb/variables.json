@@ -9,5 +9,10 @@
   "playbook_env_vcenter_cloud": "vcenter.yml",
   "seg_folder_basename": "SEG",
   "ako_url": "https://projects.registry.vmware.com/chartrepo/ako",
-  "tanzu_cert_name": "tanzu-cert"
+  "tanzu_cert_name": "tanzu-cert",
+  "networks_data_default": {
+    "dhcp_enabled": true,
+    "exclude_discovered_subnets": true,
+    "type": "V4"
+  }
 }

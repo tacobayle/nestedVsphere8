@@ -75,7 +75,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   avi_json=$(echo $avi_json | jq '.avi.config += {"playbook": "'$(echo $playbook_env_nsx_cloud)'"}')
   #
   echo "   +++ Adding transport_zone details..."
-  transport_zone=$(jq -c -r '.transport_zones[0].name' /nestedVsphere8/06_nsx_config/variables.json)
+  transport_zone=$(jq -c -r '.transport_zones[0].name' /nestedVsphere8/05_nsx_manager/variables.json)
   avi_json=$(echo $avi_json | jq '. += {"transport_zone": "'$(echo $transport_zone)'"}')
   #
   if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
@@ -228,6 +228,23 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
     avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '$(echo $avi_virtual_services_http)'}')
   fi
+fi
+#
+# ALB with vCenter Cloud use case with NSX // Telco use case
+#
+#
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
+  # .avi.config.cloud.networks_data[]
+  networks_data="[]"
+  for network in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
+  do
+    network_data=$(echo $network | jq '. += {"dhcp_enabled": "'$(jq -r .networks_data_default.dhcp_enabled $localJsonFile)'"}')
+    network_data=$(echo $network | jq '. += {"exclude_discovered_subnets": "'$(jq -r .networks_data_default.exclude_discovered_subnets $localJsonFile)'"}')
+    network_data=$(echo $network | jq '. += {"type": "'$(jq -r .networks_data_default.type $localJsonFile)'"}')
+    networks_data=$(echo $networks_data | jq '. += ['$(echo $network_data)']')
+  done
+  avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks_data)')
+  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks_data": '$(echo $networks_data)'}')
 fi
 #
 # ALB with vCenter Cloud use cases

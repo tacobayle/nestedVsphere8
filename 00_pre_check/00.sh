@@ -93,12 +93,50 @@ test_nsx_k8s_variables () {
 #
 #
 #
+test_alb_variables_if_vsphere_nsx_alb_telco () {
+  echo ""
+  echo "==> Checking ALB variables for Telco Use case (NSX with vCenter cloud with BGP)"
+  test_if_json_variable_is_defined .avi.config.cloud.networks_data "$1" "   "
+  # .avi.config.cloud.networks_data[]
+  for item in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
+  do
+    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.networks_data[] have a name defined"
+    test_if_variable_is_defined $(echo $item | jq -c .avi_ipam_pool) "   " "testing if each .avi.config.cloud.networks_data[] have a avi_ipam_pool defined"
+    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool | cut -d"-" -f1 )" "   "
+    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool | cut -d"-" -f2 )" "   "
+    test_if_variable_is_defined $(echo $item | jq -c .management) "   " "testing if each .avi.config.cloud.networks_data[] have a management defined"
+    test_if_variable_is_defined $(echo $item | jq -c .bgp) "   " "testing if each .avi.config.cloud.networks_data[] have a bgp defined"
+    if [[ $(jq '.avi.config.cloud.networks | group_by(.bgp) | .[1] | length' "$1") != 1 ]] ; then echo "      ++++++ ERROR only one item in .avi.config.cloud.networks_data can have bgp equals to true" ; exit 255 ; fi
+  done
+  test_if_json_variable_is_defined .avi.config.cloud.contexts "$1" "   "
+  if [[ $(jq '.avi.config.cloud.contexts | length' "$1") != 1 ]] ; then echo "      ++++++ ERROR only one context is supported in .avi.config.cloud.contexts" ; exit 255 ; fi
+  for item in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
+  do
+    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.contexts have a name defined"
+    test_if_variable_is_defined $(echo $item | jq -c .ibgp) "   " "testing if each .avi.config.cloud.contexts have a ibgp defined"
+    test_if_variable_is_defined $(echo $item | jq -c .keepalive_interval) "   " "testing if each .avi.config.cloud.contexts have a keepalive_interval defined"
+    test_if_variable_is_defined $(echo $item | jq -c .hold_time) "   " "testing if each .avi.config.cloud.contexts have a hold_time defined"
+    test_if_variable_is_defined $(echo $item | jq -c .local_as) "   " "testing if each .avi.config.cloud.contexts have a local_as defined"
+    test_if_variable_is_defined $(echo $item | jq -c .send_community) "   " "testing if each .avi.config.cloud.contexts have a send_community defined"
+    test_if_variable_is_defined $(echo $item | jq -c .shutdown) "   " "testing if each .avi.config.cloud.contexts have a shutdown defined"
+    test_if_variable_is_defined $(echo $item | jq -c .routing_options) "   " "testing if each .avi.config.cloud.contexts have a routing_options defined"
+    for routing_option in $(echo $item | jq -c -r .routing_options[])
+      do
+        test_if_variable_is_defined $(echo $routing_option | jq -c .advertise_learned_routes) "   " "testing if each .avi.config.cloud.contexts[].routing_options have a advertise_learned_routes defined"
+        test_if_variable_is_defined $(echo $routing_option | jq -c .label) "   " "testing if each .avi.config.cloud.contexts[].routing_options have a label defined"
+        test_if_variable_is_defined $(echo $routing_option | jq -c .max_learn_limit) "   " "testing if each .avi.config.cloud.contexts[].routing_options have a max_learn_limit defined"
+      done
+  done
+}
+#
+#
+#
 test_alb_variables_if_nsx_cloud () {
   echo ""
   echo "==> Checking ALB with NSX Cloud type"
+  test_if_json_variable_is_defined .avi.config.cloud.type "$1" "   "
   if [[ $(jq -c -r .avi.config.cloud.type "$1") == "CLOUD_NSXT" ]]; then
     test_if_json_variable_is_defined .avi.config.cloud.networks_data "$1" "   "
-    test_if_json_variable_is_defined .avi.config.cloud.type "$1" "   "
     test_if_json_variable_is_defined .avi.config.cloud.obj_name_prefix "$1" "   "
     # .avi.config.cloud.network_management
     test_if_json_variable_is_defined .avi.config.cloud.network_management.name "$1" "   "
@@ -126,6 +164,7 @@ test_alb_variables_if_nsx_cloud () {
       test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f1 )" "   "
       test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f2 )" "   "
     done
+    #
     test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.networks_data[].name" \
                                                  ".nsx.config.segments_overlay[].display_name" \
                                                  "$1" \
@@ -510,6 +549,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_telco"}')
     test_nsx_alb_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
+    test_alb_variables_if_vsphere_nsx_alb_telco "/etc/config/variables.json"
   fi
   #
   #

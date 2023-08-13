@@ -2,7 +2,7 @@
 #
 source /nestedVsphere8/bash/nsx_api.sh
 #
-jsonFile="/root/nsx3.json"
+jsonFile="/root/nsx.json"
 #
 nsx_nested_ip=$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)
 vcenter_username=administrator

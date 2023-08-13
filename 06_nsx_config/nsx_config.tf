@@ -8,7 +8,7 @@ resource "null_resource" "ansible_init_manager" {
   depends_on = [null_resource.waiting_for_nsx_api]
 
   provisioner "local-exec" {
-    command = "ansible-playbook /nestedVsphere8/06_nsx_config/ansible/ansible_init_manager.yml -e @/root/nsx3.json"
+    command = "ansible-playbook /nestedVsphere8/06_nsx_config/ansible/ansible_init_manager.yml -e @/root/nsx.json"
   }
 }
 
@@ -58,7 +58,7 @@ resource "nsxt_policy_segment" "segments_for_multiple_vds" {
 resource "null_resource" "create_transport_node_profiles" {
   depends_on = [nsxt_policy_ip_pool.pools, nsxt_policy_ip_pool_static_subnet.static_subnet, nsxt_policy_segment.segments_for_multiple_vds]
   provisioner "local-exec" {
-    command = "ansible-playbook /nestedVsphere8/06_nsx_config/ansible/create_transport_node_profiles.yml -e @/root/nsx3.json"
+    command = "ansible-playbook /nestedVsphere8/06_nsx_config/ansible/create_transport_node_profiles.yml -e @/root/nsx.json"
   }
 }
 

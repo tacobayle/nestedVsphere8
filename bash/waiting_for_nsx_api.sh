@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-jsonFile="/root/nsx3.json"
+jsonFile="/root/nsx.json"
 #
 nsx_nested_ip=$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)
 retry=10

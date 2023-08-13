@@ -5,7 +5,7 @@
       "name": "tanzu-cl",
       "type": "SUBSCRIBED",
       "automatic_sync_enabled": true,
-      "on_demand": false
+      "on_demand": true
     },
     "storage_policy_name": "vSAN Default Storage Policy"
   }

@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+source /nestedVsphere8/bash/ip.sh
+#
 jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/11_tanzu_on_vsphere/variables.json"
 rm -f /root/tanzu_wo_nsx.json
@@ -7,6 +9,8 @@ tanzu_wo_nsx_json=$(jq -c -r . $jsonFile | jq .)
 #
 IFS=$'\n'
 #
+echo ""
+echo "==> Creating /root/tanzu_wo_nsx.json file..."
 echo "   +++ Adding Networks"
 networks_details=$(jq -c -r .networks "/nestedVsphere8/02_external_gateway/variables.json")
 tanzu_wo_nsx_json=$(echo $tanzu_wo_nsx_json | jq '. += {"networks": '$(echo $networks_details)'}')
