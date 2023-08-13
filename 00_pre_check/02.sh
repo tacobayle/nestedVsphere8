@@ -192,8 +192,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
       done
       external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
     fi
-    external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"routes": '$(echo $new_routes)'}')
   fi
+#
+  echo "   +++ Adding .routes... from local variables.json"
+  external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"routes": '$(echo $new_routes)'}')
   #
   echo "   +++ Adding .default_kubectl_version... from local variables.json"
   default_kubectl_version=$(jq -c -r '.default_kubectl_version' $localJsonFile)
