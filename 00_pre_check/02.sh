@@ -192,14 +192,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
       done
       external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
     fi
-    if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" ]]; then
-      disk=$(jq -c -r '.disk' $localJsonFile)
-      vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
-    fi
-    if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
-      disk=$(jq -c -r '.disk_if_vcd' $localJsonFile)
-      vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile)
-    fi
     external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"routes": '$(echo $new_routes)'}')
   fi
   #
@@ -207,11 +199,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   default_kubectl_version=$(jq -c -r '.default_kubectl_version' $localJsonFile)
   external_gw_json=$(echo $external_gw_json | jq '. += {"default_kubectl_version": "'$(echo $default_kubectl_version)'"}')
   #
-fi
-#
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
-  disk=$(jq -c -r '.disk' $localJsonFile)
-  vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
@@ -246,6 +233,12 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   #
 fi
 #
+disk=$(jq -c -r '.disk' $localJsonFile)
+vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+  disk=$(jq -c -r '.disk_if_vcd' $localJsonFile)
+  vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile)
+fi
 echo "   +++ Adding disk..." # defined above if vcd is enabled or not
 external_gw_json=$(echo $external_gw_json | jq '. += {"disk": "'$(echo $disk)'"}')
 #

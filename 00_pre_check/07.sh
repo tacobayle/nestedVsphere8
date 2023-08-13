@@ -241,6 +241,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
     network_data=$(echo $network | jq '. += {"dhcp_enabled": "'$(jq -r .networks_data_default.dhcp_enabled $localJsonFile)'"}')
     network_data=$(echo $network | jq '. += {"exclude_discovered_subnets": "'$(jq -r .networks_data_default.exclude_discovered_subnets $localJsonFile)'"}')
     network_data=$(echo $network | jq '. += {"type": "'$(jq -r .networks_data_default.type $localJsonFile)'"}')
+    if [[ $(echo $network | jq .bgp) == "true" ]] ; then
+      network_data=$(echo $network | jq '. | del (.name)')
+      network_data=$(echo $network | jq '. += {"name": "'$(jq -r .networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"}')
+    fi
     networks_data=$(echo $networks_data | jq '. += ['$(echo $network_data)']')
   done
   avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks_data)')
