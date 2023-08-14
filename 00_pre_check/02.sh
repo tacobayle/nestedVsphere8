@@ -237,10 +237,12 @@ fi
 #
 disk=$(jq -c -r '.disk' $localJsonFile)
 vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
+#
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   disk=$(jq -c -r '.disk_if_vcd' $localJsonFile)
   vcd_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile)
 fi
+#
 echo "   +++ Adding disk..." # defined above if vcd is enabled or not
 external_gw_json=$(echo $external_gw_json | jq '. += {"disk": "'$(echo $disk)'"}')
 #

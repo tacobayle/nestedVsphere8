@@ -3,7 +3,7 @@
 source /nestedVsphere8/bash/ip.sh
 source /nestedVsphere8/bash/test_if_variables.sh
 #
-jsonFile="/etc/config/variables.json"
+jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/05_nsx_manager/variables.json"
 #
 IFS=$'\n'
