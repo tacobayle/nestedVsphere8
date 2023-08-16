@@ -36,32 +36,32 @@ resource "null_resource" "prep_tkc" {
   depends_on = [null_resource.supervisor]
 
   connection {
-    host = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
-    type = "ssh"
-    agent = false
-    user = "tanzu"
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
     private_key = file("/root/.ssh/id_rsa")
   }
 
   provisioner "file" {
     source = "/root/api_server_cluster_endpoint.json"
-    destination = "/home/tanzu/api_server_cluster_endpoint.json"
+    destination = "/home/ubuntu/api_server_cluster_endpoint.json"
   }
 
   provisioner "file" {
     source = "/root/tanzu_wo_nsx.json"
-    destination = "/home/tanzu/tanzu_wo_nsx.json"
+    destination = "/home/ubuntu/tanzu_wo_nsx.json"
   }
 
   provisioner "file" {
     content = data.template_file.tkc_clusters_script.rendered
-    destination = "/home/tanzu/tkc.sh"
+    destination = "/home/ubuntu/tkc.sh"
   }
 
   provisioner "remote-exec" {
     inline = [
       "mkdir tkc",
-      "curl -k https://$(jq -c -r .api_server_cluster_endpoint /home/tanzu/api_server_cluster_endpoint.json)/wcp/plugin/linux-amd64/vsphere-plugin.zip -o ./vsphere-plugin.zip",
+      "curl -k https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/api_server_cluster_endpoint.json)/wcp/plugin/linux-amd64/vsphere-plugin.zip -o ./vsphere-plugin.zip",
       "unzip vsphere-plugin.zip"
     ]
   }
@@ -75,17 +75,17 @@ resource "null_resource" "transfer_tkc" {
 
 
   connection {
-    host = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
-    type = "ssh"
-    agent = false
-    user = "tanzu"
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
     private_key = file("/root/.ssh/id_rsa")
   }
 
 
   provisioner "file" {
     content = data.template_file.tkc_clusters[count.index].rendered
-    destination = "/home/tanzu/tkc/tkc-${count.index + 1}"
+    destination = "/home/ubuntu/tkc/tkc-${count.index + 1}"
   }
 
 }
@@ -96,16 +96,16 @@ resource "null_resource" "run_tkc" {
 
 
   connection {
-    host = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
-    type = "ssh"
-    agent = false
-    user = "tanzu"
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
     private_key = file("/root/.ssh/id_rsa")
   }
 
   provisioner "remote-exec" {
     inline = [
-      "bin/bash /home/tanzu/tkc.sh"
+      "bin/bash /home/ubuntu/tkc.sh"
     ]
   }
 }

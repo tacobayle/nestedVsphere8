@@ -1,16 +1,12 @@
 #cloud-config
 users:
   - default
-  - tanzu
-    shell: /bin/bash
-    homedir: /home/tanzu
 
 ssh_pwauth: True
 
 chpasswd:
   list: |
     ubuntu:${password}
-    tanzu:${password}
   expire: False
 
 hostname: ${hostname}
