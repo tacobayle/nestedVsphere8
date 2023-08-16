@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #
-source /nestedVsphere8/bash/nsx_api.sh
+source /nestedVsphere8/bash/nsx/nsx_api.sh
 #
 jsonFile="/root/nsx.json"
 #
@@ -10,7 +10,7 @@ cookies_file="create_edge_clusters_cookies.txt"
 headers_file="create_edge_clusters_headers.txt"
 rm -f $cookies_file $headers_file
 #
-/bin/bash /nestedVsphere8/bash/create_nsx_api_session.sh admin $TF_VAR_nsx_password $nsx_nested_ip $cookies_file $headers_file
+/bin/bash /nestedVsphere8/bash/nsx/create_nsx_api_session.sh admin $TF_VAR_nsx_password $nsx_nested_ip $cookies_file $headers_file
 IFS=$'\n'
 #
 # edge cluster creation

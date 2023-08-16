@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-source /nestedVsphere8/bash/nsx_api.sh
+source /nestedVsphere8/bash/nsx/nsx_api.sh
 #
 jsonFile="/root/nsx.json"
 #
@@ -12,7 +12,7 @@ cookies_file="create_host_transport_nodes_cookies.txt"
 headers_file="create_host_transport_nodes_headers.txt"
 rm -f $cookies_file $headers_file
 #
-/bin/bash /nestedVsphere8/bash/create_nsx_api_session.sh admin $TF_VAR_nsx_password $nsx_nested_ip $cookies_file $headers_file
+/bin/bash /nestedVsphere8/bash/nsx/create_nsx_api_session.sh admin $TF_VAR_nsx_password $nsx_nested_ip $cookies_file $headers_file
 nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/fabric/compute-collections"
 compute_collections=$(echo $response_body)
 IFS=$'\n'

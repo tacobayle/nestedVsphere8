@@ -1,6 +1,6 @@
 {
   "nsx_ova_path": "/root/nsx.ova",
-  "dhcp_servers_api_endpoint": "/policy/api/v1/infra/dhcp-server-configs",
+  "dhcp_servers_api_endpoint": "policy/api/v1/infra/dhcp-server-configs",
   "dhcp_servers":
   [
     {
@@ -9,7 +9,7 @@
       "lease_time": 86400
     }
   ],
-  "groups_api_endpoint": "/policy/api/v1/infra/domains/default/groups",
+  "groups_api_endpoint": "policy/api/v1/infra/domains/default/groups",
   "groups": [
     {
       "display_name" : "Avi-se",
@@ -22,7 +22,7 @@
       } ]
     }
   ],
-  "exclusion_list_api_endpoint": "/policy/api/v1/infra/settings/firewall/security/exclude-list",
+  "exclusion_list_api_endpoint": "policy/api/v1/infra/settings/firewall/security/exclude-list",
   "exclusion_list_groups": ["Avi-se"],
   "ip_pools": [
     {

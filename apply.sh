@@ -106,6 +106,11 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r
   if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+  /bin/bash /nestedVsphere8/11_vsphere_with_tanzu/apply.sh
+  if [ $? -ne 0 ] ; then exit 1 ; fi
+fi
+#
 #if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
 #  /bin/bash /nestedVsphere8/13_vcd_appliance/apply.sh
 ##   if [ $? -ne 0 ] ; then exit 1 ; fi

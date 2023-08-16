@@ -1,6 +1,6 @@
 resource "null_resource" "waiting_for_nsx_api" {
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/waiting_for_nsx_api.sh"
+    command = "/bin/bash /nestedVsphere8/bash/nsx/waiting_for_nsx/nsx_api.sh"
   }
 }
 
@@ -15,7 +15,7 @@ resource "null_resource" "ansible_init_manager" {
 resource "null_resource" "register_compute_manager" {
   depends_on = [null_resource.ansible_init_manager]
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/register_compute_manager.sh"
+    command = "/bin/bash /nestedVsphere8/bash/nsx/register_compute_manager.sh"
   }
 }
 
@@ -62,31 +62,58 @@ resource "null_resource" "create_transport_node_profiles" {
   }
 }
 
-resource "null_resource" "create_host_transport_nodes" {
+resource "null_resource" "create_dhcp_servers" {
   depends_on = [null_resource.create_transport_node_profiles]
+  count = var.deployment == "vsphere_nsx_alb_telco"  ? 1 : 0
+
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/create_host_transport_nodes.sh"
+    command = "/bin/bash /nestedVsphere8/bash/nsx/dhcp.sh"
+  }
+}
+
+resource "null_resource" "create_groups" {
+  depends_on = [null_resource.create_dhcp_servers]
+  count = var.deployment == "vsphere_nsx_alb_telco"  ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "/bin/bash /nestedVsphere8/bash/nsx/dhcp/groups.sh"
+  }
+}
+
+resource "null_resource" "update_exclusion_list" {
+  depends_on = [null_resource.create_groups]
+  count = var.deployment == "vsphere_nsx_alb_telco"  ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "/bin/bash /nestedVsphere8/bash/nsx/exclusion_list.sh"
+  }
+}
+
+resource "null_resource" "create_host_transport_nodes" {
+  depends_on = [null_resource.update_exclusion_list]
+  provisioner "local-exec" {
+    command = "/bin/bash /nestedVsphere8/bash/nsx/create_host_transport_nodes.sh"
   }
 }
 
 resource "null_resource" "create_edge_nodes" {
   depends_on = [null_resource.register_compute_manager]
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/create_edge_nodes.sh"
+    command = "/bin/bash /nestedVsphere8/bash/nsx/create_edge_nodes.sh"
   }
 }
 
 resource "null_resource" "create_edge_clusters" {
   depends_on = [null_resource.create_edge_nodes]
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/create_edge_clusters.sh"
+    command = "/bin/bash /nestedVsphere8/bash/nsx/create_edge_clusters.sh"
   }
 }
 
 resource "null_resource" "create_tier0s" {
   depends_on = [null_resource.create_edge_clusters]
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/create_tier0s.sh"
+    command = "/bin/bash /nestedVsphere8/bash/nsx/create_tier0s.sh"
   }
 }
 

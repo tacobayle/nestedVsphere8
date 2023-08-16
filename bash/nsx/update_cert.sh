@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #
-source /nestedVsphere8/bash/nsx_api.sh
+source /nestedVsphere8/bash/nsx/nsx_api.sh
 #
 jsonFile=$2
 nsx_password=$TF_VAR_nsx_password

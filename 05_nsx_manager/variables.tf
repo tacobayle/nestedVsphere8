@@ -8,3 +8,4 @@ variable "nsx_password" {}
 variable "nsx_license" {}
 variable "nsx_ova_path" {}
 variable "vsphere_networks" {}
+
