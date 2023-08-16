@@ -3,7 +3,7 @@
 source /nestedVsphere8/bash/ip.sh
 #
 jsonFile="/root/variables.json"
-localJsonFile="/nestedVsphere8/11_tanzu_on_vsphere/variables.json"
+localJsonFile="/nestedVsphere8/11_vsphere_with_tanzu/variables.json"
 rm -f /root/tanzu_wo_nsx.json
 tanzu_wo_nsx_json=$(jq -c -r . $jsonFile | jq .)
 #
