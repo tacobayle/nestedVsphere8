@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+jsonFile="/home/tanzu/tanzu_wo_nsx.json"
+#
+IFS=$'\n'
+#
+export KUBECTL_VSPHERE_PASSWORD=${KUBECTL_VSPHERE_PASSWORD}
+echo "alias k=/home/tanzu/bin/kubectl" | sudo tee -a /home/ubuntu/.profile
+#
+/home/tanzu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${SSO_DOMAIN_NAME} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/tanzu/api_server_cluster_endpoint.json)
+#
+tkc_count=1
+#
+for tkc in $(jq -c -r .tanzu.tkc_clusters[] $jsonFile)
+do
+  /home/tanzu/bin/kubectl config use-context $(echo $tkc | jq -c -r .namespace_ref)
+  /home/tanzu/bin/kubectl apply -f /home/tanzu/tkc/tkc-${tkc_count}.yml
+  echo "waiting 5 minutes"
+  sleep 300
+  retry_tkc=61
+  pause_tkc=60
+  attempt_tkc=1
+  while true ; do
+    echo "attempt: $attempt_tkc // tkc cluster called $(echo $tkc | jq -c -r .name) .status.phase is :  $(/home/tanzu/bin/kubectl get tanzukubernetesclusters $(echo $tkc | jq -c -r .name) -o json | jq .status.phase)"
+    if [[ $(/home/tanzu/bin/kubectl get tanzukubernetesclusters $(echo $tkc | jq -c -r .name) -o json | jq .status.phase) == "running" ]]; then
+      /home/tanzu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${SSO_DOMAIN_NAME} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/tanzu/api_server_cluster_endpoint.json) --tanzu-kubernetes-cluster-namespace $(echo $tkc | jq -c -r .namespace_ref) --tanzu-kubernetes-cluster-name $(echo $tkc | jq -c -r .name)
+      break
+    fi
+    ((attempt_tkc++))
+    if [ $attempt_tkc -eq $retry_tkc ]; then
+      echo "Timeout after $attempt_tkc attempts"
+      exit 255
+    fi
+    sleep $pause_tkc
+  done
+  ((tkc_count++))
+done

@@ -238,6 +238,8 @@ variables_json=$(jq -c -r . $jsonFile | jq .)
 #
 IFS=$'\n'
 #
+echo ""
+echo "==> Checking required environment variables"
 echo "   +++ testing if environment variable TF_VAR_vsphere_underlay_username is not empty" ; if [ -z "$TF_VAR_vsphere_underlay_username" ] ; then exit 255 ; fi
 echo "   +++ testing if environment variable TF_VAR_vsphere_underlay_password is not empty" ; if [ -z "$TF_VAR_vsphere_underlay_password" ] ; then exit 255 ; fi
 echo "   +++ testing if environment variable TF_VAR_ubuntu_password is not empty" ; if [ -z "$TF_VAR_ubuntu_password" ] ; then exit 255 ; fi
@@ -321,7 +323,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     echo "   ++++++ ERROR: cannot get .avi defined with .nsx or .vsphere_underlay.networks.alb undefined"
     exit 255
   fi
-  echo "   +++ Adding .deployment: vsphere_wo_nsx"
+  echo ""
+  echo "==> Adding .deployment: vsphere_wo_nsx"
   variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_wo_nsx"}')
 fi
 #
@@ -396,14 +399,16 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   #
   # vSphere Avi networks with Avi config.
   if [[ $(jq -c -r .avi $jsonFile) != "null" && $(jq -c -r .tanzu $jsonFile) == "null" ]]; then
-    echo "   +++ Adding .deployment: vsphere_alb_wo_nsx"
-    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_alb_wo_nsx"}')
     test_nsx_alb_variables "/etc/config/variables.json"
+    echo ""
+    echo "==> Adding .deployment: vsphere_alb_wo_nsx"
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_alb_wo_nsx"}')
   fi
   if [[ $(jq -c -r .avi $jsonFile) != "null" && $(jq -c -r .tanzu $jsonFile) != "null" ]]; then
-    echo "   +++ Adding .deployment: vsphere_tanzu_alb_wo_nsx"
-    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
     test_nsx_alb_variables "/etc/config/variables.json"
+    echo ""
+    echo "==> Adding .deployment: vsphere_tanzu_alb_wo_nsx"
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
   fi
 fi
 #
@@ -541,33 +546,34 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
   #
   #
   if [[ $(jq -c -r .avi $jsonFile) == "null" ]]; then
-    echo "   +++ Adding .deployment: vsphere_nsx"
+    echo ""
+    echo "==> Adding .deployment: vsphere_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx"}')
   fi
   if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_VCENTER" && $(jq -c -r .vcd $jsonFile) == "null" ]]; then
-    echo "   +++ Adding .deployment: vsphere_nsx_alb_telco"
-    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_telco"}')
     test_nsx_alb_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_vsphere_nsx_alb_telco "/etc/config/variables.json"
+    echo ""
+    echo "==> Adding .deployment: vsphere_nsx_alb_telco"
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_telco"}')
   fi
   #
   #
   #
   if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" && $(jq -c -r .vcd $jsonFile) == "null" ]]; then
-    echo "   +++ Adding .deployment: vsphere_nsx_alb"
-    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb"}')
     test_nsx_alb_variables "/etc/config/variables.json"
     test_nsx_app_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_nsx_cloud "/etc/config/variables.json"
+    echo ""
+    echo "==> Adding .deployment: vsphere_nsx_alb"
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb"}')
   fi
   #
   #
   #
   if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" && $(jq -c -r .vcd $jsonFile) != "null" ]]; then
-    echo "   +++ Adding .deployment: vsphere_nsx_alb_vcd"
-    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_vcd"}')
     test_nsx_alb_variables "/etc/config/variables.json"
     test_nsx_app_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
@@ -578,6 +584,9 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.vcd_nested_ip $jsonFile) "   "
     test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.vsan.vcd_nested_ip $jsonFile) "   "
     test_if_json_variable_is_defined .vcd.ova_url $jsonFile "   "
+    echo ""
+    echo "==> Adding .deployment: vsphere_nsx_alb_vcd"
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_vcd"}')
   fi
 fi
 #

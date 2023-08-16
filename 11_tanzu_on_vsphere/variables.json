@@ -7,6 +7,24 @@
       "automatic_sync_enabled": true,
       "on_demand": true
     },
-    "storage_policy_name": "vSAN Default Storage Policy"
+    "storage_policy_name": "vSAN Default Storage Policy",
+    "vm_classes": [
+      "best-effort-2xlarge",
+      "guaranteed-small",
+      "best-effort-4xlarge",
+      "best-effort-8xlarge",
+      "best-effort-xsmall",
+      "guaranteed-large",
+      "guaranteed-medium",
+      "best-effort-large",
+      "best-effort-medium",
+      "best-effort-xlarge",
+      "guaranteed-2xlarge",
+      "guaranteed-4xlarge",
+      "best-effort-small",
+      "guaranteed-8xlarge",
+      "guaranteed-xlarge",
+      "guaranteed-xsmall"
+    ]
   }
 }

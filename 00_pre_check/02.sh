@@ -40,15 +40,15 @@ echo "   +++ Adding Ubuntu OVA path"
 ubuntu_ova_path=$(jq -c -r .ubuntu_ova_path $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
 #
-echo "   +++ alb_controller_name"
+echo "   +++ Adding alb_controller_name"
 alb_controller_name=$(jq -c -r .alb_controller_name $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"alb_controller_name": "'$(echo $alb_controller_name)'"}')
 #
-echo "   +++ nsx_manager_name"
+echo "   +++ Adding nsx_manager_name"
 nsx_manager_name=$(jq -c -r .nsx_manager_name $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"nsx_manager_name": "'$(echo $nsx_manager_name)'"}')
 #
-echo "   +++ vcd_appliance_name"
+echo "   +++ Adding vcd_appliance_name"
 vcd_appliance_name=$(jq -c -r .vcd_appliance_name $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"vcd_appliance_name": "'$(echo $vcd_appliance_name)'"}')
 #

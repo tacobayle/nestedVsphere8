@@ -1,0 +1,28 @@
+apiVersion: run.tanzu.vmware.com/v1alpha1
+kind: TanzuKubernetesCluster
+metadata:
+  name: tkg-cluster-1
+  namespace: playground
+spec:
+  distribution:
+    version: v1.24
+  topology:
+    controlPlane:
+      count: 1
+      class: best-effort-small
+      storageClass: vsan-default-storage-policy
+    workers:
+      count: 3
+      class: guaranteed-small
+      storageClass: vsan-default-storage-policy
+  settings:
+    network:
+      cni:
+        name: calico
+      services:
+        cidrBlocks: ["10.97.0.0/24"]
+      pods:
+        cidrBlocks: ["10.245.0.0/21"]
+    storage:
+      classes: ["vsan-default-storage-policy"]
+      defaultClass: vsan-default-storage-policy

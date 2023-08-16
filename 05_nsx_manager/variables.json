@@ -1,5 +1,29 @@
 {
   "nsx_ova_path": "/root/nsx.ova",
+  "dhcp_servers_api_endpoint": "/policy/api/v1/infra/dhcp-server-configs",
+  "dhcp_servers":
+  [
+    {
+      "name": "dhcp-0",
+      "server_address": "100.65.222.1/30",
+      "lease_time": 86400
+    }
+  ],
+  "groups_api_endpoint": "/policy/api/v1/infra/domains/default/groups",
+  "groups": [
+    {
+      "display_name" : "Avi-se",
+      "expression" : [ {
+        "member_type" : "VirtualMachine",
+        "key" : "Name",
+        "operator" : "STARTSWITH",
+        "value" : "Avi-se",
+        "resource_type" : "Condition"
+      } ]
+    }
+  ],
+  "exclusion_list_api_endpoint": "/policy/api/v1/infra/settings/firewall/security/exclude-list",
+  "exclusion_list_groups": ["Avi-se"],
   "ip_pools": [
     {
       "name": "ip_pool_tep_tn"

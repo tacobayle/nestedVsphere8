@@ -165,68 +165,56 @@ json_data='
   }
 }'
 vcenter_api 6 10 "POST" $token "${json_data}" $api_host "api/vcenter/namespace-management/clusters/${cluster_id}?action=enable"
-retry=61
-pause=60
-attempt=1
+#
+# Wait for supervisor cluster to be running
+#
+retry_tanzu_supervisor=61
+pause_tanzu_supervisor=60
+attempt_tanzu_supervisor=1
 while true ; do
-  echo "attempt $attempt to get supervisor cluster config_status RUNNING"
+  echo "attempt $attempt_tanzu_supervisor to get supervisor cluster config_status RUNNING"
   vcenter_api 6 10 "GET" $token '' $api_host "api/vcenter/namespace-management/clusters"
   if [[ $(echo $response_body | jq -c -r .[0].config_status) == "RUNNING" ]]; then
-    echo "supervisor cluster is $(echo $response_body | jq -c -r .[0].config_status) after $attempt attempts"
+    echo "supervisor cluster is $(echo $response_body | jq -c -r .[0].config_status) after $attempt_tanzu_supervisor attempts"
     break 2
   fi
-  ((attempt++))
-  if [ $attempt -eq $retry ]; then
-    echo "Unable to get supervisor cluster config_status RUNNING after $attempt"
+  ((attempt_tanzu_supervisor++))
+  if [ $attempt_tanzu_supervisor -eq $retry_tanzu_supervisor ]; then
+    echo "Unable to get supervisor cluster config_status RUNNING after $attempt_tanzu_supervisor"
     exit 255
   fi
-  sleep $pause
+  sleep $pause_tanzu_supervisor
 done
 #
+# Namespace creation
 #
-#
-#vcenter_api 6 10 "GET" $token "" $api_host "rest/com/vmware/content/subscribed-library"
-#
-# example of a get subscribed content library
-# {"value":{"creation_time":"2023-01-04T12:57:42.124Z","storage_backings":[{"datastore_id":"datastore-14","type":"DATASTORE"}],"last_modified_time":"2023-01-04T12:57:42.124Z","server_guid":"2ad54d17-2b8a-4aa1-8f69-a9e0c5ac6d26","description":"","security_policy_id":"f24c4762-a8ed-8fe3-b3a1-33972ec8df04","type":"SUBSCRIBED","version":"2","subscription_info":{"authentication_method":"NONE","ssl_thumbprint":"b2:52:9e:4d:57:9f:ea:53:4d:a0:0b:7f:d4:7e:55:91:56:c0:64:bb","automatic_sync_enabled":true,"subscription_url":"https://wp-content.vmware.com/v2/latest/lib.json","on_demand":false},"name":"test","id":"21f89e44-9a90-47ad-b1d0-6f21d0bf036a"}}
-#
-#
-#
-#
-#vcenter_api 6 10 "GET" $token '' $api_host "api/vcenter/namespace-management/clusters"
-#cluster_id=$(echo $response_body | jq -c -r .[0].cluster)
-retry_a=90
-pause_a=60
-attempt_a=1
-while true ; do
-  echo "attempt $attempt_a to get supervisor cluster config_status RUNNING"
+for ns in $(jq -c -r .tanzu.namespaces[] $jsonFile); do
   vcenter_api 6 10 "GET" $token '' $api_host "api/vcenter/namespace-management/clusters"
-  if [[ $(echo $response_body | jq -c -r .[0].config_status) == "RUNNING" ]]; then
-    echo "supervisor cluster is $(echo $response_body | jq -c -r .[0].config_status) after $attempt_a attempts"
-    break 2
-  fi
-  ((attempt_a++))
-  if [ $attempt_a -eq $retry_a ]; then
-    echo "Unable to get supervisor cluster config_status RUNNING after $attempt_a"
-    exit 255
-  fi
-  sleep $pause_a
+  cluster_id=$(echo $response_body | jq -c -r .[0].cluster)
+  ns_name=$(echo $ns | jq -r .name)
+  json_data='
+  {
+    "cluster": "'${cluster_id}'",
+    "vm_service_spec": {
+      "vm_classes": '$(jq -r .tanzu_local.vm_classes $jsonFile)',
+      "content_libraries": []
+    },
+    "storage_specs": [
+      {
+        "policy": "'${storage_policy_id}'"
+      }
+    ],
+    "namespace": "'${ns_name}'"
+  }'
+  vcenter_api 6 10 "POST" $token "${json_data}" $api_host "api/vcenter/namespaces/instances"
 done
 #
+# retrieve K8s Supervisor node IP
 #
-#
-#for ns in $(jq -c -r .tanzu.namespaces[] $jsonFile); do
-#  vcenter_api 6 10 "GET" $token '' $api_host "api/vcenter/namespace-management/clusters"
-#  clusters=$(echo $response_body)
-#  for cluster in $(echo $clusters | jq -c -r .[]); do
-#    if [[ $(echo $ns | jq -c -r .cluster_ref) == $(echo $cluster | jq -c -r .cluster_name) ]]; then
-#      cluster_id=$(echo $cluster | jq -c -r .cluster)
-#    else
-#      echo $ns
-#      echo "Unable to get cluster_id for cluster called $(echo $ns | jq -c -r .cluster_ref)"
-#      exit 255
-#    fi
-#  done
-#  echo '{"cluster": '\"$(echo $cluster_id)\"', "namespace": '$(echo $ns | jq .name)'}'
-#  vcenter_api 6 10 "POST" $token '{"cluster": '\"$(echo $cluster_id)\"', "namespace": '$(echo $ns | jq .name)'}' $api_host "api/vcenter/namespaces/instances"
-#done
+vcenter_api 6 10 "GET" $token '' $api_host "api/vcenter/namespace-management/clusters/${cluster_id}"
+api_server_cluster_endpoint=$(echo $response_body | jq -c -r .api_server_cluster_endpoint)
+json_data='
+{
+  "api_server_cluster_endpoint": "'${api_server_cluster_endpoint}'"
+}'
+echo $json_data | tee /root/api_server_cluster_endpoint.json

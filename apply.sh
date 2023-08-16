@@ -11,59 +11,79 @@ else
   exit 255
 fi
 #
+# 00_pre_check
+#
 /bin/bash /nestedVsphere8/00_pre_check/00.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 jsonFile="/root/variables.json"
+#
 /bin/bash /nestedVsphere8/00_pre_check/01.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
+#
 /bin/bash /nestedVsphere8/00_pre_check/02.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
+#
 /bin/bash /nestedVsphere8/00_pre_check/03.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
-if [[ $(jq -c -r .avi $jsonFile) != "null" ||  $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+#
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" || $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/04.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+#
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/05.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+#
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/07.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+#
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/08.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+#
 if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/09.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
-if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
+#
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/11.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+#
+# Environment Creation
+#
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
+#
 /bin/bash /nestedVsphere8/02_external_gateway/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
+#
 /bin/bash /nestedVsphere8/03_nested_vsphere/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
-if [[ $(jq -c -r .nsx $jsonFile) != "null" || $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
-  echo "waiting for 20 minutes to finish the vCenter config..."
-  sleep 1200
+echo "waiting for 20 minutes to finish the vCenter config..."
+sleep 1200
+#
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" || $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
   /bin/bash /nestedVsphere8/04_networks/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
-if [[ $(jq -c -r .nsx $jsonFile) != "null" ]] ; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/05_nsx_manager/apply.sh
-   if [ $? -ne 0 ] ; then exit 1 ; fi
+  if [ $? -ne 0 ] ; then exit 1 ; fi
   echo "waiting for 5 minutes to finish the NSX bootstrap..."
   sleep 300
+fi
+#
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/06_nsx_config/apply.sh
-   if [ $? -ne 0 ] ; then exit 1 ; fi
+  if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
@@ -83,7 +103,7 @@ fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/10_nsx_alb_config/apply.sh
-#   if [ $? -ne 0 ] ; then exit 1 ; fi
+  if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
 #if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
