@@ -30,6 +30,14 @@ data "template_file" "tkc_clusters_script" {
   }
 }
 
+data "template_file" "tkc_clusters_script_destroy" {
+  template = file("templates/tkc_destroy.sh.template")
+  vars = {
+    KUBECTL_VSPHERE_PASSWORD = var.vsphere_nested_password
+    SSO_DOMAIN_NAME = var.vsphere_nested.sso.domain_name
+  }
+}
+
 resource "null_resource" "prep_tkc" {
 
   depends_on = [null_resource.supervisor]
@@ -55,6 +63,11 @@ resource "null_resource" "prep_tkc" {
   provisioner "file" {
     content = data.template_file.tkc_clusters_script.rendered
     destination = "/home/ubuntu/tkc.sh"
+  }
+
+  provisioner "file" {
+    content = data.template_file.tkc_clusters_script_destroy.rendered
+    destination = "/home/ubuntu/tkc_destroy.sh"
   }
 
   provisioner "remote-exec" {
