@@ -64,7 +64,6 @@ resource "null_resource" "create_transport_node_profiles" {
 
 resource "null_resource" "create_dhcp_servers" {
   depends_on = [null_resource.create_transport_node_profiles]
-  count = var.deployment == "vsphere_nsx_alb_telco"  ? 1 : 0
 
   provisioner "local-exec" {
     command = "/bin/bash /nestedVsphere8/bash/nsx/dhcp.sh"

@@ -24,7 +24,6 @@ data "template_file" "tkc_clusters" {
 
 data "template_file" "tkc_clusters_script" {
   template = file("templates/tkc.sh.template")
-  count = length(var.tanzu.tkc_clusters)
   vars = {
     KUBECTL_VSPHERE_PASSWORD = var.vsphere_nested_password
     SSO_DOMAIN_NAME = var.vsphere_nested.sso.domain_name
@@ -62,7 +61,7 @@ resource "null_resource" "prep_tkc" {
     inline = [
       "mkdir tkc",
       "curl -k https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/api_server_cluster_endpoint.json)/wcp/plugin/linux-amd64/vsphere-plugin.zip -o ./vsphere-plugin.zip",
-      "unzip vsphere-plugin.zip"
+      "unzip -o vsphere-plugin.zip"
     ]
   }
 }
@@ -85,7 +84,7 @@ resource "null_resource" "transfer_tkc" {
 
   provisioner "file" {
     content = data.template_file.tkc_clusters[count.index].rendered
-    destination = "/home/ubuntu/tkc/tkc-${count.index + 1}"
+    destination = "/home/ubuntu/tkc/tkc-${count.index + 1}.yml"
   }
 
 }
@@ -105,7 +104,7 @@ resource "null_resource" "run_tkc" {
 
   provisioner "remote-exec" {
     inline = [
-      "bin/bash /home/ubuntu/tkc.sh"
+      "/bin/bash /home/ubuntu/tkc.sh"
     ]
   }
 }

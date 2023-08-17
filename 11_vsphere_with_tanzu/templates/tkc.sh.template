@@ -14,15 +14,15 @@ tkc_count=1
 for tkc in $(jq -c -r .tanzu.tkc_clusters[] $jsonFile)
 do
   /home/ubuntu/bin/kubectl config use-context $(echo $tkc | jq -c -r .namespace_ref)
-  /home/ubuntu/bin/kubectl apply -f /home/ubuntu/tkc/tkc-${tkc_count}.yml
+  /home/ubuntu/bin/kubectl apply -f /home/ubuntu/tkc/tkc-$${tkc_count}.yml
   echo "waiting 5 minutes"
   sleep 300
   retry_tkc=61
-  pause_tkc=60
+  pause_tkc=120
   attempt_tkc=1
   while true ; do
     echo "attempt: $attempt_tkc // tkc cluster called $(echo $tkc | jq -c -r .name) .status.phase is :  $(/home/ubuntu/bin/kubectl get tanzukubernetesclusters $(echo $tkc | jq -c -r .name) -o json | jq .status.phase)"
-    if [[ $(/home/ubuntu/bin/kubectl get tanzukubernetesclusters $(echo $tkc | jq -c -r .name) -o json | jq .status.phase) == "running" ]]; then
+    if [[ $(/home/ubuntu/bin/kubectl get tanzukubernetesclusters $(echo $tkc | jq -c -r .name) -o json | jq -r .status.phase) == "running" ]]; then
       /home/ubuntu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${SSO_DOMAIN_NAME} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/api_server_cluster_endpoint.json) --tanzu-kubernetes-cluster-namespace $(echo $tkc | jq -c -r .namespace_ref) --tanzu-kubernetes-cluster-name $(echo $tkc | jq -c -r .name)
       break
     fi

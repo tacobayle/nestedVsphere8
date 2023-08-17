@@ -169,7 +169,7 @@ vcenter_api 6 10 "POST" $token "${json_data}" $api_host "api/vcenter/namespace-m
 # Wait for supervisor cluster to be running
 #
 retry_tanzu_supervisor=61
-pause_tanzu_supervisor=60
+pause_tanzu_supervisor=120
 attempt_tanzu_supervisor=1
 while true ; do
   echo "attempt $attempt_tanzu_supervisor to get supervisor cluster config_status RUNNING"

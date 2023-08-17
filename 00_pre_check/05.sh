@@ -224,6 +224,7 @@ route_advertisement_types=$(jq -c -r '.tier1s.route_advertisement_types' $localJ
 for item in $(jq -c -r .nsx.config.tier1s[] $jsonFile)
 do
   item=$(echo $item | jq '. += {"route_advertisement_types": '$(echo $route_advertisement_types | jq -c -r .)'}')
+  item=$(echo $item | jq '. += {"dhcp_server": "'$(jq -c -r .dhcp_servers[0].name $localJsonFile)'"}')
   tier1s=$(echo $tier1s | jq '. += ['$(echo $item | jq -c -r .)']')
 done
 nsx_json=$(echo $nsx_json | jq '. | del (.nsx.config.tier1s)')
