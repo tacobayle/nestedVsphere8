@@ -1,3 +1,7 @@
+d=vsphere-nsx ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- /bin/bash
+
+
+
 kubectl delete pod pod1-nested-vsphere
 kubectl delete configmap configmap1
 kubectl apply -f configmap1-nested-vpshere.yml

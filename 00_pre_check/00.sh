@@ -536,8 +536,11 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_if_variable_is_defined $(echo $item | jq -c .tier1) "   " "testing if each .nsx.config.segments_overlay[] have a tier1 defined"
     test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .cidr)" "   "
     test_if_variable_is_defined $(echo $item | jq -c .dhcp_ranges) "   " "testing if each .nsx.config.segments_overlay[] have a dhcp_ranges defined"
-    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .dhcp_ranges | cut -d"-" -f1 )" "   "
-    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .dhcp_ranges | cut -d"-" -f2 )" "   "
+    for dhcp_range in $(echo $item | jq -c -r .dhcp_ranges[])
+    do
+      test_if_variable_is_valid_ip "$(echo $dhcp_range | cut -d"-" -f1 )" "   "
+      test_if_variable_is_valid_ip "$(echo $dhcp_range | cut -d"-" -f2 )" "   "
+    done
   done
   test_if_ref_from_list_exists_in_another_list ".nsx.config.segments_overlay[].tier1" \
                                                ".nsx.config.tier1s[].display_name" \
