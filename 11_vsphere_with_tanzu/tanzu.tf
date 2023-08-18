@@ -27,6 +27,9 @@ data "template_file" "tkc_clusters_script" {
   vars = {
     KUBECTL_VSPHERE_PASSWORD = var.vsphere_nested_password
     SSO_DOMAIN_NAME = var.vsphere_nested.sso.domain_name
+    docker_registry_username = var.docker_registry_username
+    docker_registry_password = var.docker_registry_password
+    docker_registry_email = var.docker_registry_email
   }
 }
 
@@ -53,6 +56,36 @@ resource "null_resource" "prep_tkc" {
   provisioner "file" {
     source = "/root/api_server_cluster_endpoint.json"
     destination = "/home/ubuntu/api_server_cluster_endpoint.json"
+  }
+
+  provisioner "file" {
+    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/deployment1.yml"
+    destination = "/home/ubuntu/deployment1.yml"
+  }
+
+  provisioner "file" {
+    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/deployment2.yml"
+    destination = "/home/ubuntu/deployment2.yml"
+  }
+
+  provisioner "file" {
+    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/deployment3.yml"
+    destination = "/home/ubuntu/deployment3.yml"
+  }
+
+  provisioner "file" {
+    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/svc1.yml"
+    destination = "/home/ubuntu/svc1.yml"
+  }
+
+  provisioner "file" {
+    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/svc2.yml"
+    destination = "/home/ubuntu/svc2.yml"
+  }
+
+  provisioner "file" {
+    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/svc3.yml"
+    destination = "/home/ubuntu/svc3.yml"
   }
 
   provisioner "file" {

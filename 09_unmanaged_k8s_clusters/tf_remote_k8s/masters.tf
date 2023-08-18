@@ -304,8 +304,8 @@ resource "null_resource" "ako_prerequisites" {
 #  }
 #
 #  provisioner "file" {
-#    source = "templates/deployment.yml"
-#    destination = "deployment.yml"
+#    source = "templates/deployment1.yml"
+#    destination = "deployment1.yml"
 #  }
 #
 #  provisioner "file" {
