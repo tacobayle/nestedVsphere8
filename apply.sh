@@ -55,6 +55,9 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c
   /bin/bash /nestedVsphere8/00_pre_check/11.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+echo ""
+echo "********* Deployment use case: $(jq -c -r .deployment $jsonFile) *********"
+echo ""
 #
 # Environment Creation
 #
