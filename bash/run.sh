@@ -1,54 +1,50 @@
+# vsphere
+## destroy
+d=vsphere
+kubectl exec -it pod-${d} -- /nested8Vspehere/destroy.sh
+kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml
+## create
+d=vsphere ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- /bin/bash
+
+# vsphere-alb
+## destroy
+d=vsphere-alb
+kubectl exec -it pod-${d} -- /nested8Vspehere/destroy.sh
+kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml
+## create
+d=vsphere-alb ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- /bin/bash
+
+# vsphere-tanzu-alb-wo-nsx
+## destroy
+d=vsphere-tanzu-alb-wo-nsx
+kubectl exec -it pod-${d} -- /nested8Vspehere/destroy.sh
+kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml
+## create
+d=vsphere-tanzu-alb-wo-nsx ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- /bin/bash
+
+# vsphere-nsx
+## destroy
+d=vsphere-nsx
+kubectl exec -it pod-${d} -- /nested8Vspehere/destroy.sh
+kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml
+## create
 d=vsphere-nsx ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- /bin/bash
 
+# vsphere-nsx-alb
+## destroy
+d=vsphere-nsx-alb
+kubectl exec -it pod-${d} -- /nested8Vspehere/destroy.sh
+kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml
+## create
+d=vsphere-nsx-alb ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- /bin/bash
 
-
-kubectl delete pod pod1-nested-vsphere
-kubectl delete configmap configmap1
-kubectl apply -f configmap1-nested-vpshere.yml
-kubectl apply -f pod1-nested-vpshere.yml
-sleep 3
-kubectl exec -it pod1-nested-vsphere -- /bin/bash
-/bin/bash nestedVsphere8/apply.sh
-/bin/bash nestedVsphere8/destroy.sh
-
-
-
----
-kubectl delete pod pod2
-kubectl delete configmap configmap2
-kubectl apply -f configmap2-nested-vpshere-nsx.yml
-kubectl apply -f pod2-nested-vpshere-nsx.yml
-sleep 2
-kubectl exec -it pod2 -- /bin/bash
-
-/bin/bash nestedVsphere8/apply.sh
-cd / ; /bin/bash nestedVsphere8/destroy.sh
-cd / ; rm -fr nestedVsphere8 ; git clone https://github.com/tacobayle/nestedVsphere8 ;  /bin/bash /nestedVsphere8/apply.sh
-
----
-kubectl delete pod test-pod3
-kubectl delete configmap configmap3
-kubectl apply -f configmap3-nested-vsphere-nsx-alb.yml
-kubectl apply -f pod3-nested-vsphere-nsx-alb.yml
-sleep 3
-kubectl exec -it test-pod3 -- /bin/bash
-
-/bin/bash nestedVsphere8/apply.sh
-/bin/bash nestedVsphere8/destroy.sh
-
----
-
-kubectl delete pod test-pod4
-kubectl delete configmap configmap4
-kubectl apply -f configmap4-nested-vsphere-nsx-alb-vcd.yml
-kubectl apply -f pod4-nested-vsphere-nsx-alb-vcd.yml
-sleep 3
-kubectl exec -it test-pod4 -- /bin/bash
-
-/bin/bash nestedVsphere8/apply.sh
-/bin/bash nestedVsphere8/destroy.sh
-
-
+# vsphere-nsx-alb-telco
+## destroy
+d=vsphere-nsx-alb-telco
+kubectl exec -it pod-${d} -- /nested8Vspehere/destroy.sh
+kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml
+## create
+d=vsphere-nsx-alb-telco ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- /bin/bash
 
 # python3 -m http.server
 
