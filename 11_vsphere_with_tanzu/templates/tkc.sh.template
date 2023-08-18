@@ -28,9 +28,9 @@ do
       /home/ubuntu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${SSO_DOMAIN_NAME} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/api_server_cluster_endpoint.json) --tanzu-kubernetes-cluster-namespace $(echo $tkc | jq -c -r .namespace_ref) --tanzu-kubernetes-cluster-name $(echo $tkc | jq -c -r .name)
       /home/ubuntu/bin/kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${docker_registry_username} --docker-password=${docker_registry_password} --docker-email=${docker_registry_email}
       /home/ubuntu/bin/kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"
-      /home/ubuntu/bin/kubectl apply -f https://raw.githubusercontent.com/tacobayle/k8sYaml/master/k8sDeploymentBusyBoxFrontEndV1.yml
-      /home/ubuntu/bin/kubectl apply -f https://raw.githubusercontent.com/tacobayle/k8sYaml/master/k8sDeploymentBusyBoxFrontEndV2.yml
-      /home/ubuntu/bin/kubectl apply -f https://raw.githubusercontent.com/tacobayle/k8sYaml/master/k8sDeploymentBusyBoxFrontEndV3.yml
+      /home/ubuntu/bin/kubectl apply -f deployment1.yml
+      /home/ubuntu/bin/kubectl apply -f deployment2.yml
+      /home/ubuntu/bin/kubectl apply -f deployment3.yml
       echo "/home/ubuntu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${SSO_DOMAIN_NAME} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/api_server_cluster_endpoint.json) --tanzu-kubernetes-cluster-namespace $(echo $tkc | jq -c -r .namespace_ref) --tanzu-kubernetes-cluster-name $(echo $tkc | jq -c -r .name)" | tee -a auth_tkc$${tkc_count}.sh
       break
     fi
