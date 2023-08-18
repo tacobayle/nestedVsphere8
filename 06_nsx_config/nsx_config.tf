@@ -1,6 +1,6 @@
 resource "null_resource" "waiting_for_nsx_api" {
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/nsx/waiting_for_nsx.sh"
+    command = "/bin/bash /nestedVsphere8/bash/nsx/waiting_for_nsx_api.sh"
   }
 }
 
