@@ -19,27 +19,27 @@ nsx_json=$(echo $nsx_json | jq '. += {"nsx_ova_path": "'$(echo $nsx_ova_path)'"}
 #
 echo "   +++ Adding dhcp_servers_api_endpoint..."
 dhcp_servers_api_endpoint=$(jq -c -r '.dhcp_servers_api_endpoint' $localJsonFile)
-nsx_json=$(echo $nsx_json | jq '. += {"dhcp_servers_api_endpoint": "'$(echo $dhcp_servers_api_endpoint)'"}')
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"dhcp_servers_api_endpoint": "'$(echo $dhcp_servers_api_endpoint)'"}')
 #
 echo "   +++ Adding dhcp_servers..."
 dhcp_servers=$(jq -c -r '.dhcp_servers' $localJsonFile)
-nsx_json=$(echo $nsx_json | jq '. += {"dhcp_servers": '$(echo $dhcp_servers)'}')
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"dhcp_servers": '$(echo $dhcp_servers)'}')
 #
 echo "   +++ Adding groups_api_endpoint..."
 groups_api_endpoint=$(jq -c -r '.groups_api_endpoint' $localJsonFile)
-nsx_json=$(echo $nsx_json | jq '. += {"groups_api_endpoint": "'$(echo $groups_api_endpoint)'"}')
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"groups_api_endpoint": "'$(echo $groups_api_endpoint)'"}')
 #
 echo "   +++ Adding groups..."
 groups=$(jq -c -r '.groups' $localJsonFile)
-nsx_json=$(echo $nsx_json | jq '. += {"groups": '$(echo $groups)'}')
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"groups": '$(echo $groups)'}')
 #
 echo "   +++ Adding exclusion_list_api_endpoint..."
 exclusion_list_api_endpoint=$(jq -c -r '.exclusion_list_api_endpoint' $localJsonFile)
-nsx_json=$(echo $nsx_json | jq '. += {"exclusion_list_api_endpoint": "'$(echo $exclusion_list_api_endpoint)'"}')
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"exclusion_list_api_endpoint": "'$(echo $exclusion_list_api_endpoint)'"}')
 #
 echo "   +++ Adding exclusion_list_groups..."
 exclusion_list_groups=$(jq -c -r '.exclusion_list_groups' $localJsonFile)
-nsx_json=$(echo $nsx_json | jq '. += {"exclusion_list_groups": '$(echo $exclusion_list_groups)'}')
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"exclusion_list_groups": '$(echo $exclusion_list_groups)'}')
 #
 echo "   +++ Adding nsx_manager_name"
 nsx_manager_name=$(jq -c -r .nsx_manager_name /nestedVsphere8/02_external_gateway/variables.json)
