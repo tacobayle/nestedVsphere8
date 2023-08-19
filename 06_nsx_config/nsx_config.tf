@@ -75,7 +75,7 @@ resource "null_resource" "create_groups" {
   count = var.deployment == "vsphere_nsx_alb_telco"  ? 1 : 0
 
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/nsx/dhcp/groups.sh"
+    command = "/bin/bash /nestedVsphere8/bash/nsx/groups.sh"
   }
 }
 
@@ -122,11 +122,18 @@ data "nsxt_policy_tier0_gateway" "tier0s_for_tier1s" {
   display_name = var.nsx.config.tier1s[count.index].tier0
 }
 
+data "nsxt_policy_dhcp_server" "dhcps_for_tier1s" {
+  depends_on = [null_resource.create_dhcp_servers]
+  count = length(var.nsx.config.tier1s)
+  display_name = var.nsx.config.tier1s[count.index].dhcp_server
+}
+
 resource "nsxt_policy_tier1_gateway" "tier1s" {
   count = length(var.nsx.config.tier1s)
   display_name              = var.nsx.config.tier1s[count.index].display_name
   tier0_path                = data.nsxt_policy_tier0_gateway.tier0s_for_tier1s[count.index].path
   route_advertisement_types = var.nsx.config.tier1s[count.index].route_advertisement_types
+  dhcp_config_path          = data.nsxt_policy_dhcp_server.dhcps_for_tier1s[count.index].path
 }
 
 resource "time_sleep" "wait_tier1" {
@@ -154,6 +161,14 @@ resource "nsxt_policy_fixed_segment" "segments" {
   transport_zone_path = data.nsxt_policy_transport_zone.tzs_for_segments_overlay[count.index].path
   subnet {
     cidr        = "${cidrhost(var.nsx.config.segments_overlay[count.index].cidr, "1")}/${split("/", var.nsx.config.segments_overlay[count.index].cidr)[1]}"
+    dhcp_ranges = var.nsx.config.segments_overlay[count.index].dhcp_ranges
+    dhcp_v4_config {
+      dns_servers   = [var.vsphere_underlay.networks.vsphere.management.external_gw_ip]
+      dhcp_generic_option {
+        code   = "42"
+        values = [var.vsphere_underlay.networks.vsphere.management.external_gw_ip]
+      }
+    }
   }
 }
 
