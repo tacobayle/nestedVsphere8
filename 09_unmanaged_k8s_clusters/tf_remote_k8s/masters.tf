@@ -119,7 +119,7 @@ resource "null_resource" "copy_join_command_to_tf" {
   count = length(var.unmanaged_k8s_masters_ips)
 
   provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no ubuntu@${vsphere_virtual_machine.masters[count.index].default_ip_address}:/home/ubuntu/join-command join-command-${var.unmanaged_k8s_masters_ips[count.index]}"
+    command = "scp -o StrictHostKeyChecking=no ubuntu@${var.unmanaged_k8s_masters_ips[count.index]}:/home/ubuntu/join-command join-command-${var.unmanaged_k8s_masters_ips[count.index]}"
   }
 }
 
@@ -137,7 +137,7 @@ resource "null_resource" "K8s_sanity_check" {
   count = length(var.unmanaged_k8s_masters_ips)
 
   connection {
-    host = vsphere_virtual_machine.masters[count.index].default_ip_address
+    host = var.unmanaged_k8s_masters_ips[count.index]
     type = "ssh"
     agent = false
     user = var.k8s.username
@@ -210,7 +210,7 @@ resource "null_resource" "copy_k8s_config_file_to_external_gw" {
   count = length(var.unmanaged_k8s_masters_ips)
 
   provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no ubuntu@${vsphere_virtual_machine.masters[count.index].default_ip_address}:/home/ubuntu/.kube/config /home/ubuntu/.kube/config-${count.index + 1}"
+    command = "scp -o StrictHostKeyChecking=no ubuntu@${var.unmanaged_k8s_masters_ips[count.index]}:/home/ubuntu/.kube/config /home/ubuntu/.kube/config-${count.index + 1}"
   }
 
 }
@@ -291,7 +291,7 @@ resource "null_resource" "ako_prerequisites" {
 #resource "null_resource" "ako_prerequisites" {
 #  count = length(var.unmanaged_k8s_masters_ips)
 #  connection {
-#    host = vsphere_virtual_machine.masters[count.index].default_ip_address
+#    host = var.unmanaged_k8s_masters_ips[count.index]
 #    type = "ssh"
 #    agent = false
 #    user = var.k8s.username

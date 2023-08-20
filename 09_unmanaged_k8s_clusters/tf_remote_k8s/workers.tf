@@ -103,7 +103,7 @@ resource "null_resource" "k8s_bootstrap_workers" {
   depends_on = [vsphere_virtual_machine.workers]
 
   connection {
-    host = vsphere_virtual_machine.workers[count.index].default_ip_address
+    host = var.unmanaged_k8s_workers_ips[count.index]
     type = "ssh"
     agent = false
     user = "ubuntu"
@@ -126,7 +126,7 @@ resource "null_resource" "copy_join_command_to_workers" {
   depends_on = [null_resource.copy_join_command_to_tf, null_resource.k8s_bootstrap_workers]
 
   provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no join-command-${var.unmanaged_k8s_workers_associated_master_ips[count.index]} ubuntu@${vsphere_virtual_machine.workers[count.index].default_ip_address}:/home/ubuntu/join-command"
+    command = "scp -o StrictHostKeyChecking=no join-command-${var.unmanaged_k8s_workers_associated_master_ips[count.index]} ubuntu@${var.unmanaged_k8s_workers_ips[count.index]}:/home/ubuntu/join-command"
   }
 }
 
@@ -134,7 +134,7 @@ resource "null_resource" "join_cluster" {
   depends_on = [null_resource.copy_join_command_to_workers]
   count = length(var.unmanaged_k8s_workers_ips)
   connection {
-    host        = vsphere_virtual_machine.workers[count.index].default_ip_address
+    host        = var.unmanaged_k8s_workers_ips[count.index]
     type        = "ssh"
     agent       = false
     user = "ubuntu"
