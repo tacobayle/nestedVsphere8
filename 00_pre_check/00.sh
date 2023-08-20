@@ -56,8 +56,15 @@ test_nsx_k8s_variables () {
   for item in $(jq -c -r .nsx.config.segments_overlay[] "$1")
   do
     if [[ $(echo $item | jq -c .k8s_clusters) != "null" ]] ; then
-      if [[ $(echo $item | jq -r -c .display_name) == $(jq -c -r .avi.config.cloud.network_management.name "$1") ]] ; then
-        echo "app_ips is not supported on overlay segment $(echo $item | jq -r -c .display_name) because it's defined at .avi.config.cloud.network_management.name - NAT is disabled hence no Internet Access"
+      placement_k8s=0
+      for network in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
+      do
+        if [[ $(echo $item | jq -r -c .display_name) == $(echo $network | jq -c -r .name) ]] ; then
+          placement_k8s=1
+        fi
+      done
+      if [[ $placement_k8s -ne 1 ]] ; then
+        echo "With NSX: k8s_clusters is supported only on vip segments defined .avi.config.cloud.networks_data[]"
         exit 255
       fi
       variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": true}')
