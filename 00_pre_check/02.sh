@@ -71,6 +71,12 @@ external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(ech
 nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
 #
+if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) != "true" ]]; then
+  echo "   +++ Adding .default_kubectl_version... from local variables.json"
+  default_kubectl_version=$(jq -c -r '.default_kubectl_version' $localJsonFile)
+  external_gw_json=$(echo $external_gw_json | jq '. += {"default_kubectl_version": "'$(echo $default_kubectl_version)'"}')
+fi
+#
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
   echo "   +++ Adding Networks MTU details"
@@ -226,12 +232,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   #
   echo "   +++ Creating External ip_table_prefixes..."
   external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
-  #
-  if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) != "true" ]]; then
-    echo "   +++ Adding .default_kubectl_version... from local variables.json"
-    default_kubectl_version=$(jq -c -r '.default_kubectl_version' $localJsonFile)
-    external_gw_json=$(echo $external_gw_json | jq '. += {"default_kubectl_version": "'$(echo $default_kubectl_version)'"}')
-  fi
   #
 fi
 #
