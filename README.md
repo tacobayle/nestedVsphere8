@@ -33,6 +33,9 @@ https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsp
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-alb.yml
 
 ### vsphere-nsx
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx.yml
 
 ### vsphere-nsx-alb
 
