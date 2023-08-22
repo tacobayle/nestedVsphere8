@@ -253,6 +253,13 @@ echo $external_gw_json | jq . | tee /root/external_gw.json > /dev/null
 #
 #
 #
+echo "   +++ Updating /etc/hosts..."
+contents=$(cat /etc/hosts | grep -v $(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile))
+echo "${contents}" | tee /etc/hosts
+contents="$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) external-gw"
+echo "${contents}" | tee -a /etc/hosts
+#
+#
 echo ""
 echo "==> Checking vSphere VMs for name conflict..."
 api_host="$(jq -r .vsphere_underlay.vcsa $jsonFile)"
