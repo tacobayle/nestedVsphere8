@@ -143,7 +143,6 @@ json_data='
     "id": "avi",
     "provider": "AVI"
   },
-  "Master_DNS_names":["tanzu.alb123.com"],
   "default_kubernetes_service_content_library":"'${content_library_id}'",
   "workload_networks_spec": {
     "supervisor_primary_workload_network": {
@@ -191,10 +190,19 @@ done
 for ns in $(jq -c -r .tanzu.namespaces[] $jsonFile); do
   vcenter_api 6 10 "GET" $token '' $api_host "api/vcenter/namespace-management/clusters"
   cluster_id=$(echo $response_body | jq -c -r .[0].cluster)
+  sso_domain=$(jq -c -r .vsphere_nested.sso.domain_name jsonFile)
   ns_name=$(echo $ns | jq -r .name)
   json_data='
   {
     "cluster": "'${cluster_id}'",
+    "access_list": [
+      {
+        "role": "OWNER",
+        "subject_type": "USER",
+        "subject": "Administrator",
+        "domain": "'${sso_domain}'"
+      }
+    ],
     "vm_service_spec": {
       "vm_classes": '$(jq -r .tanzu_local.vm_classes $jsonFile)',
       "content_libraries": []

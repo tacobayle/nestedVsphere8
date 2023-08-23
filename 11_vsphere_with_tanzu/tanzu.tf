@@ -25,19 +25,11 @@ data "template_file" "tkc_clusters" {
 data "template_file" "tkc_clusters_script" {
   template = file("templates/tkc.sh.template")
   vars = {
-    KUBECTL_VSPHERE_PASSWORD = var.vsphere_nested_password
-    SSO_DOMAIN_NAME = var.vsphere_nested.sso.domain_name
+    kubectl_password = var.vsphere_nested_password
+    sso_domain_name = var.vsphere_nested.sso.domain_name
     docker_registry_username = var.docker_registry_username
     docker_registry_password = var.docker_registry_password
     docker_registry_email = var.docker_registry_email
-  }
-}
-
-data "template_file" "tkc_clusters_script_destroy" {
-  template = file("templates/tkc_destroy.sh.template")
-  vars = {
-    KUBECTL_VSPHERE_PASSWORD = var.vsphere_nested_password
-    SSO_DOMAIN_NAME = var.vsphere_nested.sso.domain_name
   }
 }
 
@@ -99,7 +91,7 @@ resource "null_resource" "prep_tkc" {
   }
 
   provisioner "file" {
-    content = data.template_file.tkc_clusters_script_destroy.rendered
+    source = "templates/tkc_destroy.sh"
     destination = "/home/ubuntu/tkc_destroy.sh"
   }
 

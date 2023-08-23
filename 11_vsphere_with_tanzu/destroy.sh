@@ -33,3 +33,13 @@ cluster_id=$(echo $response_body | jq -r --arg cluster "$(jq -c -r .vsphere_nest
 echo "   +++ testing if variable cluster_id is not empty" ; if [ -z "$cluster_id" ] ; then exit 255 ; fi
 #
 vcenter_api 6 10 "POST" $token "" $api_host "api/vcenter/namespace-management/clusters/${cluster_id}?action=disable"
+#
+# Content Library Deletion
+#
+vcenter_api 6 10 "GET" $token '' $api_host "rest/com/vmware/content/subscribed-library"
+content_library_id=$(echo $response_body | jq -c -r .value[0])
+vcenter_api 6 10 "DELETE" $token "" $api_host "api/content/subscribed-library/${content_library_id}"
+#
+#
+#
+rm -fr terraform.tfstate .terraform.lock.hcl .terraform

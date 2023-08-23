@@ -4,10 +4,6 @@ jsonFile="/home/ubuntu/tanzu_wo_nsx.json"
 #
 IFS=$'\n'
 #
-export KUBECTL_VSPHERE_PASSWORD=${KUBECTL_VSPHERE_PASSWORD}
-#
-/home/ubuntu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${SSO_DOMAIN_NAME} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/api_server_cluster_endpoint.json)
-#
 for tkc in $(jq -c -r .tanzu.tkc_clusters[] $jsonFile)
 do
   /home/ubuntu/bin/kubectl config use-context $(echo $tkc | jq -c -r .namespace_ref)

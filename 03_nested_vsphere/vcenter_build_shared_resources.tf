@@ -106,7 +106,7 @@ resource "null_resource" "vcenter_iproute_2" {
   }
 }
 
-resource "null_resource" "execute_expect_script_ip_routes" {
+resource "null_resource" "execute_expect_script_vcenter_ip_routes" {
   depends_on = [null_resource.vcenter_iproute_2]
   count      = var.deployment == "vsphere_tanzu_alb_wo_nsx" || var.deployment == "vsphere_nsx_tanzu_alb" ? 1 : 0
 
@@ -129,4 +129,13 @@ resource "null_resource" "execute_expect_script_ip_routes" {
       "/tmp/vcenter_expect_ip_routes.sh"
     ]
   }
+}
+
+resource "null_resource" "execute_expect_script_esxi_ip_routes" {
+  depends_on = [null_resource.execute_expect_script]
+
+  provisioner "local-exec" {
+    command = "/bin/bash 19_esxi_ip_routes.sh"
+  }
+
 }
