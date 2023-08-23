@@ -45,39 +45,57 @@ resource "null_resource" "prep_tkc" {
     private_key = file("/root/.ssh/id_rsa")
   }
 
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir tkc",
+      "mkdir tanzu",
+      "mkdir tanzu-yaml"
+    ]
+  }
+
+
   provisioner "file" {
     source = "/root/api_server_cluster_endpoint.json"
-    destination = "/home/ubuntu/api_server_cluster_endpoint.json"
+    destination = "/home/ubuntu/tanzu/api_server_cluster_endpoint.json"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "curl -k https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/tanzu/api_server_cluster_endpoint.json)/wcp/plugin/linux-amd64/vsphere-plugin.zip -o ./vsphere-plugin.zip",
+      "unzip -o vsphere-plugin.zip",
+      "mv vsphere-plugin.zip /tmp/vsphere-plugin.zip"
+    ]
   }
 
   provisioner "file" {
     source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/deployment1.yml"
-    destination = "/home/ubuntu/deployment1.yml"
+    destination = "/home/ubuntu/tanzu-yaml/deployment1.yml"
   }
 
   provisioner "file" {
     source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/deployment2.yml"
-    destination = "/home/ubuntu/deployment2.yml"
+    destination = "/home/ubuntu/tanzu-yaml/deployment2.yml"
   }
 
   provisioner "file" {
     source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/deployment3.yml"
-    destination = "/home/ubuntu/deployment3.yml"
+    destination = "/home/ubuntu/tanzu-yaml/deployment3.yml"
   }
 
   provisioner "file" {
     source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/svc1.yml"
-    destination = "/home/ubuntu/svc1.yml"
+    destination = "/home/ubuntu/tanzu-yaml/svc1.yml"
   }
 
   provisioner "file" {
     source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/svc2.yml"
-    destination = "/home/ubuntu/svc2.yml"
+    destination = "/home/ubuntu/tanzu-yaml/svc2.yml"
   }
 
   provisioner "file" {
     source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/svc3.yml"
-    destination = "/home/ubuntu/svc3.yml"
+    destination = "/home/ubuntu/tanzu-yaml/svc3.yml"
   }
 
   provisioner "file" {
@@ -87,25 +105,18 @@ resource "null_resource" "prep_tkc" {
 
   provisioner "file" {
     content = data.template_file.tkc_clusters_script.rendered
-    destination = "/home/ubuntu/tkc.sh"
+    destination = "/home/ubuntu/tkc/tkc.sh"
   }
 
   provisioner "file" {
     source = "templates/tkc_destroy.sh"
-    destination = "/home/ubuntu/tkc_destroy.sh"
+    destination = "/home/ubuntu/tkc/tkc_destroy.sh"
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "mkdir tkc",
-      "curl -k https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/api_server_cluster_endpoint.json)/wcp/plugin/linux-amd64/vsphere-plugin.zip -o ./vsphere-plugin.zip",
-      "unzip -o vsphere-plugin.zip"
-    ]
-  }
 }
 
 
-resource "null_resource" "transfer_tkc" {
+resource "null_resource" "transfer_tkc_yaml_files" {
 
   depends_on = [null_resource.prep_tkc]
   count = length(var.tanzu.tkc_clusters)
@@ -129,7 +140,7 @@ resource "null_resource" "transfer_tkc" {
 
 resource "null_resource" "run_tkc" {
 
-  depends_on = [null_resource.transfer_tkc]
+  depends_on = [null_resource.transfer_tkc_yaml_files]
 
 
   connection {
@@ -142,7 +153,7 @@ resource "null_resource" "run_tkc" {
 
   provisioner "remote-exec" {
     inline = [
-      "/bin/bash /home/ubuntu/tkc.sh"
+      "/bin/bash /home/ubuntu/tkc/tkc.sh"
     ]
   }
 }

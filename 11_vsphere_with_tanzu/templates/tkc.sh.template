@@ -11,7 +11,7 @@ echo "${contents}" | tee /home/ubuntu/.profile > /dev/null
 contents="alias k=/home/ubuntu/bin/kubectl"
 echo "${contents}" | tee -a /home/ubuntu/.profile > /dev/null
 #
-/home/ubuntu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${sso_domain_name} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/api_server_cluster_endpoint.json)
+/home/ubuntu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${sso_domain_name} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/tanzu/api_server_cluster_endpoint.json)
 #
 tkc_count=1
 #
@@ -27,7 +27,7 @@ do
   while true ; do
     echo "attempt: $attempt_tkc // tkc cluster called $(echo $tkc | jq -c -r .name) .status.phase is :  $(/home/ubuntu/bin/kubectl get tanzukubernetesclusters $(echo $tkc | jq -c -r .name) -o json | jq .status.phase)"
     if [[ $(/home/ubuntu/bin/kubectl get tanzukubernetesclusters $(echo $tkc | jq -c -r .name) -o json | jq -r .status.phase) == "running" ]]; then
-      /home/ubuntu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${sso_domain_name} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/api_server_cluster_endpoint.json) --tanzu-kubernetes-cluster-namespace $(echo $tkc | jq -c -r .namespace_ref) --tanzu-kubernetes-cluster-name $(echo $tkc | jq -c -r .name)
+      /home/ubuntu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${sso_domain_name} --server=https://$(jq -c -r .api_server_cluster_endpoint /home/ubuntu/tanzu/api_server_cluster_endpoint.json) --tanzu-kubernetes-cluster-namespace $(echo $tkc | jq -c -r .namespace_ref) --tanzu-kubernetes-cluster-name $(echo $tkc | jq -c -r .name)
       /home/ubuntu/bin/kubectl config use-context $(echo $tkc | jq -c -r .name)
       /home/ubuntu/bin/kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${docker_registry_username} --docker-password=${docker_registry_password} --docker-email=${docker_registry_email}
       /home/ubuntu/bin/kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"
