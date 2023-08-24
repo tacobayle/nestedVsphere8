@@ -148,7 +148,8 @@ attempt_a=0
 for edge_id in $(echo $edge_ids | jq -c -r .[] ); do
   while true ; do
     echo "attempt $attempt_a to get node id $edge_id ready"
-    nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/infra/sites/default/enforcement-points/default/host-transport-nodes/state"
+    # before 4.1.1 nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/infra/sites/default/enforcement-points/default/host-transport-nodes/state"
+    nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/transport-nodes/state"
     edge_runtime=$(echo $response_body)
     for item in $(echo $edge_runtime | jq -c -r .results[])
     do
