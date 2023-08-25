@@ -16,7 +16,7 @@ token=$(/bin/bash /nestedVsphere8/bash/create_vcenter_api_session.sh "$vsphere_n
 # TKC Clusters deletion
 #
 ssh-keygen -f "/root/.ssh/known_hosts" -R $(jq  -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
-ssh -o StrictHostKeyChecking=no -t ubuntu@$(jq  -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) '/bin/bash /home/ubuntu/tkc/tkc_destroy.sh'
+ssh -o StrictHostKeyChecking=no -t ubuntu@$(jq  -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) '/bin/bash /home/ubuntu/tkc/tkc_destroy.sh; rm -fr tkc/ ; rm -fr tanzu; rm -fr tanzu-yaml'
 #
 # Namespace deletion
 #
