@@ -122,8 +122,13 @@ data "nsxt_policy_tier0_gateway" "tier0s_for_tier1s" {
   display_name = var.nsx.config.tier1s[count.index].tier0
 }
 
-data "nsxt_policy_dhcp_server" "dhcps_for_tier1s" {
+resource "time_sleep" "wait_dhcp" {
   depends_on = [null_resource.create_dhcp_servers]
+  create_duration = "10s"
+}
+
+data "nsxt_policy_dhcp_server" "dhcps_for_tier1s" {
+  depends_on = [time_sleep.wait_dhcp]
   count = length(var.nsx.config.tier1s)
   display_name = var.nsx.config.tier1s[count.index].dhcp_server
 }

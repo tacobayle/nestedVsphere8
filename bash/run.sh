@@ -15,9 +15,8 @@ d=vsphere-alb ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; s
 
 # vsphere-tanzu-alb-wo-nsx
 ## destroy
-d=vsphere-tanzu-alb-wo-nsx
-kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh
-kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0
+d=vsphere-tanzu-alb-wo-nsx ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh
+d=vsphere-tanzu-alb-wo-nsx ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0
 ## create
 d=vsphere-tanzu-alb-wo-nsx ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- /bin/bash -c "rm -fr nestedVsphere8 ; git clone https://github.com/tacobayle/nestedVsphere8 -b dual_attached"; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
 
