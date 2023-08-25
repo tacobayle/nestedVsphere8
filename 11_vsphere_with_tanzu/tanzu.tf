@@ -45,16 +45,6 @@ resource "null_resource" "prep_tkc" {
     private_key = file("/root/.ssh/id_rsa")
   }
 
-
-  provisioner "remote-exec" {
-    inline = [
-      "mkdir tkc",
-      "mkdir tanzu",
-      "mkdir tanzu-yaml"
-    ]
-  }
-
-
   provisioner "file" {
     source = "/root/api_server_cluster_endpoint.json"
     destination = "/home/ubuntu/tanzu/api_server_cluster_endpoint.json"

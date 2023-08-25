@@ -563,7 +563,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     echo "==> Adding .deployment: vsphere_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx"}')
   fi
-  if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_VCENTER" && $(jq -c -r .vcd $jsonFile) == "null" ]]; then
+  if [[ $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_VCENTER" && $(jq -c -r .vcd $jsonFile) == "null" && $(jq -c -r .tkg $jsonFile) != "null" ]]; then
     test_nsx_alb_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_vsphere_nsx_alb_telco "/etc/config/variables.json"

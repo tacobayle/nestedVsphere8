@@ -260,6 +260,14 @@ contents="$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $
 echo "${contents}" | tee -a /etc/hosts > /dev/null
 #
 #
+#
+echo "   +++ Creating an alias 'external' to ssh external-gw..."
+contents=$(cat /root/.profile | grep -v "external")
+echo "${contents}" | tee /root/.profile > /dev/null
+echo "alias external='ssh ubuntu@external-gw'" | tee -a /root/.profile
+source /root/.profile
+#
+#
 echo ""
 echo "==> Checking vSphere VMs for name conflict..."
 api_host="$(jq -r .vsphere_underlay.vcsa $jsonFile)"
