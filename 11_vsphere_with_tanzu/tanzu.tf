@@ -138,10 +138,14 @@ resource "null_resource" "transfer_tkc_yaml_files" {
 
 }
 
+resource "time_sleep" "wait_cl_sync" {
+  depends_on = [null_resource.transfer_tkc_yaml_files]
+  create_duration = "60s"
+}
+
 resource "null_resource" "run_tkc" {
 
-  depends_on = [null_resource.transfer_tkc_yaml_files]
-
+  depends_on = [time_sleep.wait_cl_sync]
 
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip

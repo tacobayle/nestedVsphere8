@@ -18,6 +18,8 @@ tkc_count=1
 for tkc in $(jq -c -r .tanzu.tkc_clusters[] $jsonFile)
 do
   /home/ubuntu/bin/kubectl config use-context $(echo $tkc | jq -c -r .namespace_ref)
+  echo "Wait for 60 seconds..."
+  sleep 60
   /home/ubuntu/bin/kubectl apply -f /home/ubuntu/tkc/tkc-$${tkc_count}.yml
   echo "waiting 5 minutes"
   sleep 300
