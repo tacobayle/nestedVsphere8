@@ -242,8 +242,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
     network_data=$(echo $network | jq '. += {"exclude_discovered_subnets": "'$(jq -r .networks_data_default.exclude_discovered_subnets $localJsonFile)'"}')
     network_data=$(echo $network | jq '. += {"type": "'$(jq -r .networks_data_default.type $localJsonFile)'"}')
     cidr=$(jq -r --arg network_name "$(echo $network | jq -c -r .name)" '.nsx.config.segments_overlay[] | select(.display_name == $network_name).cidr' $jsonFile)
-    echo $cidr
-    network_data=$(echo $network | jq '. += {"cidr": "${cidr}"}')
+    network_data=$(echo $network | jq '. += {"cidr": "'${cidr}'"}')
     networks_data=$(echo $networks_data | jq '. += ['$(echo $network_data)']')
   done
   avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks)')
@@ -360,8 +359,10 @@ avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"service_engine_groups": '
 #
 echo $avi_json | jq . | tee /root/avi.json > /dev/null
 #
-echo ""
-echo "==> Downloading Avi ova file"
-if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .avi_ova_path $localJsonFile) $(jq -c -r .avi.ova_url $jsonFile) ; fi
-if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else echo "   +++ Avi ova $(jq -c -r .avi_ova_path $localJsonFile) is empty" ; exit 255 ; fi
+if [[ $(jq -c -r .deployment $jsonFile) != "vsphere_nsx_alb_telco" ]] ; then
+  echo ""
+  echo "==> Downloading Avi ova file"
+  if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .avi_ova_path $localJsonFile) $(jq -c -r .avi.ova_url $jsonFile) ; fi
+  if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else echo "   +++ Avi ova $(jq -c -r .avi_ova_path $localJsonFile) is empty" ; exit 255 ; fi
+fi
 #

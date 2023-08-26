@@ -268,23 +268,26 @@ echo "alias external='ssh ubuntu@external-gw'" | tee -a /root/.profile > /dev/nu
 source /root/.profile
 #
 #
-echo ""
-echo "==> Checking vSphere VMs for name conflict..."
-api_host="$(jq -r .vsphere_underlay.vcsa $jsonFile)"
-vcenter_username=$TF_VAR_vsphere_underlay_username
-vcenter_domain=''
-vsphere_password=$TF_VAR_vsphere_underlay_password
-token=$(/bin/bash /nestedVsphere8/bash/create_vcenter_api_session.sh "$vcenter_username" "$vcenter_domain" "$vsphere_password" "$api_host")
-vcenter_api 6 10 "GET" $token "" $api_host "rest/vcenter/vm"
-response_vm=$(echo $response_body)
-for vm_entry in $(echo $response_vm | jq -c -r .value[])
-do
-  if [[ $(echo $vm_entry | jq -c -r .name) == "external-gw-$(jq -c -r .date_index /root/external_gw.json)" ]] ; then
-    echo "  +++ ERROR +++ VM called "external-gw-$(jq -c -r .date_index /root/external_gw.json)" already exists"
-    exit 255
-  fi
-done
-echo "  +++ No conflict found, OK"
+if [[ $(jq -c -r .deployment $jsonFile) != "vsphere_nsx_alb_telco" ]] ; then
+
+  echo ""
+  echo "==> Checking vSphere VMs for name conflict..."
+  api_host="$(jq -r .vsphere_underlay.vcsa $jsonFile)"
+  vcenter_username=$TF_VAR_vsphere_underlay_username
+  vcenter_domain=''
+  vsphere_password=$TF_VAR_vsphere_underlay_password
+  token=$(/bin/bash /nestedVsphere8/bash/create_vcenter_api_session.sh "$vcenter_username" "$vcenter_domain" "$vsphere_password" "$api_host")
+  vcenter_api 6 10 "GET" $token "" $api_host "rest/vcenter/vm"
+  response_vm=$(echo $response_body)
+  for vm_entry in $(echo $response_vm | jq -c -r .value[])
+  do
+    if [[ $(echo $vm_entry | jq -c -r .name) == "external-gw-$(jq -c -r .date_index /root/external_gw.json)" ]] ; then
+      echo "  +++ ERROR +++ VM called "external-gw-$(jq -c -r .date_index /root/external_gw.json)" already exists"
+      exit 255
+    fi
+  done
+  echo "  +++ No conflict found, OK"
+fi
 #
 #
 #
