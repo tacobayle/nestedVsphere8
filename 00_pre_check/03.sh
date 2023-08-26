@@ -144,13 +144,15 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
 fi
 echo $nested_vsphere_json | jq . | tee /root/nested_vsphere.json > /dev/null
 #
-echo ""
-echo "==> Downloading ESXi ISO file"
-if [ -s "$(jq -c -r .iso_source_location $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .iso_source_location $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .iso_source_location $localJsonFile) $(jq -c -r .vsphere_nested.esxi.iso_url $jsonFile) ; fi
-if [ -s "$(jq -c -r .iso_source_location $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .iso_source_location $localJsonFile) is not empty" ; else echo "   +++ ESXi iso $(jq -c -r .iso_source_location $localJsonFile) is empty" ; exit 255 ; fi
-#
-echo ""
-echo "==> Downloading vSphere ISO file"
-if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .vcenter_iso_path $localJsonFile) $(jq -c -r .vsphere_nested.iso_url $jsonFile) ; fi
-if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else echo "   +++ vSphere ova $(jq -c -r .vcenter_iso_path $localJsonFile) is empty" ; exit 255 ; fi
+if [[ $(jq -c -r .deployment $jsonFile) != "vsphere_nsx_alb_telco" ]] ; then
+  echo ""
+  echo "==> Downloading ESXi ISO file"
+  if [ -s "$(jq -c -r .iso_source_location $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .iso_source_location $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .iso_source_location $localJsonFile) $(jq -c -r .vsphere_nested.esxi.iso_url $jsonFile) ; fi
+  if [ -s "$(jq -c -r .iso_source_location $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .iso_source_location $localJsonFile) is not empty" ; else echo "   +++ ESXi iso $(jq -c -r .iso_source_location $localJsonFile) is empty" ; exit 255 ; fi
+  #
+  echo ""
+  echo "==> Downloading vSphere ISO file"
+  if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .vcenter_iso_path $localJsonFile) $(jq -c -r .vsphere_nested.iso_url $jsonFile) ; fi
+  if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else echo "   +++ vSphere ova $(jq -c -r .vcenter_iso_path $localJsonFile) is empty" ; exit 255 ; fi
+fi
 #
