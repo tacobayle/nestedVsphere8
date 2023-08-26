@@ -247,7 +247,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
     if [[ $(echo $network_data | jq -c -r .external) == true ]] ; then
       cidr=$(jq -r -c .vsphere_underlay.networks.nsx.external.cidr $jsonFile)
       network_data=$(echo $network_data | jq '. | del (.name)')
-      network_data=$(echo $network_data | jq '. += {"name": "'$(jq -r .nsx_networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"}')
+      network_data=$(echo $network_data | jq '. += {"name": "'$(jq -r .networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"}')
     fi
     if [ -z "$cidr" ] ; then echo "   +++ variable cidr is empty" ; exit 255 ; fi
     network_data=$(echo $network_data | jq '. += {"cidr": "'${cidr}'"}')
