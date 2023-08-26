@@ -200,7 +200,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
     fi
   fi
 #
-  echo "   +++ Adding .routes... from local variables.json"
+  echo "   +++ Adding .routes..."
   external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"routes": '$(echo $new_routes)'}')
   #
   echo "   +++ Adding .default_kubectl_version... from local variables.json"
