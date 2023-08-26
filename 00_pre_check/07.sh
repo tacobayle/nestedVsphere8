@@ -236,13 +236,13 @@ fi
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   # .avi.config.cloud.networks_data[]
   networks_data="[]"
-  for network in $(jq -c -r .avi.config.cloud.networks[] $jsonFile)
+  for network_data in $(jq -c -r .avi.config.cloud.networks[] $jsonFile)
   do
-    network_data=$(echo $network | jq '. += {"dhcp_enabled": "'$(jq -r .networks_data_default.dhcp_enabled $localJsonFile)'"}')
-    network_data=$(echo $network | jq '. += {"exclude_discovered_subnets": "'$(jq -r .networks_data_default.exclude_discovered_subnets $localJsonFile)'"}')
-    network_data=$(echo $network | jq '. += {"type": "'$(jq -r .networks_data_default.type $localJsonFile)'"}')
+    network_data=$(echo $network_data | jq '. += {"dhcp_enabled": "'$(jq -r .networks_data_default.dhcp_enabled $localJsonFile)'"}')
+    network_data=$(echo $network_data | jq '. += {"exclude_discovered_subnets": "'$(jq -r .networks_data_default.exclude_discovered_subnets $localJsonFile)'"}')
+    network_data=$(echo $network_data | jq '. += {"type": "'$(jq -r .networks_data_default.type $localJsonFile)'"}')
     cidr=$(jq -r --arg network_name "$(echo $network | jq -c -r .name)" '.nsx.config.segments_overlay[] | select(.display_name == $network_name).cidr' $jsonFile)
-    network_data=$(echo $network | jq '. += {"cidr": "'${cidr}'"}')
+    network_data=$(echo $network_data | jq '. += {"cidr": "'${cidr}'"}')
     networks_data=$(echo $networks_data | jq '. += ['$(echo $network_data)']')
   done
   avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks)')
