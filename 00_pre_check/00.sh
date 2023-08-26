@@ -112,8 +112,8 @@ test_alb_variables_if_vsphere_nsx_alb_telco () {
     test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool | cut -d"-" -f1 )" "   "
     test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool | cut -d"-" -f2 )" "   "
     test_if_variable_is_defined $(echo $item | jq -c .management) "   " "testing if each .avi.config.cloud.networks[] have a management defined"
-    test_if_variable_is_defined $(echo $item | jq -c .bgp) "   " "testing if each .avi.config.cloud.networks[] have a bgp defined"
-    if [[ $(jq '.avi.config.cloud.networks | group_by(.bgp) | .[1] | length' "$1") != 1 ]] ; then echo "      ++++++ ERROR only one item in .avi.config.cloud.networks can have bgp equals to true" ; exit 255 ; fi
+#    test_if_variable_is_defined $(echo $item | jq -c .bgp) "   " "testing if each .avi.config.cloud.networks[] have a bgp defined"
+#    if [[ $(jq '.avi.config.cloud.networks | group_by(.bgp) | .[1] | length' "$1") != 1 ]] ; then echo "      ++++++ ERROR only one item in .avi.config.cloud.networks can have bgp equals to true" ; exit 255 ; fi
   done
   test_if_json_variable_is_defined .avi.config.cloud.contexts "$1" "   "
   if [[ $(jq '.avi.config.cloud.contexts | length' "$1") != 1 ]] ; then echo "      ++++++ ERROR only one context is supported in .avi.config.cloud.contexts" ; exit 255 ; fi
