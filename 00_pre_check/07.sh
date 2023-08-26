@@ -241,8 +241,15 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
     network_data=$(echo $network_data | jq '. += {"dhcp_enabled": "'$(jq -r .networks_data_default.dhcp_enabled $localJsonFile)'"}')
     network_data=$(echo $network_data | jq '. += {"exclude_discovered_subnets": "'$(jq -r .networks_data_default.exclude_discovered_subnets $localJsonFile)'"}')
     network_data=$(echo $network_data | jq '. += {"type": "'$(jq -r .networks_data_default.type $localJsonFile)'"}')
-    cidr=$(jq -r --arg network_name "$(echo $network_data | jq -c -r .name)" '.nsx.config.segments_overlay[] | select(.display_name == $network_name).cidr' $jsonFile)
-    echo $cidr
+    if [[ $(echo $external_data | jq -c -r .external) == "false" ]] ; then
+      cidr=$(jq -r --arg network_name "$(echo $network_data | jq -c -r .name)" '.nsx.config.segments_overlay[] | select(.display_name == $network_name).cidr' $jsonFile)
+    fi
+    if [[ $(echo $external_data | jq -c -r .external) == "true" ]] ; then
+      cidr=$(jq -r -c .vsphere_underlay.networks.nsx.external.cidr $jsonFile)
+      network_data=$(echo $network_data | jq '. | del (.name)')
+      network_data=$(echo $network_data | jq '. += {"name": "'$(jq -r .nsx_networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"}')
+    fi
+    echo "   +++ testing if variable cidr is not empty" ; if [ -z "$cidr" ] ; then exit 255 ; fi
     network_data=$(echo $network_data | jq '. += {"cidr": "'${cidr}'"}')
     networks_data=$(echo $networks_data | jq '. += ['$(echo $network_data)']')
   done

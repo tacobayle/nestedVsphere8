@@ -435,6 +435,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
   test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.name $jsonFile "   "
   test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.netmask $jsonFile "   "
   test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.tier0_ips $jsonFile "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile)" "   "
   for ip in $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_ips[] $jsonFile)
   do
     test_if_variable_is_valid_ip $ip "   "
@@ -443,7 +444,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     echo "   +++ not enough IP defined in .vsphere_underlay.networks.nsx.external.tier0_ips for the amount of tier0s defined in .nsx.config.tier0s"
     exit 255
   fi
-  test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.tier0_vips $jsonFile "   "
+  test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.tier0_vipscidr $jsonFile "   "
   for ip in $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips[] $jsonFile)
   do
     test_if_variable_is_valid_ip $ip "   "
