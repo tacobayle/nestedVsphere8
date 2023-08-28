@@ -115,8 +115,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   do
     if [[ $(echo $segment | jq -c -r .nsx_external) == true ]] ; then
       ((nsx_segment_external++))
-      cidr=$(jq -c -r .vsphere_underlay.networks.nsx_external.cidr $jsonFile)
-      echo "   ++++++ Adding CIDR to external segment called $(echo $segment | jq -c -r .name): $(jq -c -r .vsphere_underlay.networks.nsx_external.cidr $jsonFile)"
+      cidr=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile)
+      echo "   ++++++ Adding CIDR to external segment called $(echo $segment | jq -c -r .name): $(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile)"
       new_segment=$(echo $segment | jq '. += {"cidr": "'$(echo $cidr)'"}')
     else
       new_segment=$(echo $segment)
