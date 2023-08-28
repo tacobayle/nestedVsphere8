@@ -58,7 +58,6 @@ fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/12.sh
-  exit
   if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 
