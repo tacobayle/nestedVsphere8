@@ -269,9 +269,9 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     #
     ip_if_edge_index=0
     peers="[]"
-    network_ref_bgp=$(jq '.avi.config.cloud.networks[] | select(.external == true).name' /root/variables.json)
-    network_ref_bgp_addr=$(jq .vsphere_underlay.networks.nsx.external.cidr /root/variables.json | cut -d"/" -f1)
-    network_ref_bgp_mask=$(jq .vsphere_underlay.networks.nsx.external.cidr /root/variables.json | cut -d"/" -f2)
+    network_ref_bgp=$(jq -c -r '.avi.config.cloud.networks[] | select(.external == true).name' /root/variables.json)
+    network_ref_bgp_addr=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr /root/variables.json | cut -d"/" -f1)
+    network_ref_bgp_mask=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr /root/variables.json | cut -d"/" -f2)
     for tier0 in $(jq -c -r .nsx.config.tier0s[] /root/nsx.json)
     do
       if [[ $(echo $tier0 | jq 'has("bgp")') == "true" ]] ; then
@@ -288,12 +288,12 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
                                                   "bfd": false,
                                                   "connect_timer": 10,
                                                   "ebgp_multihop": 0,
-                                                  "label": '${label}',
+                                                  "label": "'${label}'",
                                                   "network_ref": "/api/network/?name='${network_ref_bgp}',
                                                   "peer_ip": {"addr": '${peer_ip_addr}', "type": "V4"},
                                                   "remote_as": '${remote_as}',
                                                   "shutdown": false,
-                                                  "subnet": {"ip_addr": {"addr": '${network_ref_bgp_addr}',"type": "V4"},"mask": '${network_ref_bgp_mask}'}
+                                                  "subnet": {"ip_addr": {"addr": "'${network_ref_bgp_addr}'","type": "V4"},"mask": "'${network_ref_bgp_mask}'"}
                                                   }]')
             ((ip_if_edge_index++))
           done
