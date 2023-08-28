@@ -145,7 +145,7 @@ test_alb_variables_if_vsphere_nsx_alb_telco () {
     #
     for network in $(jq -c -r '.avi.config.ipam.networks[]' "$1")
     do
-      if [[ $(jq -c -r --arg network "$network" '.avi.config.cloud.networks[] | select(.name == $network).name' "$1") == "" && $(echo $network | jq -c -r .external) == "false" ]] ; then
+      if [[ $(jq -c -r --arg network "$network" '.avi.config.cloud.networks[] | select(.name == $network).name' "$1") == "" && $(jq -c -r --arg network "$network" '.avi.config.cloud.networks[] | select(.name == $network).external' "$1") == "false" ]] ; then
         echo "      ++++++ ERROR ${network} was not found in .avi.config.cloud.networks[].name"
         exit 255
       fi
