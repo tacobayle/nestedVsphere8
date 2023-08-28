@@ -29,6 +29,7 @@ do
   new_json=$(echo $new_json | jq -c -r '. | del (.interfaces)')
   new_json=$(echo $new_json | jq -c -r '. | del (.static_routes)')
   new_json=$(echo $new_json | jq -c -r '. | del (.ha_vips)')
+  new_json=$(echo $new_json | jq -c -r '. | del (.bgp)')
   echo "creating the tier0 called $(echo $tier0 | jq -r -c .display_name)"
   nsx_api 6 10 "PUT" $cookies_file $headers_file "$(echo $new_json)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)"
   #curl -k -s -X PUT -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" -d $(echo $new_json) https://$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)
@@ -143,4 +144,29 @@ do
 #    curl -k -s -X PATCH -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" -d $(echo $new_json) https://$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default
   fi
 done
-
+#
+# BGP config
+#
+for tier0 in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
+do
+  if [[ $(echo $tier0 | jq 'has("bgp")') == "true" ]] ; then
+    echo "Enabling BGP on tier0 called: $(echo $tier0 | jq -r -c .display_name) with local AS: $(echo $tier0 | jq -r -c .bgp.local_as_num)"
+    nsx_api 6 10 "PATCH" $cookies_file $headers_file '{"enabled": "true", "local_as_num": "'$(echo $tier0 | jq -r -c .bgp.local_as_num)'", "ecmp": "'$(echo $tier0 | jq -r -c .bgp.ecmp)'"}' "$nsx_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/bgp"
+    echo "retrieving tier0 called: $(echo $tier0 | jq -r -c .display_name) interfaces details"
+    nsx_api 6 10 "GET" $cookies_file $headers_file '' "$nsx_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/interfaces"
+    tier0_interfaces=$(echo $response_body)
+    tier0_interfaces_ips="[]"
+    for interface in $(echo $tier0_interfaces | jq -c -r .results[])
+    do
+      tier0_interfaces_ips=$(echo $tier0_interfaces_ips | jq -c -r '. += ['$(echo $interface | jq -c '.subnets[0].ip_addresses[0]')']')
+    done
+    nsx_api 6 10 "GET" $cookies_file $headers_file '' "$nsx_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/interfaces"
+    neighbor_count=1
+    for neighbor in $(echo $tier0 | jq -c -r .bgp.neighbors[])
+    do
+      echo "Adding neighbor called: peer$neighbor_count to the tier0 called $(echo $tier0 | jq -r -c .display_name) with remote AS number: $(echo $neighbor | jq -r -c .remote_as_num), with remote neighbor IP: $(echo $neighbor | jq -r -c .neighbor_address), with source IP: $(echo $tier0_interfaces_ips | jq -c -r .))"
+      nsx_api 1 1 "PUT" $cookies_file $headers_file '{"neighbor_address": "'$(echo $neighbor | jq -r -c .neighbor_address)'", "remote_as_num": "'$(echo $neighbor | jq -r -c .remote_as_num)'", "source_addresses": '$(echo $tier0_interfaces_ips | jq -c -r .)'}' "$nsx_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/bgp/neighbors/peer$neighbor_count"
+      ((neighbor_count++))
+    done
+  fi
+done
