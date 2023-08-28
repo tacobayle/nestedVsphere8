@@ -140,6 +140,16 @@ test_alb_variables_if_vsphere_nsx_alb_telco () {
         exit 255
       fi
     done
+    #
+    # Checking Avi IPAM networks list
+    #
+    for network in $(jq -c -r '.avi.config.ipam.networks' "$1")
+    do
+      if [[ $(jq -c -r --arg network "$network" '.avi.config.cloud.networks[] | select(.name == $network).name' "$1") == "" && $(echo $network | jq -c -r .external) == "false" ]] ; then
+        echo "      ++++++ ERROR ${network} was not found in .avi.config.cloud.networks[].name"
+        exit 255
+      fi
+    done
 #    test_if_variable_is_defined $(echo $item | jq -c .bgp) "   " "testing if each .avi.config.cloud.networks[] have a bgp defined"
 #    if [[ $(jq '.avi.config.cloud.networks | group_by(.bgp) | .[1] | length' "$1") != 1 ]] ; then echo "      ++++++ ERROR only one item in .avi.config.cloud.networks can have bgp equals to true" ; exit 255 ; fi
   done

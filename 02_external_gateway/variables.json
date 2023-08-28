@@ -16,17 +16,17 @@
       "nsx_external": {
         "max_mtu": 1700,
         "name": "nsx_external",
-        "port_group_name": "nsx_external-pg"
+        "port_group_name": "nsx-external-pg"
       },
       "nsx_overlay_edge": {
         "max_mtu": 1700,
         "name": "nsx_overlay_edge",
-        "port_group_name": "nsx_overlay_edge-pg"
+        "port_group_name": "nsx-overlay-edge-pg"
       },
       "nsx_overlay": {
         "max_mtu": 1700,
         "name": "nsx_overlay",
-        "port_group_name": "nsx_overlay-pg"
+        "port_group_name": "nsx-overlay-pg"
       }
     },
     "alb": {

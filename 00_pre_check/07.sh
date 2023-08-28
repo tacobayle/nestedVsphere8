@@ -267,6 +267,53 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks)')
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks": '$(echo $networks_data)'}')
     #
+    # rewriting additional_subnets to feed proper Avi formatting
+    avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.additional_subnets)')
+    additional_subnets="[]"
+    for network in $(jq -c -r '.avi.config.cloud.additional_subnets[]' $jsonFile)
+    do
+      configured_subnets="[]"
+      for subnet in $(echo $network | jq -c -r .subnets[])
+      do
+        configured_subnets=$(echo $configured_subnets | jq -c -r '. +=  [
+                                                                          {
+                                                                            "prefix":
+                                                                                      {
+                                                                                        "mask": "'$(echo $subnet | jq -c -r .cidr | cut -d"/" -f2 )'",
+                                                                                        "ip_addr":
+                                                                                          {
+                                                                                            "type": "'$(echo $subnet | jq -c -r .type )'",
+                                                                                            "addr": "'$(echo $subnet | jq -c -r .cidr | cut -d"/" -f1 )'"
+                                                                                          },
+                                                                                      },
+                                                                            "static_ip_ranges":
+                                                                              [
+                                                                                {
+                                                                                  "range":
+                                                                                    {
+                                                                                      "begin":
+                                                                                        {
+                                                                                          "type": "'$(echo $subnet | jq -c -r .type )'",
+                                                                                          "addr": "'$(echo $subnet | jq -c -r .range | cut -d"-" -f1 )'"
+                                                                                        },
+                                                                                        "end":
+                                                                                          {
+                                                                                            "type": "'$(echo $subnet | jq -c -r .type )'",
+                                                                                            "addr": "'$(echo $subnet | jq -c -r .range | cut -d"-" -f2 )'"
+                                                                                          }
+                                                                                    },
+                                                                                  "type": "'$(echo $subnet | jq -c -r .range_type )'"
+                                                                                }
+                                                                              ]
+                                                                          }
+                                                                        ]')
+      done
+      additional_subnets=$(echo $additional_subnets | jq -c -r '. +=  [ {"name_ref": "'$(echo $network | jq -c -r .name_ref )'", "configured_subnets": '$(echo $configured_subnets)'}]')
+    done
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud.additional_subnets += '$(echo $additional_subnets | jq -c -r)'')
+    #
+    #
+    #
     ip_if_edge_index=0
     peers="[]"
     network_ref_bgp=$(jq -c -r '.avi.config.cloud.networks[] | select(.external == true).name' /root/variables.json)
