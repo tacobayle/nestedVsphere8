@@ -149,10 +149,10 @@ for item in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
 do
   for edge_cluster in $(jq -c -r .nsx.config.edge_clusters[] $jsonFile)
   do
-    interfaces=[]
-    ha_vips_interfaces=[]
     if [[ $(echo $item | jq -c -r .edge_cluster_name) == $(echo $edge_cluster | jq -c -r .display_name) ]] ; then
       count=0
+      interfaces=[]
+      ha_vips_interfaces=[]
       for edge in $(echo $edge_cluster | jq -c -r .members_name[])
       do
         interface="{}"
@@ -160,7 +160,6 @@ do
         interface=$(echo $interface | jq '. += {"segment_name": "'$(jq -c -r '.segments[0].name' $localJsonFile)'"}')
         interface=$(echo $interface | jq '. += {"type": "EXTERNAL"}')
         interface=$(echo $interface | jq '. += {"display_name": "if-ext-'$count'"}')
-
         interfaces=$(echo $interfaces | jq '. += ['$(echo $interface | jq -c -r .)']')
         ha_vips_interfaces=$(echo $ha_vips_interfaces | jq '. += ["if-ext-'$count'"]')
         ((count++))
@@ -188,8 +187,8 @@ do
 #                                      "   +++++++++ found 'local_as' value equals to" \
 #                                      "   +++++++++ERROR+++++++++ 'local_as' not found"
 #      local_as=$value_to_return
-      avi_ipam_pool_start=$(jq '.avi.config.cloud.networks[] | select(.bgp == true).avi_ipam_pool' $jsonFile | cut -d"-" -f1)
-      vi_ipam_pool_end=$(jq '.avi.config.cloud.networks[] | select(.bgp == true).avi_ipam_pool' $jsonFile | cut -d"-" -f2)
+      avi_ipam_pool_start=$(jq -r '.avi.config.cloud.networks[] | select(.external == true).avi_ipam_pool' $jsonFile | cut -d"-" -f1)
+      avi_ipam_pool_end=$(jq -r '.avi.config.cloud.networks[] | select(.external == true).avi_ipam_pool' $jsonFile | cut -d"-" -f2)
 #      get_value_from_list_when_match  "$(jq -c -r '.networks.nsx.nsx_external.port_group_name' /nestedVsphere8/02_external_gateway/variables.json)" \
 #                                          "name" \
 #                                          ".avi.config.cloud.networks[]" \

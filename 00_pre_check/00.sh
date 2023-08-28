@@ -112,6 +112,34 @@ test_alb_variables_if_vsphere_nsx_alb_telco () {
     test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool | cut -d"-" -f1 )" "   "
     test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool | cut -d"-" -f2 )" "   "
     test_if_variable_is_defined $(echo $item | jq -c .management) "   " "testing if each .avi.config.cloud.networks[] have a management defined"
+    if [[ $(jq '.avi.config.cloud.networks[].management' "$1" | grep -c true) != 1 ]] ; then
+      echo "      ++++++ ERROR only one network with management == true  is supported in .avi.config.cloud.networks[]"
+      exit 255
+    fi
+    test_if_variable_is_defined $(echo $item | jq -c .external) "   " "testing if each .avi.config.cloud.networks[] have a external defined"
+    if [[ $(jq '.avi.config.cloud.networks[].external' "$1" | grep -c true) != 1 ]] ; then
+      echo "      ++++++ ERROR only one network with external == true  is supported in .avi.config.cloud.networks[]"
+      exit 255
+    fi
+    if [[ $(jq -c -r '.nsx.config.tier0s | map(select(has("bgp"))) | .[].bgp.avi_peer_label' "$1" | uniq -d) != "" ]] ; then
+      echo "      ++++++ ERROR .nsx.config.tier0s[].bgp.avi_peer_label has a duplicate value"
+      exit 255
+    fi
+    if [[ $(jq '.avi.config.cloud.contexts[].routing_options[].label' "$1" | uniq -d ) != "" ]] ; then
+      echo "      ++++++ ERROR .avi.config.cloud.contexts[].routing_options[].label has a duplicate value"
+      exit 255
+    fi
+    for tier0_bgp in $(jq -c -r '.nsx.config.tier0s | map(select(has("bgp"))) | .[].bgp' "$1")
+    do
+      if [[ $(jq -c -r --arg context "$(echo $tier0_bgp | jq -r .avi_context_ref)" '.avi.config.cloud.contexts[] | select(.name == $context).name' "$1") == "" ]] ; then
+        echo "      ++++++ ERROR $(echo $tier0_bgp | jq -r .avi_context_ref) was not found in .avi.config.cloud.contexts[].name"
+        exit 255
+      fi
+      if [[ $(jq --arg context "$(echo $tier0_bgp | jq -r .avi_context_ref)" '.avi.config.cloud.contexts[] | select(.name == $context).routing_options | map(select(.label == "'$(echo $tier0_bgp | jq -r .avi_peer_label)'"))[].label ' "$1") == "" ]] ; then
+        echo "      ++++++ ERROR $(echo $tier0_bgp | jq -r .avi_peer_label) was not found in .avi.config.cloud.contexts[].routing_options[].label"
+        exit 255
+      fi
+    done
 #    test_if_variable_is_defined $(echo $item | jq -c .bgp) "   " "testing if each .avi.config.cloud.networks[] have a bgp defined"
 #    if [[ $(jq '.avi.config.cloud.networks | group_by(.bgp) | .[1] | length' "$1") != 1 ]] ; then echo "      ++++++ ERROR only one item in .avi.config.cloud.networks can have bgp equals to true" ; exit 255 ; fi
   done

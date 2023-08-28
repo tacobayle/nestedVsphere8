@@ -230,36 +230,9 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   fi
 fi
 #
-# ALB with vCenter Cloud use case with NSX // Telco use case
-#
-#
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
-  # .avi.config.cloud.networks_data[]
-  networks_data="[]"
-  for network_data in $(jq -c -r .avi.config.cloud.networks[] $jsonFile)
-  do
-    network_data=$(echo $network_data | jq '. += {"dhcp_enabled": "'$(jq -r .networks_data_default.dhcp_enabled $localJsonFile)'"}')
-    network_data=$(echo $network_data | jq '. += {"exclude_discovered_subnets": "'$(jq -r .networks_data_default.exclude_discovered_subnets $localJsonFile)'"}')
-    network_data=$(echo $network_data | jq '. += {"type": "'$(jq -r .networks_data_default.type $localJsonFile)'"}')
-    if [[ $(echo $network_data | jq -c -r .external) == false ]] ; then
-      cidr=$(jq -r --arg network_name "$(echo $network_data | jq -c -r .name)" '.nsx.config.segments_overlay[] | select(.display_name == $network_name).cidr' $jsonFile)
-    fi
-    if [[ $(echo $network_data | jq -c -r .external) == true ]] ; then
-      cidr=$(jq -r -c .vsphere_underlay.networks.nsx.external.cidr $jsonFile)
-      network_data=$(echo $network_data | jq '. | del (.name)')
-      network_data=$(echo $network_data | jq '. += {"name": "'$(jq -r .networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"}')
-    fi
-    if [ -z "$cidr" ] ; then echo "   +++ variable cidr is empty" ; exit 255 ; fi
-    network_data=$(echo $network_data | jq '. += {"cidr": "'${cidr}'"}')
-    networks_data=$(echo $networks_data | jq '. += ['$(echo $network_data)']')
-  done
-  avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks)')
-  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks": '$(echo $networks_data)'}')
-fi
-#
 # ALB with vCenter Cloud use cases
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   #
   echo "   +++ Adding avi.config.avi_config_tag..."
   avi_config_tag=$(jq -c -r '.avi_config_tag_vcenter_cloud' $localJsonFile)
@@ -269,88 +242,156 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   playbook_env_vcenter_cloud=$(jq -c -r '.playbook_env_vcenter_cloud' $localJsonFile)
   avi_json=$(echo $avi_json | jq '.avi.config += {"playbook": "'$(echo $playbook_env_vcenter_cloud)'"}')
   #
-  alb_networks='["se", "backend", "vip", "tanzu"]'
-  ipam_networks="[]"
-  networks="[]"
+  # Avi Telco use case
   #
-  echo "   +++ Creating Avi pools and VS"
-  avi_pools="[]"
-  avi_virtual_services_http="[]"
-  avi_virtual_services_dns="[]"
-  count=1
-  #
-  for network in $(echo $alb_networks | jq -c -r .[])
-  do
-    ipam_networks=$(echo $ipam_networks | jq '. += ["'$(jq -c -r .networks.alb.$network.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"]')
-    avi_ipam_pool=$(jq -c -r '.vsphere_underlay.networks.alb.'$network'.avi_ipam_pool' $jsonFile)
-    cidr=$(jq -c -r '.vsphere_underlay.networks.alb.'$network'.cidr' $jsonFile)
-    dhcp_enabled="false"
-    exclude_discovered_subnets="true"
-    if [[ $network == "se" ]] ; then management="true" ; else management="false" ; fi
-    name=$(jq -c -r .networks.alb.$network.port_group_name /nestedVsphere8/02_external_gateway/variables.json)
-    type="V4"
-    networks=$(echo $networks | jq '. += [{"avi_ipam_pool": "'$(echo $avi_ipam_pool)'", "cidr": "'$(echo $cidr)'", "dhcp_enabled": '$(echo $dhcp_enabled)', "exclude_discovered_subnets": '$(echo $exclude_discovered_subnets)', "management": '$(echo $management)', "name": "'$(echo $name)'", "type": "'$(echo $type)'"}]')
+  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
+    # .avi.config.cloud.networks_data[]
+    networks_data="[]"
+    for network_data in $(jq -c -r .avi.config.cloud.networks[] $jsonFile)
+    do
+      network_data=$(echo $network_data | jq '. += {"dhcp_enabled": "'$(jq -r .networks_data_default.dhcp_enabled $localJsonFile)'"}')
+      network_data=$(echo $network_data | jq '. += {"exclude_discovered_subnets": "'$(jq -r .networks_data_default.exclude_discovered_subnets $localJsonFile)'"}')
+      network_data=$(echo $network_data | jq '. += {"type": "'$(jq -r .networks_data_default.type $localJsonFile)'"}')
+      if [[ $(echo $network_data | jq -c -r .external) == false ]] ; then
+        cidr=$(jq -r --arg network_name "$(echo $network_data | jq -c -r .name)" '.nsx.config.segments_overlay[] | select(.display_name == $network_name).cidr' $jsonFile)
+      fi
+      if [[ $(echo $network_data | jq -c -r .external) == true ]] ; then
+        cidr=$(jq -r -c .vsphere_underlay.networks.nsx.external.cidr $jsonFile)
+        network_data=$(echo $network_data | jq '. | del (.name)')
+        network_data=$(echo $network_data | jq '. += {"name": "'$(jq -r .networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"}')
+      fi
+      if [ -z "$cidr" ] ; then echo "   +++ variable cidr is empty" ; exit 255 ; fi
+      network_data=$(echo $network_data | jq '. += {"cidr": "'${cidr}'"}')
+      networks_data=$(echo $networks_data | jq '. += ['$(echo $network_data)']')
+    done
+    avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks)')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks": '$(echo $networks_data)'}')
     #
-    if [[ $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters $jsonFile) != "null" ]]; then
-      for cluster in $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters[] $jsonFile)
+    ip_if_edge_index=0
+    peers="[]"
+    network_ref_bgp=$(jq '.avi.config.cloud.networks[] | select(.external == true).name' /root/variables.json)
+    network_ref_bgp_addr=$(jq .vsphere_underlay.networks.nsx.external.cidr /root/variables.json | cut -d"/" -f1)
+    network_ref_bgp_mask=$(jq .vsphere_underlay.networks.nsx.external.cidr /root/variables.json | cut -d"/" -f2)
+    for tier0 in $(jq -c -r .nsx.config.tier0s[] /root/nsx.json)
+    do
+      if [[ $(echo $tier0 | jq 'has("bgp")') == "true" ]] ; then
+        remote_as=$(echo $tier0 | jq -c -r .bgp.local_as_num)
+        label=$(echo $tier0 | jq -c -r .bgp.avi_peer_label)
+        for context in $(jq -c -r '.avi.config.cloud.contexts[]' $jsonFile)
         do
-          echo "   +++ Updating avi.config.cloud.service_engine_groups for unmanaged k8s cluster(s)..."
-          seg_list=$(echo $seg_list | jq '. += [{"name": "'$(echo $cluster | jq -c -r .cluster_name)'", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-'$(echo $cluster | jq -c -r .cluster_name)'", "ha_mode": "HA_MODE_SHARED_PAIR", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+          for interface in $(echo $tier0 | jq -c -r '.interfaces[]')
+          do
+            peer_ip_addr=$(jq -c -r '.vsphere_underlay.networks.nsx.external.tier0_ips['$ip_if_edge_index']' $jsonFile)
+            peers=$(echo $peers | jq -c -r '. += [{"advertise_snat_ip": true,
+                                                  "advertise_vip": true,
+                                                  "advertisement_interval": 5,
+                                                  "bfd": false,
+                                                  "connect_timer": 10,
+                                                  "ebgp_multihop": 0,
+                                                  "label": "'${label}'",
+                                                  "network_ref": "/api/network/?name="'${network_ref_bgp}'",
+                                                  "peer_ip": {"addr": "'${peer_ip_addr}'", "type": "V4"},
+                                                  "remote_as": "'${remote_as}'",
+                                                  "shutdown": false,
+                                                  "subnet": {"ip_addr": {"addr": "'${network_ref_bgp_addr}'","type": "V4"},"mask": "'${network_ref_bgp_mask}'"}
+                                                  }]')
+            ((ip_if_edge_index++))
+          done
+          context=$(echo $context | jq '.peers += '$(echo $peers)'')
         done
-    fi
-    #
-    if [[ $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile) != "null" ]] ; then
-      type="V4"
-      pool_name="pool$count-hello"
-      default_server_port=$(jq -c -r '.app.hello_world_app_tcp_port' /nestedVsphere8/08_app/variables.json)
-      avi_pool="{\"name\": \"$(echo $pool_name)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile)}"
-      avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
-      vs_name="app$count-hello-world"
-      avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
-      avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
-      ((count++))
-      #
-      pool_name="pool$count-avi"
-      default_server_port=$(jq -c -r '.app.avi_app_tcp_port' /nestedVsphere8/08_app/variables.json)
-      avi_pool="{\"name\": \"$(echo $pool_name)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile)}"
-      avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
-      vs_name="app$count-alb"
-      avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
-      avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
-      ((count++))
-      #
-      pool_name="pool$count-waf"
-      default_server_port=$(jq -c -r '.app.hackazon_tcp_port' /nestedVsphere8/08_app/variables.json)
-      avi_pool="{\"name\": \"$(echo $pool_name)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile)}"
-      avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
-      vs_name="app$count-waf"
-      avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
-      avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
-      ((count++))
-    fi
-    #
-  done
-  #
-  echo "   +++ Adding avi.config.cloud.ipam.networks..."
-  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"ipam": {"networks": '$(echo $ipam_networks)'}}')
-  #
-  echo "   +++ Adding avi.config.cloud.networks..."
-  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks": '$(echo $networks)'}')
-  #
-  echo "   +++ Adding avi.config.cloud.name..."
-  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "Default-Cloud"}')
-  #
-  if [[ $(echo $avi_pools | jq '. | length') -gt 0 ]] ; then
-    echo "   ++++++ Adding Avi pools..."
-    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
-    echo "   ++++++ Adding Avi HTTP virtual services..."
-    avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '$(echo $avi_virtual_services_http)'}')
+      else
+        ip_if_edge_index=$((ip_if_edge_index+$(echo $tier0 | jq -c -r '.interfaces | length')))
+      fi
+    done
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud.contexts += ['$(echo $context | jq -c -r)']')
   fi
   #
-  avi_virtual_service_dns="{\"name\": \"app-dns\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 53}]}"
-  avi_virtual_services_dns=$(echo $avi_virtual_services_dns | jq '. += ['$(echo $avi_virtual_service_dns)']')
-  echo "   ++++++ Adding Avi DNS virtual services..."
-  avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"dns": '$(echo $avi_virtual_services_dns)'}')
+  # Avi wo NSX use cases
+  #
+  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+    alb_networks='["se", "backend", "vip", "tanzu"]'
+    ipam_networks="[]"
+    networks="[]"
+    #
+    echo "   +++ Creating Avi pools and VS"
+    avi_pools="[]"
+    avi_virtual_services_http="[]"
+    avi_virtual_services_dns="[]"
+    count=1
+    #
+    for network in $(echo $alb_networks | jq -c -r .[])
+    do
+      ipam_networks=$(echo $ipam_networks | jq '. += ["'$(jq -c -r .networks.alb.$network.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"]')
+      avi_ipam_pool=$(jq -c -r '.vsphere_underlay.networks.alb.'$network'.avi_ipam_pool' $jsonFile)
+      cidr=$(jq -c -r '.vsphere_underlay.networks.alb.'$network'.cidr' $jsonFile)
+      dhcp_enabled="false"
+      exclude_discovered_subnets="true"
+      if [[ $network == "se" ]] ; then management="true" ; else management="false" ; fi
+      name=$(jq -c -r .networks.alb.$network.port_group_name /nestedVsphere8/02_external_gateway/variables.json)
+      type="V4"
+      networks=$(echo $networks | jq '. += [{"avi_ipam_pool": "'$(echo $avi_ipam_pool)'", "cidr": "'$(echo $cidr)'", "dhcp_enabled": '$(echo $dhcp_enabled)', "exclude_discovered_subnets": '$(echo $exclude_discovered_subnets)', "management": '$(echo $management)', "name": "'$(echo $name)'", "type": "'$(echo $type)'"}]')
+      #
+      if [[ $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters $jsonFile) != "null" ]]; then
+        for cluster in $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters[] $jsonFile)
+          do
+            echo "   +++ Updating avi.config.cloud.service_engine_groups for unmanaged k8s cluster(s)..."
+            seg_list=$(echo $seg_list | jq '. += [{"name": "'$(echo $cluster | jq -c -r .cluster_name)'", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-'$(echo $cluster | jq -c -r .cluster_name)'", "ha_mode": "HA_MODE_SHARED_PAIR", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+          done
+      fi
+      #
+      if [[ $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile) != "null" ]] ; then
+        type="V4"
+        pool_name="pool$count-hello"
+        default_server_port=$(jq -c -r '.app.hello_world_app_tcp_port' /nestedVsphere8/08_app/variables.json)
+        avi_pool="{\"name\": \"$(echo $pool_name)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile)}"
+        avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
+        vs_name="app$count-hello-world"
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
+        ((count++))
+        #
+        pool_name="pool$count-avi"
+        default_server_port=$(jq -c -r '.app.avi_app_tcp_port' /nestedVsphere8/08_app/variables.json)
+        avi_pool="{\"name\": \"$(echo $pool_name)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile)}"
+        avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
+        vs_name="app$count-alb"
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
+        ((count++))
+        #
+        pool_name="pool$count-waf"
+        default_server_port=$(jq -c -r '.app.hackazon_tcp_port' /nestedVsphere8/08_app/variables.json)
+        avi_pool="{\"name\": \"$(echo $pool_name)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile)}"
+        avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
+        vs_name="app$count-waf"
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
+        ((count++))
+      fi
+      #
+    done
+    #
+    echo "   +++ Adding avi.config.cloud.ipam.networks..."
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"ipam": {"networks": '$(echo $ipam_networks)'}}')
+    #
+    echo "   +++ Adding avi.config.cloud.networks..."
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks": '$(echo $networks)'}')
+    #
+    echo "   +++ Adding avi.config.cloud.name..."
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "Default-Cloud"}')
+    #
+    if [[ $(echo $avi_pools | jq '. | length') -gt 0 ]] ; then
+      echo "   ++++++ Adding Avi pools..."
+      avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
+      echo "   ++++++ Adding Avi HTTP virtual services..."
+      avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '$(echo $avi_virtual_services_http)'}')
+    fi
+    #
+    avi_virtual_service_dns="{\"name\": \"app-dns\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 53}]}"
+    avi_virtual_services_dns=$(echo $avi_virtual_services_dns | jq '. += ['$(echo $avi_virtual_service_dns)']')
+    echo "   ++++++ Adding Avi DNS virtual services..."
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"dns": '$(echo $avi_virtual_services_dns)'}')
+  fi
 fi
 #
 sslkeyandcertificate="[]"
