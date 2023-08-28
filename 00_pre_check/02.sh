@@ -111,6 +111,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   #
   mv /nestedVsphere8/02_external_gateway/external_gw_nsx.tf.disabled /nestedVsphere8/02_external_gateway/external_gw_nsx.tf
   mv /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf.disabled
+  mv /nestedVsphere8/02_external_gateway/external_gw.tf /nestedVsphere8/02_external_gateway/external_gw.tf.disabled
   #
   new_routes="[]"
   if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
