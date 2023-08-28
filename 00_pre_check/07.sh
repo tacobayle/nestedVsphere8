@@ -288,12 +288,12 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
                                                   "bfd": false,
                                                   "connect_timer": 10,
                                                   "ebgp_multihop": 0,
-                                                  "label": "'${label}'",
-                                                  "network_ref": "/api/network/?name="'${network_ref_bgp}'",
-                                                  "peer_ip": {"addr": "'${peer_ip_addr}'", "type": "V4"},
-                                                  "remote_as": "'${remote_as}'",
+                                                  "label": '${label}',
+                                                  "network_ref": "/api/network/?name='${network_ref_bgp}',
+                                                  "peer_ip": {"addr": '${peer_ip_addr}', "type": "V4"},
+                                                  "remote_as": '${remote_as}',
                                                   "shutdown": false,
-                                                  "subnet": {"ip_addr": {"addr": "'${network_ref_bgp_addr}'","type": "V4"},"mask": "'${network_ref_bgp_mask}'"}
+                                                  "subnet": {"ip_addr": {"addr": '${network_ref_bgp_addr}',"type": "V4"},"mask": '${network_ref_bgp_mask}'}
                                                   }]')
             ((ip_if_edge_index++))
           done
