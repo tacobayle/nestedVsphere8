@@ -291,10 +291,8 @@ fi
 #
 #
 #
-if [[ $(jq -c -r .deployment $jsonFile) != "vsphere_nsx_alb_telco" ]] ; then
-  echo ""
-  echo "==> Downloading Ubuntu OVA"
-  if [ -s "$(jq -c -r .ubuntu_ova_path $localJsonFile)" ]; then echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .ubuntu_ova_path $localJsonFile) $(jq -c -r .ubuntu_ova_url $localJsonFile) ; fi
-  if [ -s "$(jq -c -r .ubuntu_ova_path $localJsonFile)" ]; then echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is not empty" ; else echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is empty" ; exit 255 ; fi
-fi
+echo ""
+echo "==> Downloading Ubuntu OVA"
+if [ -s "$(jq -c -r .ubuntu_ova_path $localJsonFile)" ]; then echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .ubuntu_ova_path $localJsonFile) $(jq -c -r .ubuntu_ova_url $localJsonFile) ; fi
+if [ -s "$(jq -c -r .ubuntu_ova_path $localJsonFile)" ]; then echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is not empty" ; else echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is empty" ; exit 255 ; fi
 #

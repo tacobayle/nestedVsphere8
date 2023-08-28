@@ -455,10 +455,8 @@ avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"service_engine_groups": '
 #
 echo $avi_json | jq . | tee /root/avi.json > /dev/null
 #
-if [[ $(jq -c -r .deployment $jsonFile) != "vsphere_nsx_alb_telco" ]] ; then
-  echo ""
-  echo "==> Downloading Avi ova file"
-  if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .avi_ova_path $localJsonFile) $(jq -c -r .avi.ova_url $jsonFile) ; fi
-  if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else echo "   +++ Avi ova $(jq -c -r .avi_ova_path $localJsonFile) is empty" ; exit 255 ; fi
-fi
+echo ""
+echo "==> Downloading Avi ova file"
+if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .avi_ova_path $localJsonFile) $(jq -c -r .avi.ova_url $jsonFile) ; fi
+if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else echo "   +++ Avi ova $(jq -c -r .avi_ova_path $localJsonFile) is empty" ; exit 255 ; fi
 #

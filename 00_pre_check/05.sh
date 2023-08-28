@@ -240,9 +240,7 @@ nsx_json=$(echo $nsx_json | jq '.nsx.config += {"segments_overlay": '$(echo $seg
 #
 echo $nsx_json | jq . | tee /root/nsx.json > /dev/null
 #
-if [[ $(jq -c -r .deployment $jsonFile) != "vsphere_nsx_alb_telco" ]] ; then
-  echo ""
-  echo "==> Downloading NSX ova file"
-  if [ -s "$(jq -c -r .nsx_ova_path $localJsonFile)" ]; then echo "   +++ NSX ova file $(jq -c -r .nsx_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .nsx_ova_path $localJsonFile) $(jq -c -r .nsx.ova_url $jsonFile) ; fi
-  if [ -s "$(jq -c -r .nsx_ova_path $localJsonFile)" ]; then echo "   +++ NSX ova file $(jq -c -r .nsx_ova_path $localJsonFile) is not empty" ; else echo "   +++ NSX ova $(jq -c -r .nsx_ova_path $localJsonFile) is empty" ; exit 255 ; fi
-fi
+echo ""
+echo "==> Downloading NSX ova file"
+if [ -s "$(jq -c -r .nsx_ova_path $localJsonFile)" ]; then echo "   +++ NSX ova file $(jq -c -r .nsx_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .nsx_ova_path $localJsonFile) $(jq -c -r .nsx.ova_url $jsonFile) ; fi
+if [ -s "$(jq -c -r .nsx_ova_path $localJsonFile)" ]; then echo "   +++ NSX ova file $(jq -c -r .nsx_ova_path $localJsonFile) is not empty" ; else echo "   +++ NSX ova $(jq -c -r .nsx_ova_path $localJsonFile) is empty" ; exit 255 ; fi
