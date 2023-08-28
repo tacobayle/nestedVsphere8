@@ -66,7 +66,7 @@ prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.man
 nsx_json=$(echo $nsx_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
 #
 echo "   +++ Adding prefix for NSX external network..."
-prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.nsx.external.netmask' $jsonFile) "   ++++++")
+prefix=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile | cut -d"/" -f2)
 nsx_json=$(echo $nsx_json | jq '.vsphere_underlay.networks.nsx.external += {"prefix": "'$(echo $prefix)'"}')
 #
 echo "   +++ Adding nsx networks..."
@@ -131,7 +131,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
 fi
 #
 echo "   +++ Adding transport_node_profiles details..."
-transport_node_profiles=$(jq -c -r '.transport_node_profiles' $localJsonFile | jq '.[0].switches[0] += {"name": "'$(jq -c -r .networks.nsx.nsx_overlay.name /root/networks.json)'"}')
+transport_node_profiles=$(jq -c -r '.transport_node_profiles' $localJsonFile | jq '.[0].switches[0] += {"name": "'$(jq -c -r .networks.nsx.nsx_overlay.vds_name /root/networks.json)'"}')
 nsx_json=$(echo $nsx_json | jq '.nsx.config += {"transport_node_profiles": '$(echo $transport_node_profiles | jq -c -r .)'}')
 #
 echo "   +++ Adding edge_node details..."

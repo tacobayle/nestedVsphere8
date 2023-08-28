@@ -84,7 +84,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   external_gw_json=$(echo $external_gw_json | jq '. += {"networks": '$(echo $networks_details)'}')
   #
   echo "   +++ Adding prefix for NSX external network..."
-  prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.nsx.external.netmask' $jsonFile) "   ++++++")
+  prefix=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile | cut -d"/" -f2)
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.external += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for NSX overlay network..."

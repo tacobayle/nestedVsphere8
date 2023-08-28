@@ -316,9 +316,9 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     #
     ip_if_edge_index=0
     peers="[]"
-    network_ref_bgp=$(jq -c -r '.avi.config.cloud.networks[] | select(.external == true).name' /root/variables.json)
-    network_ref_bgp_addr=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr /root/variables.json | cut -d"/" -f1)
-    network_ref_bgp_mask=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr /root/variables.json | cut -d"/" -f2)
+    network_ref_bgp=$(jq -c -r '.avi.config.cloud.networks[] | select(.external == true).name' $jsonFile)
+    network_ref_bgp_addr=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile | cut -d"/" -f1)
+    network_ref_bgp_mask=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile | cut -d"/" -f2)
     for tier0 in $(jq -c -r .nsx.config.tier0s[] /root/nsx.json)
     do
       if [[ $(echo $tier0 | jq 'has("bgp")') == "true" ]] ; then

@@ -471,7 +471,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_if_variable_is_valid_ip $ip "   "
   done
   test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.name $jsonFile "   "
-  test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.netmask $jsonFile "   "
+#  test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.netmask $jsonFile "   "
   test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.tier0_ips $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile)" "   "
   for ip in $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_ips[] $jsonFile)
