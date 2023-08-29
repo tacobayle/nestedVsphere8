@@ -1,7 +1,7 @@
 
 
 resource "vsphere_distributed_virtual_switch" "network_nsx_external" {
-  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
+  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
   name = var.networks.nsx.nsx_external.vds_name
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
   version = var.vds_version
@@ -17,14 +17,14 @@ resource "vsphere_distributed_virtual_switch" "network_nsx_external" {
 }
 
 resource "vsphere_distributed_port_group" "pg_nsx_external" {
-  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
+  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
   name                            = var.networks.nsx.nsx_external.port_group_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.network_nsx_external[0].id
   vlan_id = 0
 }
 
 resource "vsphere_distributed_virtual_switch" "network_nsx_overlay" {
-  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
+  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
   name = var.networks.nsx.nsx_overlay.vds_name
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
   version = var.vds_version
@@ -40,14 +40,14 @@ resource "vsphere_distributed_virtual_switch" "network_nsx_overlay" {
 }
 
 resource "vsphere_distributed_port_group" "pg_nsx_overlay" {
-  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
+  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
   name                            = var.networks.nsx.nsx_overlay.port_group_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.network_nsx_overlay[0].id
   vlan_id = 0
 }
 
 resource "vsphere_distributed_virtual_switch" "network_nsx_overlay_edge" {
-  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
+  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
   name = var.networks.nsx.nsx_overlay_edge.vds_name
   datacenter_id = data.vsphere_datacenter.dc_nested[0].id
   version = var.vds_version
@@ -63,7 +63,7 @@ resource "vsphere_distributed_virtual_switch" "network_nsx_overlay_edge" {
 }
 
 resource "vsphere_distributed_port_group" "pg_nsx_overlay_edge" {
-  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
+  count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
   name                            = var.networks.nsx.nsx_overlay_edge.port_group_name
   distributed_virtual_switch_uuid = vsphere_distributed_virtual_switch.network_nsx_overlay_edge[0].id
   vlan_id = 0
