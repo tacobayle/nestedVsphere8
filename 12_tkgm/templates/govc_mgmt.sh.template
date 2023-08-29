@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+export GOVC_DATACENTER=${dc}
+export GOVC_URL=${vsphere_url}
+export GOVC_INSECURE=true
+govc folder.create /${dc}/vm/'${mgmt_folder}'
+#
+govc pool.create /${dc}/host/${cluster}/Resources/${vcenter_resource_pool}

@@ -81,6 +81,7 @@ write_files:
       run_cmd 'sudo apt -y install nfs-kernel-server; ls /usr/share/nfs-kernel-server'
       mkdir -p /nfs/vCDspace
       mkdir -p /home/ubuntu/tkgm/workload_clusters
+      mkdir -p /home/ubuntu/tkgm/mgmt_cluster
       mkdir -p /home/ubuntu/tkgm/bin
       mkdir -p /home/ubuntu/tkc
       mkdir -p /home/ubuntu/tanzu

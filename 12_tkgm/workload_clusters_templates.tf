@@ -32,7 +32,7 @@ data "template_file" "workload" {
 
 data "template_file" "govc_bash_script_workloads" {
   count = length(var.tkg.clusters.workloads)
-  template = file("templates/govc.sh.template")
+  template = file("templates/govc_workers.sh.template")
   vars = {
     dc = var.vsphere_nested.datacenter
     cluster = var.vsphere_nested.cluster

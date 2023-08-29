@@ -4,9 +4,34 @@ resource "null_resource" "retrieve_vcenter_finger_print" {
   }
 }
 
+resource "null_resource" "install_docker" {
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y ca-certificates curl gnupg lsb-release",
+      "sudo mkdir -p /etc/apt/keyrings",
+      "sudo rm -f /etc/apt/keyrings/docker.gpg",
+      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg",
+      "sudo rm -f /etc/apt/sources.list.d/docker.list",
+      "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
+      "sudo apt-get update",
+      "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
+      "sudo groupadd docker",
+      "sudo usermod -aG docker $USER"
+    ]
+  }
+}
 
 resource "null_resource" "tkg_transfer" {
-
+  depends_on = [null_resource.install_docker]
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     type        = "ssh"
@@ -43,14 +68,21 @@ resource "null_resource" "tkg_install" {
 
   provisioner "remote-exec" {
     inline = [
-      "tar -xf /home/ubuntu/tkgm/bin/${basename(var.tkg.tanzu_bin_location)}",
-      "cd cli",
-      "sudo install core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu",
-      "tanzu init",
-      "tanzu plugin sync",
-      "cd ~",
-      "gunzip ${basename(var.tkg.k8s_bin_location)}",
-      "chmod ugo+x kubectl-linux-v1.23.8+vmware.2",
+      "tar_output=$(tar -xvf /home/ubuntu/tkgm/bin/${basename(var.tkg.tanzu_bin_location)})",
+      "tanzu_directory=$(echo $tar_output | cut -d"/" -f1)",
+      "install /home/ubuntu/tkgm/bin/$tanzu_directory/tanzu-cli-linux_amd64 /usr/local/bin/tanzu",
+      "tanzu plugin install --group vmware-tkg/default:${var.tkg.version}",
+      "echo \"    eulaStatus: accepted\" | tee -a home/ubuntu/.config/tanzu/config-ng.yaml",
+
+      "gunzip /home/ubuntu/tkgm/bin/${basename(var.tkg.k8s_bin_location)}",
+      "file_path=\"/home/ubuntu/tkgm/bin/${basename(var.tkg.k8s_bin_location)}\"",
+      "file_path_unziped=bar=$${file_path%.*}",
+      "chmod ugo+x $${file_unziped}",
+      "sudo install $${file_unziped} /usr/local/bin/kubectl",
+
+
+
+
       "sudo install kubectl-linux-v1.23.8+vmware.2 /usr/local/bin/kubectl",
       "cd ~/cli",
       "gunzip ytt-linux-amd64-v0.41.1+vmware.1.gz",
@@ -67,3 +99,4 @@ resource "null_resource" "tkg_install" {
     ]
   }
 }
+
