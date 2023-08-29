@@ -1,3 +1,19 @@
+resource "null_resource" "clear_ssh_keys" {
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "remote-exec" {
+    inline      = [
+      "ssh-keygen -f \"/home/ubuntu/.ssh/known_hosts\" -R \"${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}\" || true",
+    ]
+  }
+}
+
 
 resource "null_resource" "vcenter_install" {
   depends_on = [null_resource.esxi_customization_disk]
