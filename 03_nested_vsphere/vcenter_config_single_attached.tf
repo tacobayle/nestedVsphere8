@@ -146,7 +146,7 @@ resource "null_resource" "restart_esxi_vsphere_alb_wo_nsx" {
 
 resource "null_resource" "restart_esxi_nsx" {
   depends_on = [null_resource.shutdown_vcsa_vcsa]
-  count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
       export GOVC_USERNAME=${var.vsphere_underlay_username}
@@ -368,7 +368,7 @@ resource "null_resource" "reconfigure_esxi_vsphere_alb_wo_nsx" {
 
 resource "null_resource" "reconfigure_esxi_nsx" {
   depends_on = [null_resource.shutdown_vcsa_vcsa_final]
-  count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   provisioner "local-exec" {
     command = <<-EOT
       export GOVC_USERNAME=${var.vsphere_underlay_username}
