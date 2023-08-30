@@ -19,5 +19,4 @@ do
   members=$(echo $members | jq '. += ["/infra/domains/default/groups/'$(echo $member)'"]')
 done
 json_data="{\"members\": $(echo $members | jq -c -r .)}"
-echo $json_data
 nsx_api 6 10 "PATCH" $cookies_file $headers_file "$(echo $json_data)" $nsx_nested_ip "$(jq -c -r .nsx.config.exclusion_list_api_endpoint $jsonFile)"
