@@ -337,6 +337,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
       if [[ $(echo $tier0 | jq 'has("bgp")') == "true" ]] ; then
         remote_as=$(echo $tier0 | jq -c -r .bgp.local_as_num)
         label=$(echo $tier0 | jq -c -r .bgp.avi_peer_label)
+        contexts="[]"
         for context in $(jq -c -r '.avi.config.cloud.contexts[]' $jsonFile)
         do
           for interface in $(echo $tier0 | jq -c -r '.interfaces[]')
@@ -358,12 +359,14 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
             ((ip_if_edge_index++))
           done
           context=$(echo $context | jq '.peers += '$(echo $peers)'')
+          contexts=$(echo $contexts | jq '. += ['$(echo $context)']')
         done
       else
         ip_if_edge_index=$((ip_if_edge_index+$(echo $tier0 | jq -c -r '.interfaces | length')))
       fi
     done
-    avi_json=$(echo $avi_json | jq '.avi.config.cloud.contexts += ['$(echo $context | jq -c -r)']')
+    avi_json=$(echo $avi_json | jq '. | del (.avi.config.contexts)')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"contexts": '$(echo $contexts | jq -c -r)})
     #
     # avi.config.cloud.virtual_services
     #
