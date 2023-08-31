@@ -93,6 +93,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
       done
     fi
   done
+  echo "   +++ Adding avi.config.cloud.name..."
+  unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.avi.config.cloud += {"name": "'$(jq -c -r '.vcenter_default_cloud_name' /nestedVsphere8/07_nsx_alb/variables.json)'"}')
 fi
 #
 # NSX use cases
@@ -140,6 +142,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
       done
     fi
   done
+  echo "   +++ Adding avi.config.cloud.name..."
+  unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.avi.config.cloud += {"name": "'$(jq -c -r '.nsx_default_cloud_name' /nestedVsphere8/07_nsx_alb/variables.json)'"}')
 fi
 #
 #
@@ -193,9 +197,6 @@ echo "   +++ Adding unmanaged_k8s_workers_cni..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_cni": '$(echo $unmanaged_k8s_workers_cni)'}')
 echo "   +++ Adding unmanaged_k8s_workers_cni_version..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_workers_cni_version": '$(echo $unmanaged_k8s_workers_cni_version)'}')
-#
-echo "   +++ Adding avi.config.cloud.name..."
-unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.avi.config.cloud += {"name": "Default-Cloud"}')
 #
 #
 #

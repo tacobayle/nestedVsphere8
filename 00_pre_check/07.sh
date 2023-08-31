@@ -2,6 +2,7 @@
 #
 jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/07_nsx_alb/variables.json"
+source /nestedVsphere8/bash/ip.sh
 #
 IFS=$'\n'
 #
@@ -64,7 +65,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf..disabled
   #
   echo "   +++ Adding avi.config.cloud.name..."
-  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "dc1_nsx"}')
+  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "'$(jq -c -r '.nsx_default_cloud_name' $localJsonFile)'"}')
   #
   echo "   +++ Adding avi.config.avi_config_tag..."
   avi_config_tag=$(jq -c -r '.avi_config_tag_nsx_cloud' $localJsonFile)
@@ -242,11 +243,16 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   playbook_env_vcenter_cloud=$(jq -c -r '.playbook_env_vcenter_cloud' $localJsonFile)
   avi_json=$(echo $avi_json | jq '.avi.config += {"playbook": "'$(echo $playbook_env_vcenter_cloud)'"}')
   #
+  echo "   +++ Adding avi.config.cloud.name..."
+  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "'$(jq -c -r '.vcenter_default_cloud_name' $localJsonFile)'"}')
+  #
   # Avi Telco use case
   #
   if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
     # .avi.config.cloud.networks_data[]
     networks_data="[]"
+    ipam_networks="[]"
+    avi_pools="[]"
     for network_data in $(jq -c -r .avi.config.cloud.networks[] $jsonFile)
     do
       network_data=$(echo $network_data | jq '. += {"dhcp_enabled": "'$(jq -r .networks_data_default.dhcp_enabled $localJsonFile)'"}')
@@ -254,16 +260,23 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
       network_data=$(echo $network_data | jq '. += {"type": "'$(jq -r .networks_data_default.type $localJsonFile)'"}')
       if [[ $(echo $network_data | jq -c -r .external) == false ]] ; then
         cidr=$(jq -r --arg network_name "$(echo $network_data | jq -c -r .name)" '.nsx.config.segments_overlay[] | select(.display_name == $network_name).cidr' $jsonFile)
+        ipam_networks=$(echo $ipam_networks | jq '. += ["'$(echo $network_data | jq -r '.name')'"]')
+        if [[ $(echo $network_data | jq -c -r .management) == true ]] ; then
+          avi_json=$(echo $avi_json | jq '.vsphere_underlay.networks += {"alb": {"se": { "external_gw_ip": "'$(nextip $(echo $cidr | cut -d"/" -f1 ))'"}}}')
+        fi
       fi
       if [[ $(echo $network_data | jq -c -r .external) == true ]] ; then
         cidr=$(jq -r -c .vsphere_underlay.networks.nsx.external.cidr $jsonFile)
         network_data=$(echo $network_data | jq '. | del (.name)')
         network_data=$(echo $network_data | jq '. += {"name": "'$(jq -r .networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"}')
+        ipam_networks=$(echo $ipam_networks | jq '. += ["'$(jq -r .networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"]')
       fi
       if [ -z "$cidr" ] ; then echo "   +++ variable cidr is empty" ; exit 255 ; fi
       network_data=$(echo $network_data | jq '. += {"cidr": "'${cidr}'"}')
       networks_data=$(echo $networks_data | jq '. += ['$(echo $network_data)']')
     done
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"ipam": {"networks": '$(echo $ipam_networks)'}}')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks)')
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks": '$(echo $networks_data)'}')
     #
@@ -351,6 +364,21 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
       fi
     done
     avi_json=$(echo $avi_json | jq '.avi.config.cloud.contexts += ['$(echo $context | jq -c -r)']')
+    #
+    # avi.config.cloud.virtual_services
+    #
+    avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.virtual_services.http)')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http" : []}')
+    avi_dns_vs=[]
+    for vs in $(jq -c -r .avi.config.cloud.virtual_services.dns[] $jsonFile)
+    do
+      cidr=$(echo $avi_json | jq -c -r --arg network_name "$(echo $vs | jq -r .network_ref)" '.avi.config.cloud.networks[] | select(.name == $network_name).cidr')
+      type=$(echo $avi_json | jq -c -r --arg network_name "$(echo $vs | jq -r .network_ref)" '.avi.config.cloud.networks[] | select(.name == $network_name).type')
+      new_vs_dns=$(echo $vs | jq '. += {"cidr": "'$(echo $cidr)'", "type": "'$(echo $type)'", "services": [{"port": 53}]}')
+      avi_dns_vs=$(echo $avi_dns_vs | jq '. += ['$(echo $new_vs_dns)']')
+    done
+    echo "   +++ Updating .avi.config.cloud.virtual_services..."
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"dns": '$(echo $avi_dns_vs)'}')
   fi
   #
   # Avi wo NSX use cases
@@ -424,9 +452,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     echo "   +++ Adding avi.config.cloud.networks..."
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks": '$(echo $networks)'}')
     #
-    echo "   +++ Adding avi.config.cloud.name..."
-    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "Default-Cloud"}')
-    #
     if [[ $(echo $avi_pools | jq '. | length') -gt 0 ]] ; then
       echo "   ++++++ Adding Avi pools..."
       avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
@@ -438,6 +463,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     avi_virtual_services_dns=$(echo $avi_virtual_services_dns | jq '. += ['$(echo $avi_virtual_service_dns)']')
     echo "   ++++++ Adding Avi DNS virtual services..."
     avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"dns": '$(echo $avi_virtual_services_dns)'}')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"contexts": []}')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"additional_subnets": []}')
   fi
 fi
 #

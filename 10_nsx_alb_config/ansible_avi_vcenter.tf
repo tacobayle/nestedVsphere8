@@ -19,6 +19,8 @@ data "template_file" "values" {
     domain = jsonencode(var.external_gw.bind.domain)
     ipam = jsonencode(var.avi.config.cloud.ipam)
     cloud_name = var.avi.config.cloud.name
+    additional_subnets = jsonencode(var.avi.config.cloud.additional_subnets)
+    contexts = jsonencode(var.avi.config.cloud.contexts)
     dc = var.vsphere_nested.datacenter
     content_library_id = vsphere_content_library.nested_library_se.id
     content_library_name = vsphere_content_library.nested_library_se.name
@@ -29,7 +31,6 @@ data "template_file" "values" {
     virtual_services = jsonencode(var.avi.config.cloud.virtual_services)
   }
 }
-
 
 
 resource "null_resource" "alb_ansible_config_values" {
