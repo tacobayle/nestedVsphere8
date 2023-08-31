@@ -35,6 +35,10 @@ vcenter:
     dhcp_enabled: ${dhcp_enabled}
     networks: |
       ${networks}
+    contexts: |
+      ${contexts}
+    additional_subnets: |
+      ${additional_subnets}
     service_engine_groups: |
       ${service_engine_groups}
     pools: |
