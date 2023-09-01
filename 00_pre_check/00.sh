@@ -156,7 +156,7 @@ test_alb_variables_if_vsphere_nsx_alb_telco () {
   for item in $(jq -c -r .avi.config.cloud.additional_subnets[] "$1")
   do
     test_if_variable_is_defined $(echo $item | jq -c -r .name_ref) "   " "testing if each .avi.config.cloud.additional_subnets have a name_ref defined"
-    if [[ $(jq -c -r --arg network_name "$(echo $item | jq -c .name_ref)" '.avi.config.cloud.networks[] | select(name == $network_name).name' "$1") == "" ]] ; then
+    if [[ $(jq -c -r --arg network_name "$(echo $item | jq -c .name_ref)" '.avi.config.cloud.networks[] | select(.name == $network_name).name' "$1") == "" ]] ; then
       echo "      ++++++ ERROR $(echo $item | jq -c -r .name_ref) was not found in .avi.config.cloud.networks[].name"
       exit 255
     fi
