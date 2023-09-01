@@ -281,6 +281,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks": '$(echo $networks_data)'}')
     #
     # rewriting additional_subnets to feed proper Avi formatting
+    #
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.additional_subnets)')
     additional_subnets="[]"
     for network in $(jq -c -r '.avi.config.cloud.additional_subnets[]' $jsonFile)
@@ -321,7 +322,11 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
                                                                           }
                                                                         ]')
       done
-      additional_subnets=$(echo $additional_subnets | jq -c -r '. +=  [ {"name_ref": "'$(echo $network | jq -c -r .name_ref )'", "configured_subnets": '$(echo $configured_subnets)'}]')
+      if [[ $(jq -c -r --arg arg_name "$(echo $network | jq -c -r .name_ref)" '.avi.config.cloud.networks[] | select(.name == $arg_name).external' $jsonFile) == true ]] ; then
+        additional_subnets=$(echo $additional_subnets | jq -c -r '. +=  [ {"name_ref": "'$(jq -r .networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'", "configured_subnets": '$(echo $configured_subnets)'}]')
+      else
+        additional_subnets=$(echo $additional_subnets | jq -c -r '. +=  [ {"name_ref": "'$(echo $network | jq -c -r .name_ref )'", "configured_subnets": '$(echo $configured_subnets)'}]')
+      fi
     done
     avi_json=$(echo $avi_json | jq '.avi.config.cloud.additional_subnets += '$(echo $additional_subnets | jq -c -r)'')
     #

@@ -103,8 +103,10 @@ test_nsx_k8s_variables () {
 test_alb_variables_if_vsphere_nsx_alb_telco () {
   echo ""
   echo "==> Checking ALB variables for Telco Use case (NSX with vCenter cloud with BGP)"
-  test_if_json_variable_is_defined .avi.config.cloud.networks "$1" "   "
+  #
   # .avi.config.cloud.networks[]
+  #
+  test_if_json_variable_is_defined .avi.config.cloud.networks "$1" "   "
   for item in $(jq -c -r .avi.config.cloud.networks[] "$1")
   do
     test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.networks have a name defined"
@@ -146,18 +148,28 @@ test_alb_variables_if_vsphere_nsx_alb_telco () {
         exit 255
       fi
     done
-    #
-    # Checking Avi IPAM networks list
-    #
-#    for network in $(jq -c -r '.avi.config.ipam.networks[]' "$1")
-#    do
-#      if [[ $(jq -c -r --arg network "$network" '.avi.config.cloud.networks[] | select(.name == $network).name' "$1") == "" && $(jq -c -r --arg network "$network" '.avi.config.cloud.networks[] | select(.name == $network).external' "$1") == "false" ]] ; then
-#        echo "      ++++++ ERROR ${network} was not found in .avi.config.cloud.networks[].name"
-#        exit 255
-#      fi
-#    done
-#    test_if_variable_is_defined $(echo $item | jq -c .bgp) "   " "testing if each .avi.config.cloud.networks[] have a bgp defined"
-#    if [[ $(jq '.avi.config.cloud.networks | group_by(.bgp) | .[1] | length' "$1") != 1 ]] ; then echo "      ++++++ ERROR only one item in .avi.config.cloud.networks can have bgp equals to true" ; exit 255 ; fi
+  done
+  #
+  # .avi.config.cloud.additional_subnets[]
+  #
+  test_if_json_variable_is_defined .avi.config.cloud.additional_subnets "$1" "   "
+  for item in $(jq -c -r .avi.config.cloud.additional_subnets[] "$1")
+  do
+    test_if_variable_is_defined $(echo $item | jq -c -r .name_ref) "   " "testing if each .avi.config.cloud.additional_subnets have a name_ref defined"
+    if [[ $(jq -c -r --arg network_name "$(echo $item | jq -c .name_ref)" '.avi.config.cloud.networks[] | select(name == $network_name).name' "$1") == "" ]] ; then
+      echo "      ++++++ ERROR $(echo $item | jq -c -r .name_ref) was not found in .avi.config.cloud.networks[].name"
+      exit 255
+    fi
+    for subnet in $(echo $item | jq -c -r .subnets[])
+    do
+      test_if_variable_is_defined $(echo $subnet | jq -c -r .cidr) "   " "testing if each .avi.config.cloud.additional_subnets[].subnets have a cidr defined"
+      test_if_variable_is_valid_cidr "$(echo $subnet | jq -c -r .cidr)" "   "
+      test_if_variable_is_defined $(echo $subnet | jq -c -r .range) "   " "testing if each .avi.config.cloud.additional_subnets[].subnets have a range defined"
+      test_if_variable_is_valid_ip "$(echo $subnet | jq -c -r .range | cut -d"-" -f1)" "   "
+      test_if_variable_is_valid_ip "$(echo $subnet | jq -c -r .range | cut -d"-" -f2)" "   "
+      test_if_variable_is_defined $(echo $subnet | jq -c -r .type) "   " "testing if each .avi.config.cloud.additional_subnets[].subnets have a type defined"
+      test_if_variable_is_defined $(echo $subnet | jq -c -r .range_type) "   " "testing if each .avi.config.cloud.additional_subnets[].subnets have a range_type defined"
+    done
   done
   #
   # .avi.config.cloud.contexts
