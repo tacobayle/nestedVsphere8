@@ -1,6 +1,7 @@
 variable "vsphere_underlay" {}
 variable "vsphere_nested_password" {}
 variable "vsphere_nested" {}
+variable "external_gw" {}
 variable "tanzu" {}
 variable "docker_registry_username" {}
 variable "docker_registry_password" {}

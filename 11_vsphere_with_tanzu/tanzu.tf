@@ -11,14 +11,14 @@ data "template_file" "tkc_clusters" {
   vars = {
     name = var.tanzu.tkc_clusters[count.index].name
     namespace_ref = var.tanzu.tkc_clusters[count.index].namespace_ref
-    k8s_version = var.tanzu.tkc_clusters[count.index].k8s_version
-    control_plane_count = var.tanzu.tkc_clusters[count.index].control_plane_count
-    control_plane_class = var.tanzu.tkc_clusters[count.index].control_plane_class
-    workers_count = var.tanzu.tkc_clusters[count.index].workers_count
-    workers_class = var.tanzu.tkc_clusters[count.index].workers_class
-    cni = var.tanzu.tkc_clusters[count.index].cni
     services_cidrs = jsonencode(var.tanzu.tkc_clusters[count.index].services_cidrs)
     pods_cidrs = jsonencode(var.tanzu.tkc_clusters[count.index].pods_cidrs)
+    domain = var.external_gw.bind.domain
+    k8s_version = var.tanzu.tkc_clusters[count.index].k8s_version
+    cluster_count = count.index + 1
+    control_plane_count = var.tanzu.tkc_clusters[count.index].control_plane_count
+    vm_class = var.tanzu.tkc_clusters[count.index].vm_class
+    workers_count = var.tanzu.tkc_clusters[count.index].workers_count
   }
 }
 
@@ -30,6 +30,22 @@ data "template_file" "tkc_clusters_script" {
     docker_registry_username = var.docker_registry_username
     docker_registry_password = var.docker_registry_password
     docker_registry_email = var.docker_registry_email
+  }
+}
+
+data "template_file" "tkc_clusters_destroy_script" {
+  template = file("templates/tkc_destroy.sh.template")
+  vars = {
+    kubectl_password = var.vsphere_nested_password
+    sso_domain_name = var.vsphere_nested.sso.domain_name
+  }
+}
+
+data "template_file" "tanzu_auth_script" {
+  template = file("templates/tanzu_auth.sh.template")
+  vars = {
+    kubectl_password = var.vsphere_nested_password
+    sso_domain_name = var.vsphere_nested.sso.domain_name
   }
 }
 
@@ -99,8 +115,13 @@ resource "null_resource" "prep_tkc" {
   }
 
   provisioner "file" {
-    source = "templates/tkc_destroy.sh"
+    content = data.template_file.tkc_clusters_destroy_script.rendered
     destination = "/home/ubuntu/tkc/tkc_destroy.sh"
+  }
+
+  provisioner "file" {
+    content = data.template_file.tanzu_auth_script.rendered
+    destination = "/home/ubuntu/tkc/tanzu_auth.sh"
   }
 
 }

@@ -1,28 +1,29 @@
-apiVersion: run.tanzu.vmware.com/v1alpha1
-kind: TanzuKubernetesCluster
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
 metadata:
   name: ${name}
   namespace: ${namespace_ref}
 spec:
-  distribution:
-    version: ${k8s_version}
+  clusterNetwork:
+    services:
+      cidrBlocks: ${services_cidrs}
+    pods:
+      cidrBlocks: ${pods_cidrs}
+    serviceDomain: ${domain}
   topology:
+    class: tanzukubernetescluster
+    version: ${version}---vmware.1-tkg.4
     controlPlane:
-      count: ${control_plane_count}
-      class: ${control_plane_class}
-      storageClass: vsan-default-storage-policy
+      replicas: ${control_plane_count}
     workers:
-      count: ${workers_count}
-      class: ${workers_class}
-      storageClass: vsan-default-storage-policy
-  settings:
-    network:
-      cni:
-        name: ${cni}
-      services:
-        cidrBlocks: ${services_cidrs}
-      pods:
-        cidrBlocks: ${pods_cidrs}
-    storage:
-      classes: ["vsan-default-storage-policy"]
-      defaultClass: vsan-default-storage-policy
+      machineDeployments:
+        - class: node-pool
+          name: node-pool-${cluster_count}
+          replicas: ${workers_count}
+    variables:
+      - name: vmClass
+        value: ${vm_class}
+      - name: storageClass
+        value: vsan-default-storage-policy
+      - name: defaultStorageClass
+        value: vsan-default-storage-policy
