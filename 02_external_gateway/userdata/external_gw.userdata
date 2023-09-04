@@ -94,8 +94,10 @@ write_files:
       mkdir -p /home/ubuntu/tkc
       sudo chown ubuntu /home/ubuntu/tkc
       sudo chgrp ubuntu /home/ubuntu/tkc
+      mkdir -p /home/ubuntu/tanzu
       sudo chown ubuntu /home/ubuntu/tanzu
       sudo chgrp ubuntu /home/ubuntu/tanzu
+      mkdir -p /home/ubuntu/tanzu-yaml
       sudo chown ubuntu /home/ubuntu/tanzu-yaml
       sudo chgrp ubuntu /home/ubuntu/tanzu-yaml
       echo "${nfs_path} ${vcd_ip}(rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports
