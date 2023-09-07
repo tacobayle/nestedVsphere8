@@ -128,25 +128,32 @@ fi
 # outputs
 #
 rm -f /root/output.txt
+echo ""
+echo ""
 echo "+++++++++++++++++ O U T P U T S +++++++++++++++++++++" | tee /root/output.txt
+echo ""
 echo "+++++++ external-gateway" | tee -a /root/output.txt
 echo "ssh your external gateway from the pod:" | tee -a /root/output.txt
 echo "  > ssh -o StrictHostKeyChecking=no ubuntu@external-gw" | tee -a /root/output.txt
 echo "ssh your external gateway from an external node:" | tee -a /root/output.txt
 echo "  > ssh -o StrictHostKeyChecking=no ubuntu@$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)" | tee -a /root/output.txt
+echo ""
 echo "++++++++++++++++ vSphere" | tee -a /root/output.txt
 echo "Configure your /etc/hosts with the following entry:" | tee -a /root/output.txt
 echo "  > $(jq -r .vsphere_underlay.networks.vsphere.management.vcsa_nested_ip $jsonFile) $(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a /root/output.txt
 echo "vSphere server url: https://$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a /root/output.txt
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+  echo ""
   echo "++++++++++++++++++++ NSX" | tee -a /root/output.txt
   echo "  > NSX manager url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" | tee -a /root/output.txt
 fi
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+  echo ""
   echo "++++++++++++++++ NSX-ALB" | tee -a /root/output.txt
   echo "  > NSX ALB controller url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)" | tee -a /root/output.txt
 fi
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+  echo ""
   echo "+++++ vSphere with Tanzu" | tee -a /root/output.txt
   echo "Authenticate to the supervisor cluster from the external-gateway:" | tee -a /root/output.txt
   echo "  > /bin/bash /home/ubuntu/tanzu/auth_supervisor.sh" | tee -a /root/output.txt
