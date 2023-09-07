@@ -42,8 +42,19 @@ data "template_file" "tkc_clusters_destroy_script" {
 }
 
 data "template_file" "tanzu_auth_script" {
-  template = file("templates/tanzu_auth.sh.template")
+  template = file("templates/tanzu_auth_supervisor.sh.template")
   vars = {
+    kubectl_password = var.vsphere_nested_password
+    sso_domain_name = var.vsphere_nested.sso.domain_name
+  }
+}
+
+data "template_file" "tanzu_auth_script_tkc" {
+  template = file("templates/tanzu_auth_tkc.sh.template")
+  count = length(var.tanzu.tkc_clusters)
+  vars = {
+    name = var.tanzu.tkc_clusters[count.index].name
+    namespace_ref = var.tanzu.tkc_clusters[count.index].namespace_ref
     kubectl_password = var.vsphere_nested_password
     sso_domain_name = var.vsphere_nested.sso.domain_name
   }
@@ -121,7 +132,7 @@ resource "null_resource" "prep_tkc" {
 
   provisioner "file" {
     content = data.template_file.tanzu_auth_script.rendered
-    destination = "/home/ubuntu/tkc/tanzu_auth.sh"
+    destination = "/home/ubuntu/tanzu/auth_supervisor.sh"
   }
 
 }
@@ -145,6 +156,11 @@ resource "null_resource" "transfer_tkc_yaml_files" {
   provisioner "file" {
     content = data.template_file.tkc_clusters[count.index].rendered
     destination = "/home/ubuntu/tkc/tkc-${count.index + 1}.yml"
+  }
+
+  provisioner "file" {
+    content = data.template_file.tanzu_auth_script_tkc[count.index].rendered
+    destination = "/home/ubuntu/tkc/auth-tkc-${count.index + 1}.sh"
   }
 
 }
