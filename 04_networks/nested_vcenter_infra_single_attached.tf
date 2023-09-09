@@ -11,7 +11,7 @@ resource "vsphere_distributed_virtual_switch" "sa_network_nsx_external" {
     for_each = data.vsphere_host.host_nested
     content {
       host_system_id = host.value.id
-      devices        = ["vmnic3"]
+      devices        = ["vmnic4"]
     }
   }
 }
@@ -34,7 +34,7 @@ resource "vsphere_distributed_virtual_switch" "sa_network_nsx_overlay" {
     for_each = data.vsphere_host.host_nested
     content {
       host_system_id = host.value.id
-      devices        = ["vmnic4"]
+      devices        = ["vmnic5"]
     }
   }
 }
@@ -57,7 +57,7 @@ resource "vsphere_distributed_virtual_switch" "sa_network_nsx_overlay_edge" {
     for_each = data.vsphere_host.host_nested
     content {
       host_system_id = host.value.id
-      devices        = ["vmnic5"]
+      devices        = ["vmnic6"]
     }
   }
 }
