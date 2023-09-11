@@ -90,7 +90,7 @@ ip_pool_1=$(jq -c -r '.ip_pools[1]' $localJsonFile)
 ip_pool_1=$(echo $ip_pool_1 | jq '. += {"gateway": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.external_gw_ip $jsonFile)'"}')
 ip_pool_1=$(echo $ip_pool_1 | jq '. += {"start": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)'"}')
 ip_pool_1=$(echo $ip_pool_1 | jq '. += {"end": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)'"}')
-ip_pool_1=$(echo $ip_pool_1 | jq '. += {"cidr": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr $jsonFile)'"}')
+ip_pool_1=$(echo $ip_pool_1 | jq '. += {"cidr": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.cidr $jsonFile)'"}')
 ip_pools=$(echo $ip_pools | jq '. += ['$(echo $ip_pool_1)']')
 nsx_json=$(echo $nsx_json | jq '.nsx.config.ip_pools += '$(echo $ip_pools | jq -c -r .)'')
 #

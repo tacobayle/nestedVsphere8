@@ -93,7 +93,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for NSX overlay Edge network..."
-  prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
+  prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay_edge.cidr' $jsonFile | cut -d"/" -f2)
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay_edge += {"prefix": "'$(echo $prefix)'"}')
   #
   if grep -q "nsx" /nestedVsphere8/02_external_gateway/variables.tf ; then
