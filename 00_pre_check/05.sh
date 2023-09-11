@@ -2,6 +2,7 @@
 #
 source /nestedVsphere8/bash/ip.sh
 source /nestedVsphere8/bash/test_if_variables.sh
+source /nestedVsphere8/bash/download_file.sh
 #
 jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/05_nsx_manager/variables.json"
@@ -80,13 +81,13 @@ nsx_json=$(echo $nsx_json | jq '. += {"vsphere_networks": '$(echo $networks)'}')
 echo "   +++ Adding ip_pools details..."
 ip_pools=[]
 ip_pool_0=$(jq -c -r '.ip_pools[0]' $localJsonFile)
-ip_pool_0=$(echo $ip_pool_0 | jq '. += {"gateway": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.gateway $jsonFile)'"}')
+ip_pool_0=$(echo $ip_pool_0 | jq '. += {"gateway": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.external_gw_ip $jsonFile)'"}')
 ip_pool_0=$(echo $ip_pool_0 | jq '. += {"start": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.start $jsonFile)'"}')
 ip_pool_0=$(echo $ip_pool_0 | jq '. += {"end": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.end $jsonFile)'"}')
-ip_pool_0=$(echo $ip_pool_0 | jq '. += {"cidr": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.nsx_pool.cidr $jsonFile)'"}')
+ip_pool_0=$(echo $ip_pool_0 | jq '. += {"cidr": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay.cidr $jsonFile)'"}')
 ip_pools=$(echo $ip_pools | jq '. += ['$(echo $ip_pool_0)']')
 ip_pool_1=$(jq -c -r '.ip_pools[1]' $localJsonFile)
-ip_pool_1=$(echo $ip_pool_1 | jq '. += {"gateway": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.gateway $jsonFile)'"}')
+ip_pool_1=$(echo $ip_pool_1 | jq '. += {"gateway": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.external_gw_ip $jsonFile)'"}')
 ip_pool_1=$(echo $ip_pool_1 | jq '. += {"start": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)'"}')
 ip_pool_1=$(echo $ip_pool_1 | jq '. += {"end": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)'"}')
 ip_pool_1=$(echo $ip_pool_1 | jq '. += {"cidr": "'$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.cidr $jsonFile)'"}')
@@ -240,7 +241,4 @@ nsx_json=$(echo $nsx_json | jq '.nsx.config += {"segments_overlay": '$(echo $seg
 #
 echo $nsx_json | jq . | tee /root/nsx.json > /dev/null
 #
-echo ""
-echo "==> Downloading NSX ova file"
-if [ -s "$(jq -c -r .nsx_ova_path $localJsonFile)" ]; then echo "   +++ NSX ova file $(jq -c -r .nsx_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .nsx_ova_path $localJsonFile) $(jq -c -r .nsx.ova_url $jsonFile) ; fi
-if [ -s "$(jq -c -r .nsx_ova_path $localJsonFile)" ]; then echo "   +++ NSX ova file $(jq -c -r .nsx_ova_path $localJsonFile) is not empty" ; else echo "   +++ NSX ova $(jq -c -r .nsx_ova_path $localJsonFile) is empty" ; exit 255 ; fi
+download_file_from_url_to_location "$(jq -c -r .nsx.ova_url $jsonFile)" "$(jq -c -r .nsx_ova_path $localJsonFile)" "NSX ova"

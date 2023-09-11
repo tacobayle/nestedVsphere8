@@ -2,6 +2,7 @@
 #
 source /nestedVsphere8/bash/vcenter_api.sh
 source /nestedVsphere8/bash/ip.sh
+source /nestedVsphere8/bash/download_file.sh
 #
 jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/02_external_gateway/variables.json"
@@ -88,7 +89,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.external += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for NSX overlay network..."
-  prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay.nsx_pool.cidr' $jsonFile | cut -d"/" -f2)
+  prefix=$(jq -c -r '.vsphere_underlay.networks.nsx.overlay.cidr' $jsonFile | cut -d"/" -f2)
   external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.nsx.overlay += {"prefix": "'$(echo $prefix)'"}')
   #
   echo "   +++ Adding prefix for NSX overlay Edge network..."
@@ -291,9 +292,5 @@ if [[ $(jq -c -r .deployment $jsonFile) != "vsphere_nsx_alb_telco" ]] ; then
 fi
 #
 #
-#
-echo ""
-echo "==> Downloading Ubuntu OVA"
-if [ -s "$(jq -c -r .ubuntu_ova_path $localJsonFile)" ]; then echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .ubuntu_ova_path $localJsonFile) $(jq -c -r .ubuntu_ova_url $localJsonFile) ; fi
-if [ -s "$(jq -c -r .ubuntu_ova_path $localJsonFile)" ]; then echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is not empty" ; else echo "   +++ ubuntu file $(jq -c -r .ubuntu_ova_path $localJsonFile) is empty" ; exit 255 ; fi
+download_file_from_url_to_location "$(jq -c -r .ubuntu_ova_url $localJsonFile)" "$(jq -c -r .ubuntu_ova_path $localJsonFile)" "Ubuntu OVA"
 #

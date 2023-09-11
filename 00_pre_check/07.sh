@@ -3,6 +3,7 @@
 jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/07_nsx_alb/variables.json"
 source /nestedVsphere8/bash/ip.sh
+source /nestedVsphere8/bash/download_file.sh
 #
 IFS=$'\n'
 #
@@ -490,8 +491,4 @@ avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"service_engine_groups": '
 #
 echo $avi_json | jq . | tee /root/avi.json > /dev/null
 #
-echo ""
-echo "==> Downloading Avi ova file"
-if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .avi_ova_path $localJsonFile) $(jq -c -r .avi.ova_url $jsonFile) ; fi
-if [ -s "$(jq -c -r .avi_ova_path $localJsonFile)" ]; then echo "   +++ Avi ova file $(jq -c -r .avi_ova_path $localJsonFile) is not empty" ; else echo "   +++ Avi ova $(jq -c -r .avi_ova_path $localJsonFile) is empty" ; exit 255 ; fi
-#
+download_file_from_url_to_location "$(jq -c -r .avi.ova_url $jsonFile)" "$(jq -c -r .avi_ova_path $localJsonFile)" "Avi ova"

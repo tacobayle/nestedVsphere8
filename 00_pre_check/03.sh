@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 source /nestedVsphere8/bash/ip.sh
+source /nestedVsphere8/bash/download_file.sh
 #
 jsonFile="/root/variables.json"
 localJsonFile="/nestedVsphere8/03_nested_vsphere/variables.json"
@@ -144,13 +145,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
 fi
 echo $nested_vsphere_json | jq . | tee /root/nested_vsphere.json > /dev/null
 #
-echo ""
-echo "==> Downloading ESXi ISO file"
-if [ -s "$(jq -c -r .iso_source_location $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .iso_source_location $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .iso_source_location $localJsonFile) $(jq -c -r .vsphere_nested.esxi.iso_url $jsonFile) ; fi
-if [ -s "$(jq -c -r .iso_source_location $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .iso_source_location $localJsonFile) is not empty" ; else echo "   +++ ESXi iso $(jq -c -r .iso_source_location $localJsonFile) is empty" ; exit 255 ; fi
+download_file_from_url_to_location "$(jq -c -r .vsphere_nested.esxi.iso_url $jsonFile)" "$(jq -c -r .iso_source_location $localJsonFile)" "ESXi ISO"
 #
-echo ""
-echo "==> Downloading vSphere ISO file"
-if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else curl -s -o $(jq -c -r .vcenter_iso_path $localJsonFile) $(jq -c -r .vsphere_nested.iso_url $jsonFile) ; fi
-if [ -s "$(jq -c -r .vcenter_iso_path $localJsonFile)" ]; then echo "   +++ ESXi iso file $(jq -c -r .vcenter_iso_path $localJsonFile) is not empty" ; else echo "   +++ vSphere ova $(jq -c -r .vcenter_iso_path $localJsonFile) is empty" ; exit 255 ; fi
-#
+download_file_from_url_to_location "$(jq -c -r .vsphere_nested.iso_url $jsonFile)" "$(jq -c -r .vcenter_iso_path $localJsonFile)" "vSphere ISO"
