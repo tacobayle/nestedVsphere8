@@ -47,6 +47,11 @@ https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secret
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx-alb.yml
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx-alb.yml
 
+### vsphere_nsx_alb_telco (under-dev)
+
+### vsphere_nsx_tanzu_alb (under-dev)
+
+### vsphere_nsx_alb_vcd (under-dev)
 
 ## Shared resources regardless of the deployments/scenarios
 

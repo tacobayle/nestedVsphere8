@@ -11,12 +11,14 @@ data "template_file" "values" {
     avi_username = "admin"
     vsphere_username = "administrator@${var.vsphere_nested.sso.domain_name}"
     vsphere_password = var.vsphere_nested_password
+    tenants = jsonencode(var.avi.config.tenants)
+    users = jsonencode(var.avi.config.users)
     vsphere_server = var.vsphere_underlay.networks.vsphere.management.vcsa_nested_ip
     external_gw_ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     sslkeyandcertificate = jsonencode(var.avi.config.sslkeyandcertificate)
     sslkeyandcertificate_ref = var.avi.config.portal_configuration.sslkeyandcertificate_ref
     external_gw_se_ip = var.vsphere_underlay.networks.alb.se.external_gw_ip
-    domain = jsonencode(var.external_gw.bind.domain)
+    domain = jsonencode(var.avi.config.domain)
     ipam = jsonencode(var.avi.config.cloud.ipam)
     cloud_name = var.avi.config.cloud.name
     additional_subnets = jsonencode(var.avi.config.cloud.additional_subnets)

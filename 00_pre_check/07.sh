@@ -44,6 +44,16 @@ echo "   +++ Adding avi_port_group..."
 avi_port_group=$(jq -c -r '.networks.vsphere.management.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
 avi_json=$(echo $avi_json | jq '. += {"avi_port_group": "'$(echo $avi_port_group)'"}')
 #
+if [[ $(jq -c -r .avi.config.tenants $jsonFile) == "null" ]]; then
+  echo "   +++ Adding avi.config.tenants... as an empty list"
+  avi_json=$(echo $avi_json | jq '.avi.config += {"tenants": []}')
+fi
+#
+if [[ $(jq -c -r .avi.config.users $jsonFile) == "null" ]]; then
+  echo "   +++ Adding avi.config.users... as an empty list"
+  avi_json=$(echo $avi_json | jq '.avi.config += {"users": []}')
+fi
+#
 # ALB with NSX-T cloud use cases
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then

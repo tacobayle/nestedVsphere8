@@ -1,5 +1,4 @@
 data "template_file" "workload" {
-  depends_on = [null_resource.retrieve_vcenter_finger_print]
   count = length(var.tkg.clusters.workloads)
   template = file("templates/workload_clusters.yml.template")
   vars = {
@@ -25,20 +24,8 @@ data "template_file" "workload" {
     control_plane_memory = var.tkg.clusters.workloads[count.index].control_plane_memory
     control_plane_cpu = var.tkg.clusters.workloads[count.index].control_plane_cpu
     control_plane_count = var.tkg.clusters.workloads[count.index].control_plane_count
-    ssh_public_key = file(var.tkg.clusters.workloads[count.index].public_key_path)
+    ssh_public_key = file(var.tkg.clusters.public_key_path)
     vsphere_tls_thumbprint = file("/root/vcenter_finger_print.txt")
-  }
-}
-
-data "template_file" "govc_bash_script_workloads" {
-  count = length(var.tkg.clusters.workloads)
-  template = file("templates/govc_workers.sh.template")
-  vars = {
-    dc = var.vsphere_nested.datacenter
-    cluster = var.vsphere_nested.cluster
-    vsphere_url = "administrator@${var.vsphere_nested.sso.domain_name}:${var.vsphere_nested_password}@${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
-    vcenter_folder = var.tkg.clusters.workloads[count.index].name
-    vcenter_resource_pool = var.tkg.clusters.workloads[count.index].name
   }
 }
 
@@ -58,5 +45,25 @@ resource "null_resource" "transfer_templates" {
   provisioner "file" {
     content = data.template_file.workload[count.index].rendered
     destination = "/home/ubuntu/tkgm/workload_clusters/workload${count.index + 1 }.yml"
+  }
+}
+
+
+resource "null_resource" "create_workload_clusters" {
+  depends_on = [null_resource.govc_workloads, null_resource.create_mgmt_cluster]
+  count = length(var.tkg.clusters.workloads)
+
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "tanzu cluster create ${var.tkg.clusters.workloads[count.index].name} -f /home/ubuntu/tkgm/workload_clusters/workload${count.index + 1 }.yml -v 6"
+    ]
   }
 }

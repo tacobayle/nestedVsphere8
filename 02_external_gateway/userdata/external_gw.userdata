@@ -81,16 +81,10 @@ write_files:
       run_cmd 'sudo apt -y install nfs-kernel-server; ls /usr/share/nfs-kernel-server'
       mkdir -p /nfs/vCDspace
       mkdir -p /home/ubuntu/tkgm/workload_clusters
-      sudo chown ubuntu /home/ubuntu/tkgm
-      sudo chgrp ubuntu /home/ubuntu/tkgm
-      sudo chown ubuntu /home/ubuntu/tkgm/workload_clusters
-      sudo chgrp ubuntu /home/ubuntu/tkgm/workload_clusters
       mkdir -p /home/ubuntu/tkgm/mgmt_cluster
-      sudo chown ubuntu /home/ubuntu/tkgm/mgmt_cluster
-      sudo chgrp ubuntu /home/ubuntu/tkgm/mgmt_cluster
       mkdir -p /home/ubuntu/tkgm/bin
-      sudo chown ubuntu /home/ubuntu/tkgm/bin
-      sudo chgrp ubuntu /home/ubuntu/tkgm/bin
+      sudo chown -R ubuntu /home/ubuntu/tkgm
+      sudo chgrp -R ubuntu /home/ubuntu/tkgm
       mkdir -p /home/ubuntu/tkc
       sudo chown ubuntu /home/ubuntu/tkc
       sudo chgrp ubuntu /home/ubuntu/tkc

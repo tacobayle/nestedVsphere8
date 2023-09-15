@@ -21,6 +21,10 @@ sslkeyandcertificate: |
   ${sslkeyandcertificate}
 portal_configuration:
   sslkeyandcertificate_ref: ${sslkeyandcertificate_ref}
+tenants: |
+  ${tenants}
+users: |
+  ${users}
 vcenter:
   domains: |
     [{"name": ${domain}}]

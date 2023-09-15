@@ -153,5 +153,10 @@ resource "null_resource" "execute_expect_script_esxi_ip_routes" {
   provisioner "local-exec" {
     command = "/bin/bash 19_esxi_ip_routes.sh"
   }
+}
 
+resource "null_resource" "retrieve_vcenter_finger_print" {
+  provisioner "local-exec" {
+    command = "rm -f /root/vcenter_finger_print.txt ; echo | openssl s_client -connect ${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}:443 | openssl x509 -fingerprint -noout |  cut -d\"=\" -f2 | tee /root/vcenter_finger_print.txt > /dev/null "
+  }
 }

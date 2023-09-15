@@ -44,7 +44,7 @@ resource "dns_ptr_record" "vcenter" {
 
 resource "dns_a_record_set" "nsx" {
   depends_on = [null_resource.end, vsphere_virtual_machine.external_gw]
-  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? 1 : 0
+  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx_alb_telco" ? 1 : 0
   zone  = "${var.external_gw.bind.domain}."
   name  = var.external_gw.nsx_manager_name
   addresses = [var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip]
@@ -52,7 +52,7 @@ resource "dns_a_record_set" "nsx" {
 }
 
 resource "dns_ptr_record" "nsx" {
-  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? 1 : 0
+  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx_alb_telco" ? 1 : 0
   depends_on = [null_resource.end, vsphere_virtual_machine.external_gw]
   zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
   name = split(".", var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip)[3]
@@ -61,7 +61,7 @@ resource "dns_ptr_record" "nsx" {
 }
 
 resource "dns_a_record_set" "alb" {
-  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" || var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx_alb" ? 1 : 0
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" || var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" ? 1 : 0
   depends_on = [null_resource.end, vsphere_virtual_machine.external_gw]
   zone  = "${var.external_gw.bind.domain}."
   name  = var.external_gw.alb_controller_name
@@ -70,7 +70,7 @@ resource "dns_a_record_set" "alb" {
 }
 
 resource "dns_ptr_record" "alb" {
-  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" || var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx_alb" ? 1 : 0
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" || var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" ? 1 : 0
   depends_on = [null_resource.end, vsphere_virtual_machine.external_gw]
   zone = "${var.external_gw.bind.reverse}.in-addr.arpa."
   name = split(".", var.vsphere_underlay.networks.vsphere.management.avi_nested_ip)[3]

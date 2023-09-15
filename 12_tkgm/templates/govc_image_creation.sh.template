@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+export GOVC_DATACENTER=${dc}
+export GOVC_URL=${vsphere_url}
+export GOVC_INSECURE=true
+#
+govc folder.create /${dc}/vm/'${ova_folder_template}'
+govc import.spec ${ova_basename} | jq ".Name=\"/root/${ova_basename}\"" | jq ".NetworkMapping[0].Network=\"${ova_network}\"" | jq ".DiskProvisioning=\"thin\"" > /root/tkgm_ova.json
+govc import.ova -options=/root/tkgm_ova.json /root/${ova_basename}
+govc snapshot.create -vm ${ova_basename} root
+govc vm.markastemplate ${ova_basename}
+govc object.mv /${dc}/vm/${ova_basename} /${dc}/vm/'${ova_folder_template}'
