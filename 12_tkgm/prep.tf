@@ -1,7 +1,3 @@
-
-
-
-
 resource "null_resource" "install_docker" {
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
