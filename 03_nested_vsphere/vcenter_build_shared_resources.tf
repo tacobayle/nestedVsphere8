@@ -149,6 +149,7 @@ resource "null_resource" "execute_expect_script_vcenter_ip_routes" {
 
 resource "null_resource" "execute_expect_script_esxi_ip_routes" {
   depends_on = [null_resource.execute_expect_script]
+  count      = var.deployment == "vsphere_tanzu_alb_wo_nsx" || var.deployment == "vsphere_nsx_tanzu_alb" ? 1 : 0
 
   provisioner "local-exec" {
     command = "/bin/bash 19_esxi_ip_routes.sh"
@@ -156,6 +157,7 @@ resource "null_resource" "execute_expect_script_esxi_ip_routes" {
 }
 
 resource "null_resource" "retrieve_vcenter_finger_print" {
+  depends_on = [null_resource.execute_expect_script]
   provisioner "local-exec" {
     command = "rm -f /root/vcenter_finger_print.txt ; echo | openssl s_client -connect ${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}:443 | openssl x509 -fingerprint -noout |  cut -d\"=\" -f2 | tee /root/vcenter_finger_print.txt > /dev/null "
   }

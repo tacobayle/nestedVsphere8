@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 export GOVC_DATACENTER=${dc}
-export GOVC_CLUSTER=${vsphere_cluster}
+export GOVC_CLUSTER=${cluster}
 export GOVC_URL=${vsphere_url}
 export GOVC_INSECURE=true
 #

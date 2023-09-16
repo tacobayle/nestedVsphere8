@@ -57,8 +57,8 @@ resource "null_resource" "tkg_install" {
 
   provisioner "remote-exec" {
     inline = [
-      "tar_output=$(tar -xvf /home/ubuntu/tkgm/bin/$(basename ${var.tkg.tanzu_bin_location})",
-      "tanzu_directory=$(echo $tar_output | cut -d"/" -f1)",
+      "tar_output=$(tar -xvf /home/ubuntu/tkgm/bin/$(basename ${var.tkg.tanzu_bin_location}))",
+      "tanzu_directory=$(echo $tar_output | cut -d\"/\" -f1)",
       "sudo install /home/ubuntu/$tanzu_directory/tanzu-cli-linux_amd64 /usr/local/bin/tanzu",
       "tanzu config eula  accept",
       "tanzu plugin install --group vmware-tkg/default:${var.tkg.version}",

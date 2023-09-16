@@ -36,7 +36,7 @@ data "template_file" "mgmt" {
     worker_disk = var.tkg.clusters.management.worker_disk
     worker_memory = var.tkg.clusters.management.worker_memory
     worker_cpu = var.tkg.clusters.management.worker_cpu
-    avi_cert_base64 = base64encode(file("/root/avi.cert"))
+    avi_cert_base64 = base64encode(file("/root/avi_cert.txt"))
   }
 }
 
