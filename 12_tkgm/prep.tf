@@ -124,16 +124,16 @@ data "template_file" "govc_mgmt_destroy" {
 resource "null_resource" "govc_mgmt_run" {
 
   provisioner "local-exec" {
-    command = "cat > govc_mgmt.sh <<EOL\n${data.template_file.govc_mgmt.rendered}\nEOL"
+    command = "cat > /root/govc_mgmt.sh <<EOL\n${data.template_file.govc_mgmt.rendered}\nEOL"
   }
 
   provisioner "local-exec" {
-    command = "cat > govc_mgmt_destroy.sh <<EOL\n${data.template_file.govc_mgmt_destroy.rendered}\nEOL"
+    command = "cat > /root/govc_mgmt_destroy.sh <<EOL\n${data.template_file.govc_mgmt_destroy.rendered}\nEOL"
   }
 
 
   provisioner "local-exec" {
-    command = "/bin/bash govc_mgmt.sh"
+    command = "/bin/bash /root/govc_mgmt.sh"
   }
 
 }
@@ -167,15 +167,15 @@ resource "null_resource" "govc_workloads" {
   count = length(var.tkg.clusters.workloads)
 
   provisioner "local-exec" {
-    command = "cat > govc_workload${count.index + 1 }.sh <<EOL\n${data.template_file.govc_workloads[count.index].rendered}\nEOL"
+    command = "cat > /root/govc_workload${count.index + 1 }.sh <<EOL\n${data.template_file.govc_workloads[count.index].rendered}\nEOL"
   }
 
   provisioner "local-exec" {
-    command = "cat > govc_workload${count.index + 1 }_destroy.sh <<EOL\n${data.template_file.govc_workloads_destroy[count.index].rendered}\nEOL"
+    command = "cat > /root/govc_workload${count.index + 1 }_destroy.sh <<EOL\n${data.template_file.govc_workloads_destroy[count.index].rendered}\nEOL"
   }
 
   provisioner "local-exec" {
-    command = "/bin/bash govc_workload${count.index + 1 }.sh"
+    command = "/bin/bash /root/govc_workload${count.index + 1 }.sh"
   }
 
 }
