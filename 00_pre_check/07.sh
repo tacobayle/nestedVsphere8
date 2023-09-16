@@ -389,6 +389,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     for cluster in $(jq -c -r .tkg.clusters.workloads[] $jsonFile)
     do
       name=$(echo $cluster | jq -c -r .name)
+      echo "   +++ adding Service Engine Group called ${name} for TKG workload clusters"
       seg_list=$(echo $seg_list | jq -c -r '. += [{"name": "'${name}'",
                                                                              "ha_mode": "HA_MODE_SHARED",
                                                                              "min_scaleout_per_vs": 2,
