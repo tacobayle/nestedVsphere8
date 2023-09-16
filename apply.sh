@@ -208,9 +208,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   echo "  > vrf xxx" | tee -a /root/output.txt
   echo "  > get route" | tee -a /root/output.txt
 fi
-
-
-
 #echo "To Add AKO leveraging helm Install (from the external-gw):" | tee -a /root/output.txt
 #echo "  - helm --debug install ako/ako --generate-name --version $(jq -c -r .tkg.clusters.ako_version $jsonFile) -f path-to-values.yml --namespace=avi-system" | tee -a /root/output.txt
 #echo "Create InfraSetting CRD (from the external-gw):" | tee -a /root/output.txt
