@@ -291,7 +291,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.networks)')
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"networks": '$(echo $networks_data)'}')
     #
-    # rewriting additional_subnets to feed proper Avi formatting
+    # avi.config.cloud.additional_subnets // rewriting additional_subnets to feed proper Avi formatting
     #
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.additional_subnets)')
     additional_subnets="[]"
@@ -341,7 +341,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     done
     avi_json=$(echo $avi_json | jq '.avi.config.cloud.additional_subnets += '$(echo $additional_subnets | jq -c -r)'')
     #
-    #
+    # avi.config.cloud.contexts
     #
     ip_if_edge_index=0
     peers="[]"
@@ -383,6 +383,27 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     done
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.contexts)')
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"contexts": '$(echo $contexts | jq -c -r)})
+    #
+    # avi.config.cloud.service_engine_groups // adding service engine group for tkg workload clusters
+    #
+    for cluster in $(jq -c -r .tkg.clusters.workloads[] $jsonFile)
+    do
+      name=$(echo $cluster | jq -c -r .name)
+      seg_list=$(echo $seg_list | jq -c -r '. += [{"name": "'${name}'",
+                                                                             "ha_mode": "HA_MODE_SHARED",
+                                                                             "min_scaleout_per_vs": 2,
+                                                                             "buffer_se": 0,
+                                                                             "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-'${name}'",
+                                                                             "extra_shared_config_memory": 0,
+                                                                             "vcpus_per_se": 2,
+                                                                             "memory_per_se": 2048,
+                                                                             "disk_per_se": 25,
+                                                                             "realtime_se_metrics": {
+                                                                               "enabled": true,
+                                                                               "duration": 0
+                                                                             }
+                                                                            }]')
+    done
     #
     # avi.config.cloud.virtual_services
     #
