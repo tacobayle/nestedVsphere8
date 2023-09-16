@@ -260,7 +260,47 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   # Avi Telco use case
   #
   if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
+    #
+    # updating avi.config.tenants
+    #
+    avi_json=$(echo $avi_json | jq '. | del (.avi.config.tenants)')
+    tenants=[]
+    for cluster in $(jq -c -r .tkg.clusters.workloads[] $jsonFile)
+    do
+      name=$(echo $cluster | jq -c -r .name)
+      echo "   +++ adding tenant called ${name} for TKG workload clusters"
+      tenants=$(echo $tenants | jq -c -r '. += [{"name": "'${name}'",
+                                                   "local": true,
+                                                   "config_settings" : {
+                                                     "tenant_vrf": false,
+                                                     "se_in_provider_context": true,
+                                                     "tenant_access_to_provider_se": true
+                                                   }
+                                                 }]')
+    done
+    avi_json=$(echo $avi_json | jq '.avi.config += {"tenants": '$(echo $tenants)'}')
+    #
+    # updating avi.config.users
+    #
+    avi_json=$(echo $avi_json | jq '. | del (.avi.config.users)')
+    users=[]
+    users=$(echo $users | jq -c -r '. += [{"access": [
+                                            {
+                                              "role_ref": "/api/role?name=System-Admin",
+                                              "tenant_ref": "/api/tenant?name=admin",
+                                              "all_tenants": false
+                                            }
+                                           ],
+                                           "username": "'$(jq -r .tkgm_user $localJsonFile)'",
+                                           "name": "'$(jq -r .tkgm_user $localJsonFile)'",
+                                           "is_superuser": true,
+                                           "default_tenant_ref": "/api/tenant?name=admin",
+                                           "user_profile_ref": "/api/useraccountprofile?name=Default-User-Account-Profile"
+                                          }]')
+    avi_json=$(echo $avi_json | jq '.avi.config += {"users": '$(echo $users)'}')
+    #
     # .avi.config.cloud.networks_data[]
+    #
     networks_data="[]"
     ipam_networks="[]"
     avi_pools="[]"

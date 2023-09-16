@@ -12,6 +12,9 @@ tkgm_json=$(jq -c -r . $jsonFile | jq .)
 #
 IFS=$'\n'
 #
+echo "   +++ Adding avi_username on tkg.clusters.management"
+tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"avi_username": "'$(jq -r .tkgm_user /nestedVsphere8/07_nsx_alb/variables.json)'"}')
+#
 echo "   +++ Adding avi_cloud_name on tkg.clusters.management"
 tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"avi_cloud_name": "'$(jq -c -r '.vcenter_default_cloud_name' /nestedVsphere8/07_nsx_alb/variables.json)'"}')
 #
