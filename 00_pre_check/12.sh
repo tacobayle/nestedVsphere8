@@ -27,6 +27,18 @@ tkgm_json=$(echo $tkgm_json | jq '.tkg += {"ova_folder_template": "'$(jq -c -r '
 echo "   +++ Adding ova_network on tkg"
 tkgm_json=$(echo $tkgm_json | jq '.tkg += {"ova_network": "'$(jq -c -r '.nsx.config.segments_overlay[0].display_name' $jsonFile)'"}')
 #
+workload_clusters_list="[]"
+for cluster in $(jq -c -r .tkg.clusters.workloads[] $jsonFile)
+do
+  echo "   +++ add ako_tenant_ref in workload cluster called $(echo $cluster | jq -c -r .name)"
+  cluster=$(echo $cluster | jq '. += {"ako_tenant_ref": "'$(echo $cluster | jq -c -r .name)'"}')
+  echo "   +++ add ako_service_engine_group_ref in workload cluster called $(echo $cluster | jq -c -r .name)"
+  cluster=$(echo $cluster | jq '. += {"ako_service_engine_group_ref": "'$(echo $cluster | jq -c -r .name)'"}')
+  workload_clusters_list=$(echo $workload_clusters_list | jq '. += ['$(echo $cluster | jq -c -r .)']')
+done
+tkgm_json=$(echo $tkgm_json | jq '. | del (.tkg.clusters.workloads)')
+tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"workloads": '$(echo $workload_clusters_list)'}')
+#
 echo $tkgm_json | jq . | tee /root/tkgm.json > /dev/null
 #
 local_file="/root/$(basename $(jq -c -r .tkg.tanzu_bin_location $jsonFile))"
