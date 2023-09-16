@@ -21,6 +21,9 @@ tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"avi_cloud_name":
 echo "   +++ Adding public_key_path on tkg.clusters.management"
 tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"public_key_path": "/root/.ssh/id_rsa.pub"}')
 #
+echo "   +++ Adding private_key_path on tkg.clusters.management"
+tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"private_key_path": "/root/.ssh/id_rsa"}')
+#
 echo "   +++ Adding ova_folder_template on tkg"
 tkgm_json=$(echo $tkgm_json | jq '.tkg += {"ova_folder_template": "'$(jq -c -r '.ova_folder_template' $localJsonFile)'"}')
 #
@@ -30,6 +33,8 @@ tkgm_json=$(echo $tkgm_json | jq '.tkg += {"ova_network": "'$(jq -c -r '.nsx.con
 workload_clusters_list="[]"
 for cluster in $(jq -c -r .tkg.clusters.workloads[] $jsonFile)
 do
+  echo "   +++ add ssh_username in workload cluster called $(echo $cluster | jq -c -r .name)"
+  cluster=$(echo $cluster | jq '. += {"ssh_username": "capv"}')
   echo "   +++ add ako_tenant_ref in workload cluster called $(echo $cluster | jq -c -r .name)"
   cluster=$(echo $cluster | jq '. += {"ako_tenant_ref": "'$(echo $cluster | jq -c -r .name)'"}')
   echo "   +++ add ako_service_engine_group_ref in workload cluster called $(echo $cluster | jq -c -r .name)"
