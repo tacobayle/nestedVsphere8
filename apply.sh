@@ -203,18 +203,11 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   echo '  > kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a /root/output.txt
   echo "Add avi-system name space:" | tee -a /root/output.txt
   echo "  > kubectl create ns avi-system" | tee -a /root/output.txt
+  echo "Deploy AKO for your workload clusters:" | tee -a /root/output.txt
+  echo "  > helm install --generate-name $(jq -c -r .avi.config.ako.helm_url $jsonFile) --version $(jq -c -r .avi.config.ako.ako_version $jsonFile) -f values.yml --namespace=avi-system" | tee -a /root/output.txt
   echo "Connect to the tier0 to check the routes" | tee -a /root/output.txt
   echo "  > get logical-routers" | tee -a /root/output.txt
   echo "  > vrf xxx" | tee -a /root/output.txt
   echo "  > get route" | tee -a /root/output.txt
 fi
-#echo "To Add AKO leveraging helm Install (from the external-gw):" | tee -a /root/output.txt
-#echo "  - helm --debug install ako/ako --generate-name --version $(jq -c -r .tkg.clusters.ako_version $jsonFile) -f path-to-values.yml --namespace=avi-system" | tee -a /root/output.txt
-#echo "Create InfraSetting CRD (from the external-gw):" | tee -a /root/output.txt
-#echo "  - kubectl apply -f avi-infra-settings-workload-vrf-X.yml" | tee -a /root/output.txt
-#echo "Create CNF/App (from the external-gw):" | tee -a /root/output.txt
-#echo "  - kubectl apply -f k8s-deployment-X.yml" | tee -a /root/output.txt
-#echo "Create svc (from the external-gw):" | tee -a /root/output.txt
-#echo "  - kubectl apply -f k8s-svc-X.yml" | tee -a /root/output.txt
-
 while true ; do sleep 3600 ; done
