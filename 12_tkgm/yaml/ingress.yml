@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-front-1
+spec:
+  selector:
+    app: cnf-1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: avi-ingress-class
+spec:
+  controller: ako.vmware.com/avi-lb
+  parameters:
+    apiGroup: ako.vmware.com
+    kind: AviInfraSetting
+    name: infra-setting-1
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+spec:
+  ingressClassName: avi-ingress-class
+  rules:
+    - host: ingress.avi-telco.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/v1"
+            backend:
+              service:
+                name: web-front-1
+                port:
+                  number: 80
+---
+apiVersion: ako.vmware.com/v1alpha1
+kind: HostRule
+metadata:
+  name: my-host-rule-1
+  namespace: default
+spec:
+  virtualhost:
+    fqdn: ingress.avi-telco.com
+    enableVirtualHost: true
+    wafPolicy: System-WAF-Policy
+    analyticsPolicy:
+      fullClientLogs:
+        enabled: true
+        throttle: HIGH
+      logAllHeaders: true
+    tls:
+      sslKeyCertificate:
+        name: System-Default-Cert-EC
+        type: ref

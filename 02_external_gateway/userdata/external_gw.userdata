@@ -91,9 +91,9 @@ write_files:
       mkdir -p /home/ubuntu/tanzu
       sudo chown ubuntu /home/ubuntu/tanzu
       sudo chgrp ubuntu /home/ubuntu/tanzu
-      mkdir -p /home/ubuntu/tanzu-yaml
-      sudo chown ubuntu /home/ubuntu/tanzu-yaml
-      sudo chgrp ubuntu /home/ubuntu/tanzu-yaml
+      mkdir -p /home/ubuntu/yaml-files
+      sudo chown ubuntu /home/ubuntu/yaml-files
+      sudo chgrp ubuntu /home/ubuntu/yaml-files
       echo "${nfs_path} ${vcd_ip}(rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports
       sudo systemctl start nfs-kernel-server.service
       sudo exportfs -a

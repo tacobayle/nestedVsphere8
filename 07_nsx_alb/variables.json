@@ -17,5 +17,6 @@
     "dhcp_enabled": true,
     "exclude_discovered_subnets": true,
     "type": "V4"
-  }
+  },
+  "ako_service_type": "ClusterIP"
 }
