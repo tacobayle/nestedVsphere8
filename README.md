@@ -8,7 +8,8 @@ Several deployments/scenarios are supported:
 - vsphere_alb_wo_nsx deploys a nested vSphere with and NSX ALB on the top
 - vsphere_tanzu_alb_wo_nsx deploys a nested vSphere with Tanzu (VDS use case) and NSX ALB on the top
 - vsphere_nsx deploys a nested vSphere included NSX (overlay use case)
-- vsphere_nsx_alb deploys a nested vsphere included NSX (overlay use case) and NSX ALB on the top
+- vsphere_nsx_alb deploys a nested vSphere included NSX (overlay use case) and NSX ALB on the top
+- vsphere_nsx_alb_telco deploys a nested vSphere included NSX (overlay use case) and NSX ALB (vCenter Cloud) with BGP between Service Engines and tiers 0 - TKGm is included and configured with the top of this along with AKO
 
 ## How to consume this repo? - Prerequisites
 The starting point to consume this repo is to have a K8s cluster to deploy the following:
@@ -27,15 +28,15 @@ https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secret
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere.yml
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere.y
 
-### vsphere_tanzu_alb_wo_nsx
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-tanzu-alb-wo-nsx.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-tanzu-alb-wo-nsx.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-tanzu-alb-wo-nsx.yml
-
 ### vsphere_alb_wo_nsx
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-alb.yml
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-alb.yml
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-alb.yml
+
+### vsphere_tanzu_alb_wo_nsx
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-tanzu-alb-wo-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-tanzu-alb-wo-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-tanzu-alb-wo-nsx.yml
 
 ### vsphere_nsx
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-nsx.yml
