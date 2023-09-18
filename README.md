@@ -14,13 +14,13 @@ Several deployments/scenarios are supported:
 The starting point to consume this repo is to have a K8s cluster to deploy the following:
 - secrets
 - config-map
-- pod (it requires connectivity: to the Internet, to the web servers which contains the iso/ova files and to outer/underlay vSphere API)
+- pod (it requires connectivity: to the Internet, to the web servers which contains the iso/ova files (defined in the config map) and to outer/underlay vSphere API)
 
 Additionally, you need to have an external web server configured where the ISO/OVA files needed will be downloaded.
 
-All the variables are stored in K8s secrets (mostly passwords) and in one configmap for non-sensitive variables.
+All the variables are stored in K8s secrets (mostly credentials) and in one configmap for non-sensitive variables.
 
-Here are below the links of the yaml manifest file examples for the different deployments/scenarios:
+Here are below the links of the yaml manifest (data model) file for the different deployments/scenarios:
 
 ### vsphere_wo_nsx
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere_wo_nsx.yml
@@ -47,7 +47,10 @@ https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secret
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx-alb.yml
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx-alb.yml
 
-### vsphere_nsx_alb_telco (under-dev)
+### vsphere_nsx_alb_telco
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-nsx-alb-telco.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx-alb-telco.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx-alb-telco.yml
 
 ### vsphere_nsx_tanzu_alb (under-dev)
 
@@ -63,11 +66,11 @@ On the top of an underlay/outer vSphere, this repo will create the following VMs
 
 ### Nested VM(s) connectivity
 
-- if .vsphere_underlay.networks_vsphere_dual_attached == false
+- if \.vsphere_underlay.networks_vsphere_dual_attached == false
 
 ![img.png](imgs/underlay_architecture.png)
 
-- if .vsphere_underlay.networks_vsphere_dual_attached == true
+- if \.vsphere_underlay.networks_vsphere_dual_attached == true
 
 ![img.png](imgs/underlay_architecture_dual_attached.png)
 
@@ -78,4 +81,4 @@ Here are below a list of the VM(s) that will be deployed on the top of the neste
 - Apps VM
 - VM for unmanaged K8s clusters
 
-Depending on the selected deployment/scenario, VMs deployed will vary. For example, all the scenarios/deployments "wo_nsx" will not include the NSX manager.
+Depending on the selected deployment/scenario, VMs deployed will vary. For example, all the scenarios/deployments "wo_nsx" will not include the NSX manager and its configuration.
