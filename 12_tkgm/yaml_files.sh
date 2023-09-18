@@ -108,9 +108,9 @@ spec:
                   fieldPath: spec.serviceAccountName
       restartPolicy: Always
 EOM
-    ((vrf_count++))
     echo "$cnf_yaml_data" | tee /root/cnf-vrf-${vrf_count}.yml > /dev/null
     scp -o StrictHostKeyChecking=no /root/cnf-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/cnf-vrf-${vrf_count}.yml
+    ((vrf_count++))
   done
   ((cluster_count++))
 done
