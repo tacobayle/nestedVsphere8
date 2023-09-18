@@ -56,7 +56,6 @@ spec:
       port: 80
       targetPort: 80
 EOM
-    ((vrf_count++))
     echo "$svc_yaml_data" | tee /root/svc-vrf-${vrf_count}.yml > /dev/null
     scp -o StrictHostKeyChecking=no /root/svc-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/svc-vrf-${vrf_count}.yml
 #

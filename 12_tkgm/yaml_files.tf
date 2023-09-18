@@ -36,8 +36,8 @@ data "template_file" "workload_values" {
     default_peer_label = var.avi.config.cloud.contexts[0].routing_options[0].label
     serviceType = var.avi.config.ako.service_type
     serviceEngineGroupName = var.tkg.clusters.workloads[count.index].name
-    controllerVersion = var.avi.controller.version
-    cloudName = var.avi.ako.cloud_name
+    controllerVersion = var.avi.version
+    cloudName = var.avi.config.ako.cloud_name
     controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
     tenantName = var.tkg.clusters.workloads[count.index].name
     password = var.avi_password
@@ -57,7 +57,7 @@ resource "null_resource" "transfer_ako_values_files" {
 
   provisioner "file" {
     content = data.template_file.workload_values[count.index].rendered
-    destination = "/home/ubuntu/tkgm/workload_clusters/ako-values-cluster{count.index + 1}.yml"
+    destination = "/home/ubuntu/tkgm/workload_clusters/ako-values-cluster${count.index + 1}.yml"
   }
 }
 

@@ -44,6 +44,31 @@ done
 tkgm_json=$(echo $tkgm_json | jq '. | del (.tkg.clusters.workloads)')
 tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"workloads": '$(echo $workload_clusters_list)'}')
 #
+# .avi.config.ako.vip_network_name_ref
+#
+echo "   +++ Adding vip_network_name_ref on .avi.config.ako"
+vip_network_name_ref=$(jq -r .networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)
+tkgm_json=$(echo $tkgm_json | jq '.avi.config.ako += {"vip_network_name_ref": "'${vip_network_name_ref}'"}')
+#
+# .avi.config.ako.vip_network_cidr
+#
+echo "   +++ Adding vip_network_cidr on .avi.config.ako"
+vip_network_cidr=$(jq -r --arg network_name "${vip_network_name_ref}" '.avi.config.cloud.additional_subnets[] | select(.name_ref == $network_name).subnets[0].cidr' $jsonFile)
+tkgm_json=$(echo $tkgm_json | jq '.avi.config.ako += {"vip_network_cidr": "'${vip_network_cidr}'"}')
+#
+# .avi.config.ako.service_type
+#
+echo "   +++ Adding service_type on .avi.config.ako"
+service_type=$(jq -c -r .ako_service_type /nestedVsphere8/07_nsx_alb/variables.json)
+tkgm_json=$(echo $tkgm_json | jq '.avi.config.ako += {"service_type": "'${service_type}'"}')
+#
+# .avi.config.ako.cloud_name
+#
+echo "   +++ Adding service_type on .avi.config.ako"
+cloud_name=$(jq -c -r .nsx_default_cloud_name /nestedVsphere8/07_nsx_alb/variables.json)
+tkgm_json=$(echo $tkgm_json | jq '.avi.config.ako += {"cloud_name": "'${cloud_name}'"}')
+
+#
 echo $tkgm_json | jq . | tee /root/tkgm.json > /dev/null
 #
 local_file="/root/$(basename $(jq -c -r .tkg.tanzu_bin_location $jsonFile))"

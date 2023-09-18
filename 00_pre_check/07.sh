@@ -460,30 +460,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     done
     echo "   +++ Updating .avi.config.cloud.virtual_services..."
     avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"dns": '$(echo $avi_dns_vs)'}')
-    #
-    # .avi.config.ako.vip_network_name_ref
-    #
-    echo "   +++ Adding vip_network_name_ref on .avi.config.ako"
-    vip_network_name_ref=$(jq -r .networks.nsx.nsx_external.port_group_name /nestedVsphere8/02_external_gateway/variables.json)
-    avi_json=$(echo $avi_json | jq '.avi.config.ako += {"vip_network_name_ref": "'${vip_network_name_ref}'"}')
-    #
-    # .avi.config.ako.vip_network_cidr
-    #
-    echo "   +++ Adding vip_network_cidr on .avi.config.ako"
-    vip_network_cidr=$(jq -r --arg network_name "${vip_network_name_ref}" '.avi.config.cloud.additional_subnets[] | select(.name_ref == $network_name).subnets[0].cidr' $jsonFile)
-    avi_json=$(echo $avi_json | jq '.avi.config.ako += {"vip_network_cidr": "'${vip_network_cidr}'"}')
-    #
-    # .avi.config.ako.service_type
-    #
-    echo "   +++ Adding service_type on .avi.config.ako"
-    service_type=$(jq -c -r .ako_service_type $localJsonFile)
-    avi_json=$(echo $avi_json | jq '.avi.config.ako += {"service_type": "'${service_type}'"}')
-    #
-    # .avi.config.ako.cloud_name
-    #
-    echo "   +++ Adding service_type on .avi.config.ako"
-    cloud_name=$(jq -c -r .nsx_default_cloud_name $localJsonFile)
-    avi_json=$(echo $avi_json | jq '.avi.config.ako += {"cloud_name": "'${cloud_name}'"}')
   fi
   #
   # Avi wo NSX use cases
