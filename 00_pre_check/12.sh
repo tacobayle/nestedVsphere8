@@ -65,7 +65,7 @@ tkgm_json=$(echo $tkgm_json | jq '.avi.config.ako += {"service_type": "'${servic
 # .avi.config.ako.cloud_name
 #
 echo "   +++ Adding service_type on .avi.config.ako"
-cloud_name=$(jq -c -r .nsx_default_cloud_name /nestedVsphere8/07_nsx_alb/variables.json)
+cloud_name=$(jq -c -r .vcenter_default_cloud_name /nestedVsphere8/07_nsx_alb/variables.json)
 tkgm_json=$(echo $tkgm_json | jq '.avi.config.ako += {"cloud_name": "'${cloud_name}'"}')
 
 #
