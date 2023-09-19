@@ -226,3 +226,29 @@ json_data='
   "api_server_cluster_endpoint": "'${api_server_cluster_endpoint}'"
 }'
 echo $json_data | tee /root/api_server_cluster_endpoint.json
+
+
+#curl -k --location --request PUT 'https://192.168.130.25/policy/api/v1/infra/alb-onboarding-workflow' \
+# --header 'X-Allow-Overwrite: True' \
+# --header 'Authorization: Basic YWRtaW46Vk13YXJlMSFWTXdhcmUxIQo=' \
+# --header 'Content-Type: application/json' \
+# --data-raw '{
+# "owned_by": "LCM",
+# "cluster_ip": "192.168.130.28",
+# "infra_admin_username" : "admin",
+# "infra_admin_password" : "VMware1!VMware1!",
+# "dns_servers": ["92.168.130.23"],
+# "ntp_servers": ["time.vmware.com"]
+# }'
+#
+# curl -k -u 'admin:VMware1!VMware1!' --location --request PUT 'https://192.168.130.25/policy/api/v1/infra/alb-onboarding-workflow' \
+# --header 'X-Allow-Overwrite: True' \
+# --header 'Content-Type: application/json' \
+# --data-raw '{
+# "owned_by": "LCM",
+# "cluster_ip": "192.168.130.28",
+# "infra_admin_username" : "admin",
+# "infra_admin_password" : "VMware1!",
+# "dns_servers": ["92.168.130.23"],
+# "ntp_servers": ["time.vmware.com"]
+# }'

@@ -218,7 +218,7 @@ spec:
           command: [ "sh", "-c"]
           args:
           - while true; do
-              echo -e "HTTP/1.1 200 OK\n\n\$\(date\)\nThis is my cnf-1\nNode is \$(printenv MY_NODE_NAME)\nPod is \$(printenv MY_POD_NAME)\nNamespace is \$(printenv MY_POD_NAMESPACE)\nPod IP is \$(printenv MY_POD_IP)\nPod Service account is \$(printenv MY_POD_SERVICE_ACCOUNT)" | nc -l -p 80 ; done
+              echo -e "HTTP/1.1 200 OK\n\n\$(date)\nThis is my cnf-1\nNode is \$(printenv MY_NODE_NAME)\nPod is \$(printenv MY_POD_NAME)\nNamespace is \$(printenv MY_POD_NAMESPACE)\nPod IP is \$(printenv MY_POD_IP)\nPod Service account is \$(printenv MY_POD_SERVICE_ACCOUNT)" | nc -l -p 80 ; done
           env:
             - name: MY_NODE_NAME
               valueFrom:
