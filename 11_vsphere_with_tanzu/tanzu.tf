@@ -1,7 +1,7 @@
 resource "null_resource" "supervisor" {
 
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/11_vsphere_with_tanzu/01_supervisor.sh"
+    command = "/bin/bash /nestedVsphere8/11_vsphere_with_tanzu/create_supervisor.sh"
   }
 }
 

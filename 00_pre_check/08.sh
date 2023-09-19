@@ -22,7 +22,7 @@ app_segments=[]
 app_ips=[]
 app_cidr=[]
 #
-if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
   do
@@ -58,7 +58,7 @@ if [[ $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   #
 fi
 #
-if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
   #
 #  if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" ]] ; then
 #    for ip in $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips[] $jsonFile)

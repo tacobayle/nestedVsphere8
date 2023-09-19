@@ -102,7 +102,7 @@ echo "   +++ Adding transport_zones details..."
 transport_zones=$(jq -c -r '.transport_zones' $localJsonFile)
 nsx_json=$(echo $nsx_json | jq '.nsx.config += {"transport_zones": '$(echo $transport_zones | jq -c -r .)'}')
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   echo "   +++ Adding segments details..."
   segments=$(jq -c -r '.segments' $localJsonFile)
   nsx_json=$(echo $nsx_json | jq '.nsx.config += {"segments": '$(echo $segments | jq -c -r .)'}')

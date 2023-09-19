@@ -64,7 +64,7 @@ resource "null_resource" "create_workload_clusters" {
   provisioner "remote-exec" {
     inline = [
       "tanzu cluster create ${var.tkg.clusters.workloads[count.index].name} -f /home/ubuntu/tkgm/workload_clusters/workload${count.index + 1 }.yml -v 6",
-      "tanzu cluster create --file /home/ubuntu/.config/tanzu/tkg/clusterconfigs/tkg-cluster-workload-${count.index + 1 }.yaml"
+      "tanzu cluster create --file /home/ubuntu/.config/tanzu/tkg/clusterconfigs/${var.tkg.clusters.workloads[count.index].name}.yaml"
     ]
   }
 }

@@ -1,6 +1,6 @@
 resource "vsphere_virtual_machine" "esxi_host_nsx" {
   depends_on = [ vsphere_file.iso_upload ]
-  count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == true ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == true ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   name             = "${var.vsphere_nested.esxi.basename}${count.index + 1}"
   datastore_id     = data.vsphere_datastore.datastore.id
   resource_pool_id = data.vsphere_resource_pool.pool.id
@@ -57,7 +57,7 @@ resource "vsphere_virtual_machine" "esxi_host_nsx" {
 
 resource "vsphere_virtual_machine" "esxi_host_nsx_single_attached" {
   depends_on = [ vsphere_file.iso_upload ]
-  count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
+  count = (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd") && var.vsphere_underlay.networks_vsphere_dual_attached == false ? length(var.vsphere_underlay.networks.vsphere.management.esxi_ips) : 0
   name             = "${var.vsphere_nested.esxi.basename}${count.index + 1}"
   datastore_id     = data.vsphere_datastore.datastore.id
   resource_pool_id = data.vsphere_resource_pool.pool.id

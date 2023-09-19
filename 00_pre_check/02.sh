@@ -78,7 +78,9 @@ if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) != "true" ]]; then
   external_gw_json=$(echo $external_gw_json | jq '. += {"default_kubectl_version": "'$(echo $default_kubectl_version)'"}')
 fi
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+# with nsx
+#
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
   echo "   +++ Adding Networks MTU details"
   networks_details=$(jq -c -r .networks $localJsonFile)
@@ -159,7 +161,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
     fi
   fi
   #
-  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
     #
     if [[ $(jq -c -r '.avi.config.cloud.networks_data | length' $jsonFile) -gt 0 ]] ; then
       echo "   +++ Creating External gateway routes to Avi VIP subnets..."
@@ -210,6 +212,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   external_gw_json=$(echo $external_gw_json | jq '. += {"default_kubectl_version": "'$(echo $default_kubectl_version)'"}')
   #
 fi
+#
+# wo nsx
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
   alb_networks='["se", "backend", "vip", "tanzu"]'
@@ -270,26 +274,24 @@ echo "alias external='ssh -o StrictHostKeyChecking=no ubuntu@external-gw'" | tee
 source /root/.profile
 #
 #
-if [[ $(jq -c -r .deployment $jsonFile) != "vsphere_nsx_alb_telco" ]] ; then
-
-  echo ""
-  echo "==> Checking vSphere VMs for name conflict..."
-  api_host="$(jq -r .vsphere_underlay.vcsa $jsonFile)"
-  vcenter_username=$TF_VAR_vsphere_underlay_username
-  vcenter_domain=''
-  vsphere_password=$TF_VAR_vsphere_underlay_password
-  token=$(/bin/bash /nestedVsphere8/bash/create_vcenter_api_session.sh "$vcenter_username" "$vcenter_domain" "$vsphere_password" "$api_host")
-  vcenter_api 6 10 "GET" $token "" $api_host "rest/vcenter/vm"
-  response_vm=$(echo $response_body)
-  for vm_entry in $(echo $response_vm | jq -c -r .value[])
-  do
-    if [[ $(echo $vm_entry | jq -c -r .name) == "external-gw-$(jq -c -r .date_index /root/external_gw.json)" ]] ; then
-      echo "  +++ ERROR +++ VM called "external-gw-$(jq -c -r .date_index /root/external_gw.json)" already exists"
-      exit 255
-    fi
-  done
-  echo "  +++ No conflict found, OK"
-fi
+#
+echo ""
+echo "==> Checking vSphere VMs for name conflict..."
+api_host="$(jq -r .vsphere_underlay.vcsa $jsonFile)"
+vcenter_username=$TF_VAR_vsphere_underlay_username
+vcenter_domain=''
+vsphere_password=$TF_VAR_vsphere_underlay_password
+token=$(/bin/bash /nestedVsphere8/bash/create_vcenter_api_session.sh "$vcenter_username" "$vcenter_domain" "$vsphere_password" "$api_host")
+vcenter_api 6 10 "GET" $token "" $api_host "rest/vcenter/vm"
+response_vm=$(echo $response_body)
+for vm_entry in $(echo $response_vm | jq -c -r .value[])
+do
+  if [[ $(echo $vm_entry | jq -c -r .name) == "external-gw-$(jq -c -r .date_index /root/external_gw.json)" ]] ; then
+    echo "  +++ ERROR +++ VM called "external-gw-$(jq -c -r .date_index /root/external_gw.json)" already exists"
+    exit 255
+  fi
+done
+echo "  +++ No conflict found, OK"
 #
 #
 download_file_from_url_to_location "$(jq -c -r .ubuntu_ova_url $localJsonFile)" "$(jq -c -r .ubuntu_ova_path $localJsonFile)" "Ubuntu OVA"

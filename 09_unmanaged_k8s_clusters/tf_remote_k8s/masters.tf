@@ -177,7 +177,7 @@ data "template_file" "values_ako_wo_nsx" {
 }
 
 data "template_file" "values_ako_nsx" {
-  count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s_masters_ips) : 0
+  count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s_masters_ips) : 0
   template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
   vars = {
     disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
@@ -242,25 +242,25 @@ resource "null_resource" "ako_config_locally_wo_nsx" {
 
 resource "null_resource" "ako_config_locally_nsx" {
   depends_on = [null_resource.generating_kube_config_locally]
-  count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s_masters_ips) : 0
+  count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s_masters_ips) : 0
 
   provisioner "local-exec" {
     command = "cat > /home/ubuntu/ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako_nsx[count.index].rendered}\nEOL"
   }
 }
 
-resource "null_resource" "helm_prerequisites" {
-  depends_on = [null_resource.ako_config_locally_wo_nsx, null_resource.ako_config_locally_nsx]
-
-  provisioner "local-exec" {
-    command = "helm repo add ako ${var.ako_url}; echo \"export avi_password='${var.avi_password}'\" | sudo tee -a /home/ubuntu/.profile"
-  }
-}
+#resource "null_resource" "helm_prerequisites" {
+#  depends_on = [null_resource.ako_config_locally_wo_nsx, null_resource.ako_config_locally_nsx]
+#
+#  provisioner "local-exec" {
+#    command = "helm repo add ako ${var.ako_url}; echo \"export avi_password='${var.avi_password}'\" | sudo tee -a /home/ubuntu/.profile"
+#  }
+#}
 
 
 resource "null_resource" "set_initial_state_ako_prerequisites" {
   count = 1
-  depends_on = [null_resource.helm_prerequisites]
+  depends_on = [null_resource.ako_config_locally_wo_nsx, null_resource.ako_config_locally_nsx]
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
     command = "echo \"0\" > masters.txt"
@@ -268,7 +268,7 @@ resource "null_resource" "set_initial_state_ako_prerequisites" {
 }
 
 resource "null_resource" "ako_prerequisites" {
-  depends_on = [null_resource.helm_prerequisites, null_resource.set_initial_state_ako_prerequisites]
+  depends_on = [null_resource.set_initial_state_ako_prerequisites]
   count = length(var.unmanaged_k8s_masters_ips)
 
   provisioner "local-exec" {

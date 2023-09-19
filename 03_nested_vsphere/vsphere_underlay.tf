@@ -30,19 +30,19 @@ data "vsphere_network" "vsphere_underlay_network_mgmt" {
 }
 
 data "vsphere_network" "network_nsx_external" {
-  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd" ? 1 : 0
+  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? 1 : 0
   name = var.vsphere_underlay.networks.nsx.external.name
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 data "vsphere_network" "network_nsx_overlay" {
-  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd" ? 1 : 0
+  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? 1 : 0
   name = var.vsphere_underlay.networks.nsx.overlay.name
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 data "vsphere_network" "network_nsx_overlay_edge" {
-  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb_vcd" ? 1 : 0
+  count = var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? 1 : 0
   name = var.vsphere_underlay.networks.nsx.overlay_edge.name
   datacenter_id = data.vsphere_datacenter.dc.id
 }

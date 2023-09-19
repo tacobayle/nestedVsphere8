@@ -56,7 +56,7 @@ fi
 #
 # ALB with NSX-T cloud use cases
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
   if grep -q "nsx_password" /nestedVsphere8/10_nsx_alb_config/variables.tf ; then
     echo "   +++ variable nsx_password is already in /nestedVsphere8/10_nsx_alb_config/variables.tf"
