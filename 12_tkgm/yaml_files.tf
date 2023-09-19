@@ -57,7 +57,7 @@ resource "null_resource" "transfer_ako_values_files" {
 
   provisioner "file" {
     content = data.template_file.workload_values[count.index].rendered
-    destination = "/home/ubuntu/tkgm/workload_clusters/ako-values-cluster${count.index + 1}.yml"
+    destination = "/home/ubuntu/tkgm/workload_clusters/ako-values-${var.tkg.clusters.workloads[count.index].name}.yml"
   }
 }
 
