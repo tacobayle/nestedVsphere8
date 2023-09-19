@@ -6,3 +6,6 @@ variable "vsphere_nested_password" {}
 variable "external_gw" {}
 variable "vsphere_underlay" {}
 variable "avi_password" {}
+variable "docker_registry_username" {}
+variable "docker_registry_password" {}
+variable "docker_registry_email" {}

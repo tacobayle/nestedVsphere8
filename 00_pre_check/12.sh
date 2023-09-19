@@ -19,10 +19,10 @@ echo "   +++ Adding avi_cloud_name on tkg.clusters.management"
 tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"avi_cloud_name": "'$(jq -c -r '.vcenter_default_cloud_name' /nestedVsphere8/07_nsx_alb/variables.json)'"}')
 #
 echo "   +++ Adding public_key_path on tkg.clusters.management"
-tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"public_key_path": "/root/.ssh/id_rsa.pub"}')
+tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"public_key_path": "/root/.ssh/id_rsa_external.pub"}')
 #
 echo "   +++ Adding private_key_path on tkg.clusters.management"
-tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"private_key_path": "/root/.ssh/id_rsa"}')
+tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"private_key_path": "/root/.ssh/id_rsa_external"}')
 #
 echo "   +++ Adding ova_folder_template on tkg"
 tkgm_json=$(echo $tkgm_json | jq '.tkg += {"ova_folder_template": "'$(jq -c -r '.ova_folder_template' $localJsonFile)'"}')
