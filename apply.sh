@@ -72,8 +72,8 @@ if [ $? -ne 0 ] ; then exit 1 ; fi
 #
 /bin/bash /nestedVsphere8/02_external_gateway/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
-scp -o StrictHostKeyChecking=no ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/.ssh/id_rsa /root/.ssh/id_rsa_external
-scp -o StrictHostKeyChecking=no ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/.ssh/id_rsa.pub /root/.ssh/id_rsa_external.pub
+scp -o StrictHostKeyChecking=no ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/.ssh/id_rsa /root/.ssh/id_rsa_external >/dev/null 2>&1
+scp -o StrictHostKeyChecking=no ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/.ssh/id_rsa.pub /root/.ssh/id_rsa_external.pub >/dev/null 2>&1
 #
 /bin/bash /nestedVsphere8/03_nested_vsphere/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
