@@ -10,9 +10,11 @@ kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"do
 # ns avi-system
 #
 kubectl create ns avi-system
+#
+# SCTP patching
+#
 kubectl get nodes -o json | jq -r .items[].status.addresses[1].address | tee /home/ubuntu/tkgm/workload_clusters/${file_ips}
 IFS=$'\n'
 for ip in $(cat /home/ubuntu/tkgm/workload_clusters/${file_ips}) ; do
-  # sctp patching
   ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/${private_key} -t ${ssh_username}@$ip 'sudo apt-get update -y ; sudo apt-get install -y libsctp-dev lksctp-tools ; cd /lib/modules/$(uname -r)/kernel/net/sctp ; sudo insmod sctp.ko'
 done
