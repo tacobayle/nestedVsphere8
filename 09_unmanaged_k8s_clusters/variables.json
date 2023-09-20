@@ -13,7 +13,6 @@
     "netplan_file": "/etc/netplan/50-cloud-init.yaml",
     "pod_cidr": "192.168.0.0/16",
     "docker_version": "5:24.0.2-1~ubuntu.20.04~focal",
-    "helm_ako_url": "https://projects.registry.vmware.com/chartrepo/ako",
     "ako_shardVSSize": "SMALL",
     "ako_loglevel": "WARN"
   }
