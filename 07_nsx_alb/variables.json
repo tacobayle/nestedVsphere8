@@ -8,7 +8,7 @@
   "avi_config_tag_vcenter_cloud": "v2.01",
   "playbook_env_vcenter_cloud": "vcenter.yml",
   "vcenter_default_cloud_name": "Default-Cloud",
-  "nsx_default_cloud_name": "Default-Cloud",
+  "nsx_default_cloud_name": "dc1_nsx",
   "tkgm_user": "tkg",
   "seg_folder_basename": "SEG",
   "tanzu_cert_name": "tanzu-cert",
