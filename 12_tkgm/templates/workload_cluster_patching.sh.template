@@ -1,9 +1,15 @@
 #!/bin/bash
 tanzu cluster kubeconfig get ${name} --admin
 kubectl config use-context ${name}-admin@${name}
+#
 # docker patching
+#
 kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${docker_registry_username} --docker-password=${docker_registry_password} --docker-email=${docker_registry_email}
 kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"
+#
+# ns avi-system
+#
+kubectl create ns avi-system
 kubectl get nodes -o json | jq -r .items[].status.addresses[1].address | tee /home/ubuntu/tkgm/workload_clusters/${file_ips}
 IFS=$'\n'
 for ip in $(cat /home/ubuntu/tkgm/workload_clusters/${file_ips}) ; do

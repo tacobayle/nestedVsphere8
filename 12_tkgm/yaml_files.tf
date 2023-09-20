@@ -1,29 +1,3 @@
-resource "null_resource" "transfer_cnf_sctp_files" {
-
-  connection {
-    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
-    type        = "ssh"
-    agent       = false
-    user        = "ubuntu"
-    private_key = file("/root/.ssh/id_rsa")
-  }
-
-  provisioner "file" {
-    source      = "yaml/sctp_client.yml"
-    destination = "/home/ubuntu/yaml-files/sctp_client.yml"
-  }
-
-  provisioner "file" {
-    source      = "yaml/svc_sctp.yml"
-    destination = "/home/ubuntu/yaml-files/svc_sctp.yml"
-  }
-
-  provisioner "file" {
-    source      = "yaml/k8s_sctp_deployment.yml"
-    destination = "/home/ubuntu/yaml-files/k8s_sctp_deployment.yml"
-  }
-
-}
 
 data "template_file" "workload_values" {
   count = length(var.tkg.clusters.workloads)

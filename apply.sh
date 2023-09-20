@@ -193,7 +193,7 @@ fi
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   echo ""
   echo "+++++ TKGm" | tee -a /root/output.txt
-  echo "To Access your TKG workload cluster:" | tee -a /root/output.txt
+  echo "To Access your TKG workload cluster from the external gw:" | tee -a /root/output.txt
   echo "  > tanzu cluster list" | tee -a /root/output.txt
   echo "  > tanzu cluster kubeconfig get $(jq -c -r .tkg.clusters.workloads[0].name $jsonFile) --admin" | tee -a /root/output.txt
   echo "  > kubectl config use-context $(jq -c -r .tkg.clusters.workloads[0].name $jsonFile)-admin@$(jq -c -r .tkg.clusters.workloads[0].name $jsonFile)" | tee -a /root/output.txt
