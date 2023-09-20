@@ -31,4 +31,5 @@ while [ $attempt -ne $retry ]; do
     sleep $pause
   fi
 done
+echo "ERROR: unable to get all the nodes READY after $attempt attempts"
 exit 255
