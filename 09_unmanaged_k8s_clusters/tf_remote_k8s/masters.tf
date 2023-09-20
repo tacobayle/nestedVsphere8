@@ -249,15 +249,6 @@ resource "null_resource" "ako_config_locally_nsx" {
   }
 }
 
-#resource "null_resource" "helm_prerequisites" {
-#  depends_on = [null_resource.ako_config_locally_wo_nsx, null_resource.ako_config_locally_nsx]
-#
-#  provisioner "local-exec" {
-#    command = "helm repo add ako ${var.ako_url}; echo \"export avi_password='${var.avi_password}'\" | sudo tee -a /home/ubuntu/.profile"
-#  }
-#}
-
-
 resource "null_resource" "set_initial_state_ako_prerequisites" {
   count = 1
   depends_on = [null_resource.ako_config_locally_wo_nsx, null_resource.ako_config_locally_nsx]
