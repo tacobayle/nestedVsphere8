@@ -38,7 +38,7 @@ EOM
     echo "$infra_setting_yaml_data" | tee /root/infra-setting-cluster-${cluster_count}-vrf-${vrf_count}.yml > /dev/null
     scp -o StrictHostKeyChecking=no /root/infra-setting-cluster-${cluster_count}-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/tkgm/workload_clusters/infra-setting-cluster-${cluster_count}-vrf-${vrf_count}.yml
 #
-# HTTP Services
+# HTTP LB Services
 #
 read -r -d '' svc_yaml_data << EOM
 apiVersion: v1

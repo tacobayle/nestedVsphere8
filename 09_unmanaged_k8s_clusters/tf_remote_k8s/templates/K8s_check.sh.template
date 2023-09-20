@@ -1,7 +1,7 @@
 #!/bin/bash
 #sudo apt-get update
 #sudo apt-get install -y jq
-retry=20
+retry=30
 pause=30
 attempt=0
 echo "############################################################################################"
