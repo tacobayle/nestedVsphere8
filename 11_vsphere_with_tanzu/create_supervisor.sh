@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 source /nestedVsphere8/bash/vcenter_api.sh
+source /nestedVsphere8/bash/ip.sh
 #
 jsonFile="/root/tanzu_wo_nsx.json"
 #
@@ -122,7 +123,7 @@ json_data='
     "mode":"STATICRANGE",
     "address_range":
       {
-        "subnet_mask":"'$(jq -r .vsphere_underlay.networks.alb.tanzu.netmask $jsonFile)'",
+        "subnet_mask":"'$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.tanzu.cidr' $jsonFile| cut -d"/" -f2) "   ++++++")'",
         "starting_address":"'$(jq -r .vsphere_underlay.networks.alb.tanzu.tanzu_supervisor_starting_ip $jsonFile)'",
         "gateway":"'$(jq -r .vsphere_underlay.networks.alb.tanzu.external_gw_ip $jsonFile)'",
         "address_count":'$(jq -r .vsphere_underlay.networks.alb.tanzu.tanzu_supervisor_count $jsonFile)'
@@ -158,7 +159,12 @@ json_data='
         "gateway": "'$(jq -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)'",
         "ip_assignment_mode": "STATICRANGE",
         "portgroup": "'${tanzu_worker_dvportgroup}'",
-        "subnet_mask": "'$(jq -r .vsphere_underlay.networks.alb.backend.netmask $jsonFile)'"
+
+
+
+
+
+        "subnet_mask": "'$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.backend.cidr' $jsonFile| cut -d"/" -f2) "   ++++++")'"
       }
     }
   }

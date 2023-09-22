@@ -94,6 +94,20 @@ write_files:
       mkdir -p /home/ubuntu/yaml-files
       sudo chown ubuntu /home/ubuntu/yaml-files
       sudo chgrp ubuntu /home/ubuntu/yaml-files
+      #
+      #
+      #
+      mkdir -p /home/ubuntu/unmanaged_k8s_clusters
+      sudo chown ubuntu /home/ubuntu/unmanaged_k8s_clusters
+      sudo chgrp ubuntu /home/ubuntu/unmanaged_k8s_clusters
+      #
+      #
+      #
+      cd /home/ubuntu/yaml-files
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/mixed-protocols-app/mixed-protocols-svc-app.yml
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/sctp_cnf/sctp-cnf.yml
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/sctp_cnf/sctp-client.yml
+      #
       echo "${nfs_path} ${vcd_ip}(rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports
       sudo systemctl start nfs-kernel-server.service
       sudo exportfs -a

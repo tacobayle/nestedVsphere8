@@ -233,19 +233,19 @@ resource "null_resource" "generating_kube_config_locally" {
 
 resource "null_resource" "ako_config_locally_wo_nsx" {
   depends_on = [null_resource.generating_kube_config_locally]
-  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
+  count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_cluster_name) : 0
 
   provisioner "local-exec" {
-    command = "cat > /home/ubuntu/ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako_wo_nsx[count.index].rendered}\nEOL"
+    command = "cat > /home/ubuntu/unmanaged_k8s_clusters/ako-values-${var.unmanaged_k8s_masters_cluster_name[count.index]}.yml <<EOL\n${data.template_file.values_ako_wo_nsx[count.index].rendered}\nEOL"
   }
 }
 
 resource "null_resource" "ako_config_locally_nsx" {
   depends_on = [null_resource.generating_kube_config_locally]
-  count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s_masters_ips) : 0
+  count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s_masters_cluster_name) : 0
 
   provisioner "local-exec" {
-    command = "cat > /home/ubuntu/ako_config_maps/values-cluster-${count.index + 1}.yaml <<EOL\n${data.template_file.values_ako_nsx[count.index].rendered}\nEOL"
+    command = "cat > /home/ubuntu/unmanaged_k8s_clusters/ako-values-${var.unmanaged_k8s_masters_cluster_name[count.index]}.yml <<EOL\n${data.template_file.values_ako_nsx[count.index].rendered}\nEOL"
   }
 }
 
@@ -277,69 +277,3 @@ resource "null_resource" "ako_prerequisites" {
   }
 
 }
-
-#
-#resource "null_resource" "ako_prerequisites" {
-#  count = length(var.unmanaged_k8s_masters_ips)
-#  connection {
-#    host = var.unmanaged_k8s_masters_ips[count.index]
-#    type = "ssh"
-#    agent = false
-#    user = var.k8s.username
-#    private_key = file("/home/ubuntu/.ssh/id_rsa")
-#  }
-#
-#  provisioner "file" {
-#    content = data.template_file.values[count.index].rendered
-#    destination = "values.yml"
-#  }
-#
-#  provisioner "file" {
-#    source = "templates/deployment1.yml"
-#    destination = "deployment1.yml"
-#  }
-#
-#  provisioner "file" {
-#    source = "templates/service_clusterIP.yml"
-#    destination = "service_clusterIP.yml"
-#  }
-#
-#  provisioner "file" {
-#    source = "templates/service_loadBalancer.yml"
-#    destination = "service_loadBalancer.yml"
-#  }
-#
-#  provisioner "file" {
-#    content = data.template_file.ingress[count.index].rendered
-#    destination = "ingress.yml"
-#  }
-#
-#  provisioner "file" {
-#    content = data.template_file.secure_ingress[count.index].rendered
-#    destination = "secure_ingress.yml"
-#  }
-#
-#  provisioner "file" {
-#    content = data.template_file.avi_crd_hostrule_waf[count.index].rendered
-#    destination = "avi_crd_hostrule_waf.yml"
-#  }
-#
-#  provisioner "file" {
-#    content = data.template_file.avi_crd_hostrule_tls_cert[count.index].rendered
-#    destination = "avi_crd_hostrule_tls_cert.yml"
-#  }
-#
-#  provisioner "remote-exec" {
-#    inline = [
-#      "echo \"export avi_password='${random_string.password.result}'\" | sudo tee -a /home/ubuntu/.profile",
-#      "helm repo add ako ${var.ako_helm_url}",
-#      "kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${var.docker_registry_username} --docker-password=${var.docker_registry_password} --docker-email=${var.docker_registry_email}",
-#      "kubectl patch serviceaccount default -p \"{\\\"imagePullSecrets\\\": [{\\\"name\\\": \\\"docker\\\"}]}\"",
-#      "kubectl create ns avi-system",
-#      "kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${var.docker_registry_username} --docker-password=${var.docker_registry_password} --docker-email=${var.docker_registry_email} -n avi-system",
-#      "kubectl patch serviceaccount default -p \"{\\\"imagePullSecrets\\\": [{\\\"name\\\": \\\"docker\\\"}]}\" -n avi-system",
-#      "openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out ssl.crt -keyout ssl.key -subj \"/C=US/ST=CA/L=Palo Alto/O=VMWARE/OU=IT/CN=ingress.${var.avi_domain}\"",
-#      "kubectl create secret tls cert01 --key=ssl.key --cert=ssl.crt",
-#    ]
-#  }
-#}

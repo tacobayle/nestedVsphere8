@@ -200,11 +200,11 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   echo "To ssh your TKG cluster node(s):" | tee -a /root/output.txt
   echo "  > kubectl get nodes -o json | jq -r .items[].status.addresses[1].address" | tee -a /root/output.txt
   echo "  > ssh capv@ip_of_tanzu_node -i $(jq -c -r .tkg.clusters.public_key_path /root/tkgm.json)" | tee -a /root/output.txt
-  echo "Add docker credential in your TKG cluster:" | tee -a /root/output.txt
-  echo "  > kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${TF_VAR_docker_registry_username} --docker-password=****** --docker-email=${TF_VAR_docker_registry_email}" | tee -a /root/output.txt
-  echo '  > kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a /root/output.txt
-  echo "Add avi-system name space:" | tee -a /root/output.txt
-  echo "  > kubectl create ns avi-system" | tee -a /root/output.txt
+  echo "Add docker credential in your TKG cluster:" | tee -a /root/output.txt >/dev/null 2>&1
+  echo "  > kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${TF_VAR_docker_registry_username} --docker-password=****** --docker-email=${TF_VAR_docker_registry_email}" | tee -a /root/output.txt >/dev/null 2>&1
+  echo '  > kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a /root/output.txt >/dev/null 2>&1
+  echo "Add avi-system name space:" | tee -a /root/output.txt >/dev/null 2>&1
+  echo "  > kubectl create ns avi-system" | tee -a /root/output.txt >/dev/null 2>&1
   echo "Deploy AKO for your workload clusters:" | tee -a /root/output.txt
   echo "  > helm install --generate-name $(jq -c -r .avi.config.ako.helm_url $jsonFile) --version $(jq -c -r .avi.config.ako.ako_version $jsonFile) -f values.yml --namespace=avi-system" | tee -a /root/output.txt
   echo "Connect to the tier0 to check the routes" | tee -a /root/output.txt

@@ -56,8 +56,8 @@ spec:
       port: 80
       targetPort: 80
 EOM
-    echo "$svc_yaml_data" | tee /root/svc-vrf-${vrf_count}.yml > /dev/null
-    scp -o StrictHostKeyChecking=no /root/svc-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/svc-vrf-${vrf_count}.yml
+    echo "$svc_yaml_data" | tee /root/svc-LB-vrf-${vrf_count}.yml > /dev/null
+    scp -o StrictHostKeyChecking=no /root/svc-LB-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/svc-LB-vrf-${vrf_count}.yml
 #
 # Ingress
 #
@@ -293,13 +293,3 @@ spec:
 EOM
 echo "$cnf_yaml_data" | tee /root/cnf-2.yml > /dev/null
 scp -o StrictHostKeyChecking=no /root/cnf-2.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/cnf-2.yml
-#
-# SCTP yaml file
-#
-ssh -o StrictHostKeyChecking=no -t ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) 'cd /home/ubuntu/yaml-files; wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/sctp_cnf/sctp-cnf.yml'
-ssh -o StrictHostKeyChecking=no -t ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) 'cd /home/ubuntu/yaml-files; wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/sctp_cnf/sctp-client.yml'
-#
-# Mixed Protocol svc yaml file
-#
-ssh -o StrictHostKeyChecking=no -t ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) 'cd /home/ubuntu/yaml-files; wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/mixed-protocols-app/mixed-protocols-app.yml'
-
