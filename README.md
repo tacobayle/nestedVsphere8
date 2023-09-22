@@ -32,10 +32,11 @@ Regardless of the scenario that you want to use, the repo will always create the
 ### Deployment Details
 
 The amount of nested ESXi hosts is based on the amount of IP provided in .vsphere_underlay.networks.vsphere.management.esxi_ips.
+
 The VM called external-gw-* acts as of:
 - a DNS server
 - a NTP server
-- for deployment/scenario which includes NSX: it does the gateway between the tier 0 and the external world providing source-NAT to allow the nested environment to access the Internet
+- for deployment/scenario which includes NSX: it is the gateway between the tier0 and the external world providing source-NAT to allow the nested environment to access the Internet
 - for deployment/scenario which includes K8s cluster (managed or non-managed): a single location to manage your K8s cluster via kubectl command
 
 ## How to consume this repo? - Where to get started?
@@ -44,9 +45,9 @@ The starting point to consume this repo is to have a K8s cluster to deploy the f
 - secrets
 - config-map
 - pod with the following connectivity:
-  - Internet
+  - to the Internet
   - to the web server(s) which contains the iso/ova files (defined in the config map)
-  - to outer/underlay vSphere API
+  - to the outer/underlay vSphere API
 
 Additionally, you need to have an external web server configured where the ISO/OVA files required will be downloaded.
 
