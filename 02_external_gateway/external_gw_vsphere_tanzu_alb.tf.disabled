@@ -1,4 +1,4 @@
-resource "vsphere_virtual_machine" "external_gw_tanzu" {
+resource "vsphere_virtual_machine" "external_gw" {
   count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
   name             = "external-gw-${var.date_index}"
   datastore_id     = data.vsphere_datastore.datastore.id
@@ -76,7 +76,7 @@ resource "vsphere_virtual_machine" "external_gw_tanzu" {
 }
 
 resource "null_resource" "add_nic_to_gw_alb_se" {
-  depends_on = [vsphere_virtual_machine.external_gw_tanzu]
+  depends_on = [vsphere_virtual_machine.external_gw]
   count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? 1 : 0
 
   provisioner "local-exec" {

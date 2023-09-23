@@ -15,3 +15,4 @@ variable "disk" {}
 variable "vcd_ip" {}
 variable "deployment" {}
 variable "default_kubectl_version" {}
+variable "yaml_directory" {}

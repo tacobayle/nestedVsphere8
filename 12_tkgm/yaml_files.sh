@@ -57,7 +57,7 @@ spec:
       targetPort: 80
 EOM
     echo "$svc_yaml_data" | tee /root/svc-LB-vrf-${vrf_count}.yml > /dev/null
-    scp -o StrictHostKeyChecking=no /root/svc-LB-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/svc-LB-vrf-${vrf_count}.yml
+    scp -o StrictHostKeyChecking=no /root/svc-LB-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/$(jq -c -r .yaml_directory /nestedVsphere8/02_external_gateway/variables.json)/svc-LB-vrf-${vrf_count}.yml
 #
 # Ingress
 #
@@ -124,7 +124,7 @@ spec:
         type: ref
 EOM
     echo "$svc_yaml_data" | tee /root/ingress-cnf-1-vrf-${vrf_count}.yml > /dev/null
-    scp -o StrictHostKeyChecking=no /root/ingress-cnf-1-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/ingress-cnf-1-vrf-${vrf_count}.yml
+    scp -o StrictHostKeyChecking=no /root/ingress-cnf-1-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/$(jq -c -r .yaml_directory /nestedVsphere8/02_external_gateway/variables.json)/ingress-cnf-1-vrf-${vrf_count}.yml
 read -r -d '' svc_yaml_data << EOM
 apiVersion: v1
 kind: Service
@@ -188,7 +188,7 @@ spec:
         type: ref
 EOM
     echo "$svc_yaml_data" | tee /root/ingress-cnf-2-vrf-${vrf_count}.yml > /dev/null
-    scp -o StrictHostKeyChecking=no /root/ingress-cnf-2-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/ingress-cnf-2-vrf-${vrf_count}.yml
+    scp -o StrictHostKeyChecking=no /root/ingress-cnf-2-vrf-${vrf_count}.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/$(jq -c -r .yaml_directory /nestedVsphere8/02_external_gateway/variables.json)/ingress-cnf-2-vrf-${vrf_count}.yml
     ((vrf_count++))
   done
   ((cluster_count++))
@@ -243,7 +243,7 @@ spec:
       restartPolicy: Always
 EOM
 echo "$cnf_yaml_data" | tee /root/cnf-1.yml > /dev/null
-scp -o StrictHostKeyChecking=no /root/cnf-1.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/cnf-1.yml
+scp -o StrictHostKeyChecking=no /root/cnf-1.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/$(jq -c -r .yaml_directory /nestedVsphere8/02_external_gateway/variables.json)/cnf-1.yml
 #
 read -r -d '' cnf_yaml_data << EOM
 apiVersion: apps/v1
@@ -292,4 +292,4 @@ spec:
       restartPolicy: Always
 EOM
 echo "$cnf_yaml_data" | tee /root/cnf-2.yml > /dev/null
-scp -o StrictHostKeyChecking=no /root/cnf-2.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/yaml-files/cnf-2.yml
+scp -o StrictHostKeyChecking=no /root/cnf-2.yml ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/$(jq -c -r .yaml_directory /nestedVsphere8/02_external_gateway/variables.json)/cnf-2.yml

@@ -52,5 +52,6 @@
       }
     }
   },
-  "default_kubectl_version": "1.26.6-00"
+  "default_kubectl_version": "1.26.6-00",
+  "yaml_directory": "yaml-files"
 }

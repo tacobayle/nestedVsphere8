@@ -86,9 +86,9 @@ write_files:
       sudo chown ubuntu /home/ubuntu/.kube
       sudo chgrp ubuntu /home/ubuntu/.kube
       #
-      mkdir -p /home/ubuntu/yaml-files
-      sudo chown ubuntu /home/ubuntu/yaml-files
-      sudo chgrp ubuntu /home/ubuntu/yaml-files
+      mkdir -p /home/ubuntu/${yaml_directory}
+      sudo chown ubuntu /home/ubuntu/${yaml_directory}
+      sudo chgrp ubuntu /home/ubuntu/${yaml_directory}
       #
       mkdir -p /home/ubuntu/tkgm/workload_clusters
       mkdir -p /home/ubuntu/tkgm/mgmt_cluster
@@ -108,10 +108,16 @@ write_files:
       #
       #
       #
-      cd /home/ubuntu/yaml-files
+      cd /home/ubuntu/${yaml_directory}
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/mixed-protocols-app/mixed-protocols-svc-app.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/sctp_cnf/sctp-cnf.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/sctp_cnf/sctp-client.yml
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-apps.yml
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-ingress.yml
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-crds.yml
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-svc-LB-1.
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-svc-LB-2.yml
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-svc-LB-3.yml
       #
       echo "${nfs_path} ${vcd_ip}(rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports
       sudo systemctl start nfs-kernel-server.service

@@ -86,36 +86,6 @@ resource "null_resource" "prep_tkc" {
   }
 
   provisioner "file" {
-    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/deployment1.yml"
-    destination = "/home/ubuntu/yaml-files/deployment1.yml"
-  }
-
-  provisioner "file" {
-    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/deployment2.yml"
-    destination = "/home/ubuntu/yaml-files/deployment2.yml"
-  }
-
-  provisioner "file" {
-    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/deployment3.yml"
-    destination = "/home/ubuntu/yaml-files/deployment3.yml"
-  }
-
-  provisioner "file" {
-    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/svc1.yml"
-    destination = "/home/ubuntu/yaml-files/svc1.yml"
-  }
-
-  provisioner "file" {
-    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/svc2.yml"
-    destination = "/home/ubuntu/yaml-files/svc2.yml"
-  }
-
-  provisioner "file" {
-    source = "/nestedVsphere8/11_vsphere_with_tanzu/templates/svc3.yml"
-    destination = "/home/ubuntu/yaml-files/svc3.yml"
-  }
-
-  provisioner "file" {
     source = "/root/tanzu_wo_nsx.json"
     destination = "/home/ubuntu/tanzu_wo_nsx.json"
   }

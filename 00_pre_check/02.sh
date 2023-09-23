@@ -41,6 +41,10 @@ echo "   +++ Adding Ubuntu OVA path"
 ubuntu_ova_path=$(jq -c -r .ubuntu_ova_path $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
 #
+echo "   +++ Adding yaml_directory"
+yaml_directory=$(jq -c -r .yaml_directory $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '. += {"yaml_directory": "'$(echo $yaml_directory)'"}')
+#
 echo "   +++ Adding alb_controller_name"
 alb_controller_name=$(jq -c -r .alb_controller_name $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '.external_gw += {"alb_controller_name": "'$(echo $alb_controller_name)'"}')
@@ -114,7 +118,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   #
   mv /nestedVsphere8/02_external_gateway/external_gw_nsx.tf.disabled /nestedVsphere8/02_external_gateway/external_gw_nsx.tf
   mv /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf.disabled
-  mv /nestedVsphere8/02_external_gateway/external_gw.tf /nestedVsphere8/02_external_gateway/external_gw.tf.disabled
   #
   new_routes="[]"
   if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then

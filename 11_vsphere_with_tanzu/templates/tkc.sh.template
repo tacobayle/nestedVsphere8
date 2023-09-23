@@ -34,9 +34,6 @@ do
 #      /home/ubuntu/bin/kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${docker_registry_username} --docker-password=${docker_registry_password} --docker-email=${docker_registry_email}
 #      /home/ubuntu/bin/kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"
 #      /home/ubuntu/bin/kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated
-#      /home/ubuntu/bin/kubectl apply -f /home/ubuntu/yaml-files/deployment1.yml
-#      /home/ubuntu/bin/kubectl apply -f /home/ubuntu/yaml-files/deployment2.yml
-#      /home/ubuntu/bin/kubectl apply -f /home/ubuntu/yaml-files/deployment3.yml
 #      break
 #    fi
 #    ((attempt_tkc++))

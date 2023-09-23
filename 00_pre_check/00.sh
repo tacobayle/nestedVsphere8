@@ -421,6 +421,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
   echo ""
   echo "==> Adding .deployment: vsphere_wo_nsx"
   variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_wo_nsx"}')
+  mv /nestedVsphere8/02_external_gatewayexternal_gw.tf.disabled /nestedVsphere8/02_external_gatewayexternal_gw.tf
 fi
 #
 # Nested vSphere wo NSX with Avi
@@ -498,6 +499,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
     echo ""
     echo "==> Adding .deployment: vsphere_alb_wo_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_alb_wo_nsx"}')
+    mv /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf.disabled /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf
   fi
   #
   # vsphere_tanzu_alb_wo_nsx
@@ -507,6 +509,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
     echo ""
     echo "==> Adding .deployment: vsphere_tanzu_alb_wo_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
+    mv /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf.disabled /nestedVsphere8/02_external_gateway/external_gw_vsphere_tanzu_alb.tf
   fi
 fi
 #

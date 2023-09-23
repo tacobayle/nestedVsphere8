@@ -39,6 +39,7 @@ data "template_file" "external_gw_userdata" {
     dns      = join(", ", var.external_gw.bind.forwarders)
     netplanFile = "/etc/netplan/50-cloud-init.yaml"
     privateKey = "/root/.ssh/id_rsa"
+    yaml_directory = var.yaml_directory
     ansible_version = var.ansible_version
     avi_sdk_version = var.avi_sdk_version
     forwarders = join("; ", var.external_gw.bind.forwarders)
@@ -54,4 +55,33 @@ data "template_file" "external_gw_userdata" {
     nfs_path = var.external_gw.nfs_path
     K8s_version = var.default_kubectl_version
   }
+}
+
+resource "null_resource" "yaml_replace_avi_domain" {
+  depends_on = [vsphere_virtual_machine.external_gw]
+
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "file" {
+    source      = "/root/external_gw.json"
+    destination = "/home/ubuntu/external_gw.json"
+  }
+
+  provisioner "file" {
+    source      = "/nestedVsphere8/02_external_gateway/yaml_replace_avi_domain.sh"
+    destination = "/home/ubuntu/${var.yaml_directory}/yaml_replace_avi_domain.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline      = [
+      "/bin/bash /home/ubuntu/${var.yaml_directory}/yaml_replace_avi_domain.sh"
+    ]
+  }
+
 }
