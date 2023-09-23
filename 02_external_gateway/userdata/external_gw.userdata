@@ -104,9 +104,6 @@ write_files:
       mkdir -p /home/ubuntu/unmanaged_k8s_clusters
       sudo chown ubuntu /home/ubuntu/unmanaged_k8s_clusters
       sudo chgrp ubuntu /home/ubuntu/unmanaged_k8s_clusters
-      mkdir -p /home/ubuntu/tf_remote_k8s
-      sudo chown ubuntu /home/ubuntu/tf_remote_k8s
-      sudo chgrp ubuntu /home/ubuntu/tf_remote_k8s
       #
       #
       #
