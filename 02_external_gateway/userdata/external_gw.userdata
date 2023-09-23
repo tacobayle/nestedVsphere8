@@ -79,6 +79,7 @@ write_files:
       run_cmd 'sudo apt install -y expect; ls /usr/bin/expect'
       run_cmd 'sudo apt install -y python3-jmespath; pip3 list | grep jmespath'
       run_cmd 'sudo apt -y install nfs-kernel-server; ls /usr/share/nfs-kernel-server'
+      #
       mkdir -p /nfs/vCDspace
       #
       mkdir -p /home/ubuntu/.kube
