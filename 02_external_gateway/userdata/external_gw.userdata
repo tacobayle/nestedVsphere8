@@ -80,6 +80,15 @@ write_files:
       run_cmd 'sudo apt install -y python3-jmespath; pip3 list | grep jmespath'
       run_cmd 'sudo apt -y install nfs-kernel-server; ls /usr/share/nfs-kernel-server'
       mkdir -p /nfs/vCDspace
+      #
+      mkdir -p /home/ubuntu/.kube
+      sudo chown ubuntu /home/ubuntu/.kube
+      sudo chgrp ubuntu /home/ubuntu/.kube
+      #
+      mkdir -p /home/ubuntu/yaml-files
+      sudo chown ubuntu /home/ubuntu/yaml-files
+      sudo chgrp ubuntu /home/ubuntu/yaml-files
+      #
       mkdir -p /home/ubuntu/tkgm/workload_clusters
       mkdir -p /home/ubuntu/tkgm/mgmt_cluster
       mkdir -p /home/ubuntu/tkgm/bin
@@ -91,15 +100,13 @@ write_files:
       mkdir -p /home/ubuntu/tanzu
       sudo chown ubuntu /home/ubuntu/tanzu
       sudo chgrp ubuntu /home/ubuntu/tanzu
-      mkdir -p /home/ubuntu/yaml-files
-      sudo chown ubuntu /home/ubuntu/yaml-files
-      sudo chgrp ubuntu /home/ubuntu/yaml-files
-      #
-      #
       #
       mkdir -p /home/ubuntu/unmanaged_k8s_clusters
       sudo chown ubuntu /home/ubuntu/unmanaged_k8s_clusters
       sudo chgrp ubuntu /home/ubuntu/unmanaged_k8s_clusters
+      mkdir -p /home/ubuntu/tf_remote_k8s
+      sudo chown ubuntu /home/ubuntu/tf_remote_k8s
+      sudo chgrp ubuntu /home/ubuntu/tf_remote_k8s
       #
       #
       #
