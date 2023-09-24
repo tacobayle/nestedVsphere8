@@ -356,7 +356,7 @@ vsphere_networks='["management", "vmotion", "vsan"]'
 for network in $(echo $vsphere_networks | jq -c -r .[])
 do
   test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.$network.name $jsonFile "   "
-  test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.vsphere.$network.cidr $jsonFile)" "   "
+  test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.vsphere.$network.cidr $jsonFile)" "   "
   test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.$network.esxi_ips $jsonFile "   "
   for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.$network.esxi_ips[] $jsonFile)
   do
