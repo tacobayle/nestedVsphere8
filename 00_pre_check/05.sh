@@ -59,12 +59,6 @@ fi
 if [[ $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) == "extra_large" ]] ;  then
   nsx_json=$(echo $nsx_json | jq '.nsx.config.edge_node += {"cpu": 16, "memory": 64, "disk": 200}')
 fi
-prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-nsx_json=$(echo $nsx_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
-#
-echo "   +++ Adding prefix for management network..."
-prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-nsx_json=$(echo $nsx_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
 #
 echo "   +++ Adding prefix for NSX external network..."
 prefix=$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile | cut -d"/" -f2)

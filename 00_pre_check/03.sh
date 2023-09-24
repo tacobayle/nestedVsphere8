@@ -89,10 +89,6 @@ echo "   +++ Adding networks..."
 networks=$(jq -c -r '.networks' $localJsonFile)
 nested_vsphere_json=$(echo $nested_vsphere_json | jq '. += {"networks": '$(echo $networks)'}')
 #
-echo "   +++ Adding prefix for vSphere management network..."
-prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
-#
 echo "   +++ Adding a date_index"
 date_index=$(date '+%Y%m%d%H%M%S')
 nested_vsphere_json=$(echo $nested_vsphere_json | jq '. += {"date_index": '$(echo $date_index)'}')

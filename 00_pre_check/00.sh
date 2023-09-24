@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 source /nestedVsphere8/bash/test_if_variables.sh
+source /nestedVsphere8/bash/ip.sh
 #
 jsonFile="/etc/config/variables.json"
 #
@@ -355,12 +356,21 @@ vsphere_networks='["management", "vmotion", "vsan"]'
 for network in $(echo $vsphere_networks | jq -c -r .[])
 do
   test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.$network.name $jsonFile "   "
-  test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.vsphere.$network.netmask $jsonFile)" "   "
+  test_if_variable_is_netmask "$(jq -c -r .vsphere_underlay.networks.vsphere.$network.cidr $jsonFile)" "   "
   test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.$network.esxi_ips $jsonFile "   "
   for ip in $(jq -c -r .vsphere_underlay.networks.vsphere.$network.esxi_ips[] $jsonFile)
   do
     test_if_variable_is_valid_ip $ip "   "
   done
+  #
+  echo "   +++ Adding prefix for $network network..."
+  prefix=$(jq -c -r .vsphere_underlay.networks.vsphere.$network.cidr $jsonFile | cut -d"/" -f2)
+  variables_json=$(echo $variables_json | jq '.vsphere_underlay.networks.vsphere.'$network' += {"prefix": "'$(echo $prefix)'"}')
+  #
+  echo "   +++ Adding netmask for $network network..."
+  netmask=$(ip_netmask_by_prefix $(jq -c -r .vsphere_underlay.networks.vsphere.$network.cidr $jsonFile | cut -d"/" -f2) "   ++++++")
+  variables_json=$(echo $variables_json | jq '.vsphere_underlay.networks.vsphere.'$network' += {"netmask": "'$(echo $netmask)'"}')
+  #
 done
 #
 test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.gateway $jsonFile "   "
@@ -527,7 +537,6 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_if_variable_is_valid_ip $ip "   "
   done
   test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.name $jsonFile "   "
-#  test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.netmask $jsonFile "   "
   test_if_json_variable_is_defined .vsphere_underlay.networks.nsx.external.tier0_ips $jsonFile "   "
   test_if_variable_is_valid_cidr "$(jq -c -r .vsphere_underlay.networks.nsx.external.cidr $jsonFile)" "   "
   for ip in $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_ips[] $jsonFile)

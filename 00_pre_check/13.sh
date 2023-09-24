@@ -33,14 +33,6 @@ echo "   +++ Adding vcd_port_group_db..."
 vcd_port_group_db=$(jq -c -r '.networks.vsphere.VSAN.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
 vcd_json=$(echo $vcd_json | jq '. += {"vcd_port_group_db": "'$(echo $vcd_port_group_db)'"}')
 #
-echo "   +++ Adding prefix for management network..."
-prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-vcd_json=$(echo $vcd_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
-#
-echo "   +++ Adding prefix for db network..."
-prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.vsan.netmask' $jsonFile) "   ++++++")
-vcd_json=$(echo $vcd_json | jq '.vsphere_underlay.networks.vsphere.vsan += {"prefix": "'$(echo $prefix)'"}')
-#
 echo "   +++ Adding vcd_appliance..."
 vcd_appliance=$(jq -c -r '.vcd_appliance' $localJsonFile)
 vcd_json=$(echo $vcd_json | jq '. += {"vcd_appliance": '$(echo $vcd_appliance)'}')

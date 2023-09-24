@@ -29,10 +29,6 @@ reverse=${addr%.}
 echo "   ++++++ Found: $reverse"
 external_gw_json=$(echo $external_gw_json | jq '.external_gw.bind += {"reverse": "'$(echo $reverse)'"}')
 #
-echo "   +++ Adding prefix for management network..."
-prefix=$(ip_prefix_by_netmask $(jq -c -r '.vsphere_underlay.networks.vsphere.management.netmask' $jsonFile) "   ++++++")
-external_gw_json=$(echo $external_gw_json | jq '.vsphere_underlay.networks.vsphere.management += {"prefix": "'$(echo $prefix)'"}')
-#
 echo "   +++ Adding a date index"
 date_index=$(date '+%Y%m%d%H%M%S')
 external_gw_json=$(echo $external_gw_json | jq '. += {"date_index": '$(echo $date_index)'}')

@@ -107,11 +107,11 @@ rbac:
   pspEnable: false
 
 
-  #avicredentials:
-  #username: ''
-  #password: ''
-  #authtoken:
-  #certificateAuthorityData:
+avicredentials:
+  username: 'admin'
+  password: '${password}'
+  authtoken:
+  certificateAuthorityData:
 
 
 persistentVolumeClaim: ''

@@ -173,6 +173,7 @@ data "template_file" "values_ako_wo_nsx" {
     controllerVersion = var.avi.version
     cloudName    = var.avi.config.cloud.name
     controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
+    password = var.avi_password
   }
 }
 
@@ -193,6 +194,7 @@ data "template_file" "values_ako_nsx" {
     controllerVersion = var.avi.version
     cloudName    = var.avi.config.cloud.name
     controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
+    password = var.avi_password
   }
 }
 
