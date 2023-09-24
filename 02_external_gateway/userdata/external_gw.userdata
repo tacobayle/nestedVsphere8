@@ -115,7 +115,7 @@ write_files:
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-apps.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-ingress.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-crds.yml
-      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-svc-LB-1.
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-svc-LB-1.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-svc-LB-2.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-svc-LB-3.yml
       #
