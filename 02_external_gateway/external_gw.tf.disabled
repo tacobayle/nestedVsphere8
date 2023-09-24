@@ -56,3 +56,10 @@ resource "vsphere_virtual_machine" "external_gw" {
   }
 }
 
+resource "null_resource" "end" {
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command = "echo 'dummy step'"
+  }
+}

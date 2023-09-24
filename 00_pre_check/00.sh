@@ -431,7 +431,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
   echo ""
   echo "==> Adding .deployment: vsphere_wo_nsx"
   variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_wo_nsx"}')
-  mv /nestedVsphere8/02_external_gatewayexternal_gw.tf.disabled /nestedVsphere8/02_external_gatewayexternal_gw.tf
+  mv /nestedVsphere8/02_external_gateway/external_gw.tf.disabled /nestedVsphere8/02_external_gateway/external_gw.tf
 fi
 #
 # Nested vSphere wo NSX with Avi
