@@ -17,6 +17,7 @@ data "template_file" "values" {
     users = jsonencode(var.avi.config.users)
     domain = var.avi.config.domain
     cloud_name = var.avi.config.cloud.name
+    dhcp_enabled = var.avi.config.cloud.dhcp_enabled
     cloud_obj_name_prefix = var.avi.config.cloud.obj_name_prefix
     transport_zone_name = var.transport_zone
     network_management = jsonencode(var.avi.config.cloud.network_management)

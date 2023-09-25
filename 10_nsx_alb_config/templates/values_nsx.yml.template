@@ -29,6 +29,7 @@ nsxt:
   cloud:
     name: ${cloud_name}
     obj_name_prefix: ${cloud_obj_name_prefix}
+    dhcp_enabled: ${dhcp_enabled}
   domains:
     - name: ${domain}
   transport_zone:

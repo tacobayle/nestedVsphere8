@@ -54,6 +54,10 @@ if [[ $(jq -c -r .avi.config.users $jsonFile) == "null" ]]; then
   avi_json=$(echo $avi_json | jq '.avi.config += {"users": []}')
 fi
 #
+echo "   +++ Adding dhcp_enabled on .avi.config.cloud"
+dhcp_enabled=$(jq -c -r '.dhcp_enabled_default' $localJsonFile)
+avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"dhcp_enabled": "'$(echo $dhcp_enabled)'"}')
+#
 # ALB with NSX-T cloud use cases
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
@@ -239,6 +243,13 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   if [[ $(echo $avi_pools | jq '. | length') -gt 0 ]] ; then
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
     avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '$(echo $avi_virtual_services_http)'}')
+  fi
+  #
+  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]] ; then
+    echo "   +++ Updating dhcp_enabled on .avi.config.cloud"
+    dhcp_enabled=$(jq -c -r '.dhcp_enabled_if_vsphere_nsx_tanzu_alb' $localJsonFile)
+    avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.dhcp_enabled)')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"dhcp_enabled": "'$(echo $dhcp_enabled)'"}')
   fi
 fi
 #
