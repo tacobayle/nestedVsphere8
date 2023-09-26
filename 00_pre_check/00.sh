@@ -82,13 +82,6 @@ test_nsx_k8s_variables () {
           exit 255
         fi
         test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cni_version defined"
-        test_if_variable_is_defined $(echo $cluster | jq -c .ako_version) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a ako_version defined"
-        if [[ $(echo $cluster | jq -c -r .ako_version) == "1.10.1" ]] ; then
-          echo "   +++ ako_version is $(echo $cluster | jq -c -r .ako_version) which is supported"
-        else
-          echo "   +++ ako_version $(echo $cluster | jq -c -r .ako_version) is not supported"
-          exit 255
-        fi
         test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " ".nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cluster_ips defined"
         if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
         for ip in $(echo $cluster | jq -c -r .cluster_ips[])
@@ -484,13 +477,6 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
           exit 255
         fi
         test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cni_version defined"
-        test_if_variable_is_defined $(echo $cluster | jq -c .ako_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a ako_version defined"
-        if [[ $(echo $cluster | jq -c -r .ako_version) == "1.10.1" ]] ; then
-          echo "   +++ ako_version is $(echo $cluster | jq -c -r .ako_version) which is supported"
-        else
-          echo "   +++ ako_version $(echo $cluster | jq -c -r .ako_version) is not supported"
-          exit 255
-        fi
         test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cluster_ips defined"
         if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
         for ip in $(echo $cluster | jq -c -r .cluster_ips[])

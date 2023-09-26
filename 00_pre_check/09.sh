@@ -23,7 +23,6 @@ unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"ubu
 #unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"ako_url": "'$(echo $ako_url)'"}')
 #
 unmanaged_k8s_clusters_nodes=[]
-unmanaged_k8s_clusters_ako_version=[]
 unmanaged_k8s_masters_ips=[]
 unmanaged_k8s_masters_segments=[]
 unmanaged_k8s_masters_cidr=[]
@@ -57,7 +56,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
       for cluster in $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters[] $jsonFile)
       do
         unmanaged_k8s_clusters_nodes=$(echo $unmanaged_k8s_clusters_nodes | jq '. += ["'$(echo $cluster | jq -c -r '.cluster_ips | length')'"]')
-        unmanaged_k8s_clusters_ako_version=$(echo $unmanaged_k8s_clusters_ako_version | jq '. += ["'$(echo $cluster | jq -c -r .ako_version )'"]')
         unmanaged_k8s_masters_ips=$(echo $unmanaged_k8s_masters_ips | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ips[0])'"]')
         unmanaged_k8s_masters_cluster_name=$(echo $unmanaged_k8s_masters_cluster_name | jq '. += ["'$(echo $cluster | jq -c -r .cluster_name)'"]')
         unmanaged_k8s_masters_segments=$(echo $unmanaged_k8s_masters_segments | jq '. += ["'$(jq -c -r .networks.alb.$network.port_group_name /nestedVsphere8/02_external_gateway/variables.json)'"]')
@@ -106,7 +104,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
       for cluster in $(echo $item | jq -c -r .k8s_clusters[])
       do
         unmanaged_k8s_clusters_nodes=$(echo $unmanaged_k8s_clusters_nodes | jq '. += ["'$(echo $cluster | jq -c -r '.cluster_ips | length')'"]')
-        unmanaged_k8s_clusters_ako_version=$(echo $unmanaged_k8s_clusters_ako_version | jq '. += ["'$(echo $cluster | jq -c -r .ako_version )'"]')
         unmanaged_k8s_masters_ips=$(echo $unmanaged_k8s_masters_ips | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ips[0])'"]')
         unmanaged_k8s_masters_cluster_name=$(echo $unmanaged_k8s_masters_cluster_name | jq '. += ["'$(echo $cluster | jq -c -r .cluster_name)'"]')
         unmanaged_k8s_masters_segments=$(echo $unmanaged_k8s_masters_segments | jq '. += ["'$(echo $item | jq -c -r .display_name)'"]')
@@ -150,8 +147,6 @@ fi
 #
 echo "   +++ Adding unmanaged_k8s_clusters_nodes..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_clusters_nodes": '$(echo $unmanaged_k8s_clusters_nodes)'}')
-echo "   +++ Adding unmanaged_k8s_clusters_ako_version..."
-unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_clusters_ako_version": '$(echo $unmanaged_k8s_clusters_ako_version)'}')
 echo "   +++ Adding unmanaged_k8s_masters_ips..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"unmanaged_k8s_masters_ips": '$(echo $unmanaged_k8s_masters_ips)'}')
 echo "   +++ Adding unmanaged_k8s_masters_cluster_name..."

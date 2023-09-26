@@ -158,7 +158,7 @@ resource "null_resource" "K8s_sanity_check" {
 
 data "template_file" "values_ako_wo_nsx" {
   count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.unmanaged_k8s_masters_ips) : 0
-  template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
+  template = file("templates/values.yml.1.10.1.template")
   vars = {
     disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
     clusterName  = var.unmanaged_k8s_masters_cluster_name[count.index]
@@ -179,7 +179,7 @@ data "template_file" "values_ako_wo_nsx" {
 
 data "template_file" "values_ako_nsx" {
   count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s_masters_ips) : 0
-  template = file("templates/values.yml.${var.unmanaged_k8s_clusters_ako_version[count.index]}.template")
+  template = file("templates/values.yml.1.10.1.template")
   vars = {
     disableStaticRouteSync = var.unmanaged_k8s_masters_ako_disableStaticRouteSync[count.index]
     clusterName  = var.unmanaged_k8s_masters_cluster_name[count.index]

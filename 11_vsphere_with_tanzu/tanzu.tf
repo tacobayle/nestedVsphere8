@@ -158,3 +158,44 @@ resource "null_resource" "run_tkc" {
     ]
   }
 }
+
+data "template_file" "values_ako_wo_nsx" {
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.tanzu.tkc_clusters) : 0
+  template = file("templates/values.yml.1.10.1.template")
+  vars = {
+    disableStaticRouteSync = false
+    clusterName  = var.tanzu.tkc_clusters[count.index].name
+    cniPlugin    = "antrea"
+    subnetIP     = split("/", var.vsphere_underlay.networks.alb.vip.cidr)[0]
+    subnetPrefix = split("/", var.vsphere_underlay.networks.alb.vip.cidr)[1]
+    networkName  = var.networks.alb.vip.port_group_name
+    serviceType  = "ClusterIP"
+    shardVSSize  = "SMALL"
+    loglevel     = "WARN"
+    serviceEngineGroupName = "Default-Group"
+    controllerVersion = var.avi.version
+    cloudName    = var.avi.config.cloud.name
+    controllerHost = var.vsphere_underlay.networks.vsphere.management.avi_nested_ip
+    password = var.avi_password
+  }
+}
+
+resource "null_resource" "transfer_ako_yaml_files" {
+
+  count = var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.tanzu.tkc_clusters) : 0
+
+
+  connection {
+    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+    type        = "ssh"
+    agent       = false
+    user        = "ubuntu"
+    private_key = file("/root/.ssh/id_rsa")
+  }
+
+  provisioner "file" {
+    content     = data.template_file.values_ako_wo_nsx[count.index].rendered
+    destination = "/home/ubuntu/tkc/ako-values-${var.tanzu.tkc_clusters[count.index].name}.yml"
+  }
+
+}
