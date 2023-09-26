@@ -191,6 +191,7 @@ fi
 # Tanzu or unmanaged K8s clusters
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]] ; then
+  echo "" | tee -a /root/output.txt
   echo "Deploy AKO for your unmanaged workload/tkc clusters:" | tee -a /root/output.txt
   echo "  > helm install --generate-name $(jq -c -r .avi.config.ako.helm_url $jsonFile) --version $(jq -c -r .avi.config.ako.ako_version $jsonFile) -f values.yml --namespace=avi-system" | tee -a /root/output.txt
 fi
