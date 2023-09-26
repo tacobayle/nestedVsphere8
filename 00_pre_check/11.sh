@@ -19,7 +19,7 @@ echo "   +++ Adding tanzu_local"
 tanzu_local=$(jq -c -r .tanzu_local $localJsonFile)
 tanzu_wo_nsx_json=$(echo $tanzu_wo_nsx_json | jq '. += {"tanzu_local": '$(echo $tanzu_local)'}')
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
   echo "   +++ Adding netmasks"
   alb_networks='["se", "backend", "vip", "tanzu"]'
   for network in $(echo $alb_networks | jq -c -r .[])
@@ -28,6 +28,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     netmask=$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.'$network'.cidr'  $jsonFile| cut -d"/" -f2) "   ++++++")
     tanzu_wo_nsx_json=$(echo $tanzu_wo_nsx_json | jq '.vsphere_underlay.networks.alb.'$network' += {"netmask": "'$(echo $netmask)'"}')
   done
+  #
+  echo "   +++ Adding avi.config.cloud.name..."
+  unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.avi.config.cloud += {"name": "'$(jq -c -r '.vcenter_default_cloud_name' /nestedVsphere8/07_nsx_alb/variables.json)'"}')
+  #
 fi
 #
 echo $tanzu_wo_nsx_json | jq . | tee /root/tanzu_wo_nsx.json > /dev/null
