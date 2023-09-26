@@ -112,7 +112,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
   do
     if [[ $network != "se" ]] ; then
       echo "   +++ Adding vcenter ip route prefix $(jq .vsphere_underlay.networks.alb.$network.cidr $jsonFile)..."
-      ip_routes_vcenter=$(echo $ip_routes_vcenter | jq '. += ["'$(jq .vsphere_underlay.networks.alb.$network.cidr $jsonFile)'"]')
+      ip_routes_vcenter=$(echo $ip_routes_vcenter | jq '. += ['$(jq .vsphere_underlay.networks.alb.$network.cidr $jsonFile)']')
     fi
   done
   nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vsphere_nested  += {"ip_routes_vcenter": '$(echo $ip_routes_vcenter)'}')
