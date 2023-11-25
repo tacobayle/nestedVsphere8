@@ -190,9 +190,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
     #
     if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
       echo "   +++ Creating external gateway routes to Tanzu CIDRs..."
-      tanzu_segment=$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)
-      tanzu_tier1=$(jq -c -r --arg tanzu_segment ${tanzu_segment} '.nsx.config.segments_overlay[] | select( .display_name == $tanzu_segment ) | .tier1' $jsonFile)
-      tanzu_tier0=$(jq -c -r --arg tanzu_tier1 ${tanzu_tier1} '.nsx.config.tier1s[] | select( .display_name == $tanzu_tier1 ) | .tier0' $jsonFile)
+      tanzu_tier0=$(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile)
       tanzu_tier0_index=$(jq -c -r --arg tanzu_tier0 ${tanzu_tier0} '.nsx.config.tier0s | map(.display_name == $tanzu_tier0) | index(true)' $jsonFile)
       namespace_cidr=$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)
       new_routes=$(echo $new_routes | jq '. += [{"to": "'${namespace_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
