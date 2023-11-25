@@ -128,15 +128,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   fi
   #
   if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
-    ip_routes_vcenter="[]"
     if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
-      for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
-      do
-        echo "   +++ Adding vcenter ip route prefix $(echo $segment | jq -c -r .cidr)..."
-        ip_routes_vcenter=$(echo $ip_routes_vcenter | jq '. += ["'$(echo $segment | jq -c -r .cidr)'"]')
-      done
+      ip_routes_vcenter=$(jq -c -r '.nsx.config.segments_overlay | map(select(any) | .cidr)' $jsonFile)
     fi
-    nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vsphere_nested  += {"ip_routes_vcenter": '$(echo $ip_routes_vcenter)'}')
+    nested_vsphere_json=$(echo $nested_vsphere_json | jq '.vsphere_nested  += {"ip_routes_vcenter": '${ip_routes_vcenter}'}')
   fi
 fi
 echo $nested_vsphere_json | jq . | tee /root/nested_vsphere.json > /dev/null

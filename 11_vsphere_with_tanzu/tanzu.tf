@@ -86,8 +86,8 @@ resource "null_resource" "prep_tkc" {
   }
 
   provisioner "file" {
-    source = "/root/tanzu_wo_nsx.json"
-    destination = "/home/ubuntu/tanzu_wo_nsx.json"
+    source = "/root/vsphere_with_tanzu.json"
+    destination = "/home/ubuntu/vsphere_with_tanzu.json"
   }
 
   provisioner "file" {

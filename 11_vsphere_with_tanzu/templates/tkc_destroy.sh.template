@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-jsonFile="/home/ubuntu/tanzu_wo_nsx.json"
+jsonFile="/home/ubuntu/vsphere_with_tanzu.json"
 #
 IFS=$'\n'
 #

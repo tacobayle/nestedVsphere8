@@ -188,6 +188,20 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
     fi
     #
     #
+    if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
+      tanzu_segment=$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)
+      tanzu_tier1=$(jq -c -r --arg tanzu_segment ${tanzu_segment} '.nsx.config.segments_overlay[] | select( .display_name == $tanzu_segment ) | .tier1' $jsonFile)
+      tanzu_tier0=$(jq -c -r --arg tanzu_tier1 ${tanzu_tier1} '.nsx.config.tier1s[] | select( .display_name == $tanzu_tier1 ) | .tier0' $jsonFile)
+      tanzu_tier0_index=$(jq -c -r --arg tanzu_tier0 ${tanzu_tier0} '.nsx.config.tier0s | map(.display_name == $tanzu_tier0) | index(true)' $jsonFile)
+      namespace_cidr=$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)
+      new_routes=$(echo $new_routes | jq '. += [{"to": "'${namespace_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+      echo "   ++++++ Route to ${namespace_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
+      ingress_cidr=$(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
+      new_routes=$(echo $new_routes | jq '. += [{"to": "'${ingress_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+      echo "   ++++++ Route to ${ingress_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
+    fi
+    #
+    #
     echo "   +++ Creating External ip_table_prefixes..."
     ip_table_prefixes="[]"
     if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
@@ -198,8 +212,13 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
           echo "   ++++++ Prefix $(echo $segment | jq -c -r .cidr) added: OK"
         fi
       done
-      external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
     fi
+    if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
+      namespace_cidr=$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)
+      ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'${namespace_cidr}'"]')
+      echo "   ++++++ Prefix ${namespace_cidr} added: OK"
+    fi
+    external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
   fi
 #
   echo "   +++ Adding .routes..."

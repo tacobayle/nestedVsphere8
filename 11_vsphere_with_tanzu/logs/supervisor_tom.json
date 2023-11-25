@@ -1,0 +1,49 @@
+{
+  "specVersion":"1.0",
+  "supervisorSpec":
+    {
+      "supervisorName":"supervisor"
+    },
+  "envSpec":
+    {
+      "vcenterDetails":
+        {
+          "vcenterAddress":"vcsa-01.tkgs.lab",
+          "vcenterCluster":"cluster1"
+        }
+    },
+  "tkgsComponentSpec":
+    {
+      "tkgsStoragePolicySpec":
+        {
+          "masterStoragePolicy":"vSAN Default Storage Policy",
+          "imageStoragePolicy":"vSAN Default Storage Policy",
+          "ephemeralStoragePolicy":"vSAN Default Storage Policy"
+        },
+      "tkgsMgmtNetworkSpec":
+        {
+          "tkgsMgmtNetworkName":"my-segment-mgmt",
+          "tkgsMgmtIpAssignmentMode":"STATICRANGE",
+          "tkgsMgmtNetworkStartingIp":"100.100.11.100",
+          "tkgsMgmtNetworkGatewayCidr":"100.100.11.1/24", // SNAT at the extrnal-gw + ip route at the external gw to the tier0 + ip route configured on ESXi/vCenter
+          "tkgsMgmtNetworkDnsServers":["192.168.130.23"],
+          "tkgsMgmtNetworkSearchDomains":["tkgs.lab"],
+          "tkgsMgmtNetworkNtpServers":["time.vmware.com"]
+        },
+      "tkgsNcpClusterNetworkInfo":
+        {
+          "tkgsClusterDistributedSwitch":"nsx-overlay",
+          "tkgsNsxEdgeCluster":"my-edge-cluster-01",
+          "tkgsNsxTier0Gateway":"my-tier0",
+          "tkgsNamespaceSubnetPrefix":27,
+          "tkgsRoutedMode":true,
+          "tkgsNamespaceNetworkCidrs":["100.100.24.0/23"], // SNAT at the extrnal-gw + ip route at the external gw to the tier0
+          "tkgsIngressCidrs":["100.100.23.0/24"], // ip route at the external gw to the tier0
+          "tkgsEgressCidrs":[],
+          "tkgsWorkloadDnsServers":["192.168.130.23"],
+          "tkgsWorkloadServiceCidr":"10.96.0.0/24"
+        },
+      "apiServerDnsNames":["supervisor.tkgs.lab"],
+      "controlPlaneSize":"TINY"
+    }
+}

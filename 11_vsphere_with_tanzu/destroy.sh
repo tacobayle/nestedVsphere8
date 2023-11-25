@@ -2,7 +2,7 @@
 #
 source /nestedVsphere8/bash/vcenter_api.sh
 #
-jsonFile="/root/tanzu_wo_nsx.json"
+jsonFile="/root/vsphere_with_tanzu.json"
 #
 IFS=$'\n'
 #
