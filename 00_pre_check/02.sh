@@ -116,7 +116,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   #
   new_routes="[]"
   if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
-    echo "   +++ Creating External gateway routes to subnet segments..."
+    echo "   +++ Creating external gateway routes to overlay segments..."
     for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
     do
       for tier1 in $(jq -c -r .nsx.config.tier1s[] $jsonFile)
@@ -138,7 +138,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   #
   if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
     if [[ $(jq -c -r '.avi.config.cloud.additional_subnets | length' $jsonFile) -gt 0 ]] ; then
-      echo "   +++ Creating External gateway routes to .avi.config.cloud.additional_subnets..."
+      echo "   +++ Creating external gateway routes to .avi.config.cloud.additional_subnets..."
       for network in $(jq -c -r .avi.config.cloud.additional_subnets[] $jsonFile)
       do
         for subnet in $(echo $network | jq -c -r '.subnets[]')
@@ -162,7 +162,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
     #
     if [[ $(jq -c -r '.avi.config.cloud.networks_data | length' $jsonFile) -gt 0 ]] ; then
-      echo "   +++ Creating External gateway routes to Avi VIP subnets..."
+      echo "   +++ Creating external gateway routes to Avi VIP subnets..."
       for network in $(jq -c -r .avi.config.cloud.networks_data[] $jsonFile)
       do
         for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
@@ -189,6 +189,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
     #
     #
     if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
+      echo "   +++ Creating external gateway routes to Tanzu CIDRs..."
       tanzu_segment=$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)
       tanzu_tier1=$(jq -c -r --arg tanzu_segment ${tanzu_segment} '.nsx.config.segments_overlay[] | select( .display_name == $tanzu_segment ) | .tier1' $jsonFile)
       tanzu_tier0=$(jq -c -r --arg tanzu_tier1 ${tanzu_tier1} '.nsx.config.tier1s[] | select( .display_name == $tanzu_tier1 ) | .tier0' $jsonFile)
