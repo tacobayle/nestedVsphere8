@@ -117,7 +117,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
   /bin/bash /nestedVsphere8/11_vsphere_with_tanzu/apply.sh
   if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
