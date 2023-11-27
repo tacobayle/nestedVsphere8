@@ -1,0 +1,59 @@
+{
+  "default_kubernetes_service_content_library": "f4bc6357-899b-4050-8eb3-c523827b1604",
+  "ephemeral_storage_policy": "aa6d5a82-1c88-45da-85d3-3d74b91a5bad",
+  "image_storage": {
+    "storage_policy": "aa6d5a82-1c88-45da-85d3-3d74b91a5bad"
+  },
+  "master_storage_policy": "aa6d5a82-1c88-45da-85d3-3d74b91a5bad",
+  "cluster_proxy_config": {
+    "proxy_settings_source": "VC_INHERITED"
+  },
+  "worker_DNS": [
+    "10.41.134.240"
+  ],
+  "master_DNS": [
+    "10.41.134.240"
+  ],
+  "workload_ntp_servers": [
+    "10.41.134.240"
+  ],
+  "master_NTP_servers": [
+    "10.41.134.240"
+  ],
+  "network_provider": "NSXT_CONTAINER_PLUGIN",
+  "size_hint": "SMALL",
+  "service_cidr": {
+    "address": "10.96.0.0",
+    "prefix": "23"
+  },
+  "master_management_network": {
+    "mode": "STATICRANGE",
+    "address_range": {
+      "subnet_mask": "255.255.255.0",
+      "starting_address": "100.100.12.130",
+      "gateway": "100.100.12.1",
+      "address_count": "5"
+    },
+    "network": "dvportgroup-50"
+  },
+  "ncp_cluster_network_spec": {
+    "cluster_distributed_switch": "50 04 43 8b 1c 9b 94 ad-53 d7 97 b6 a8 c6 a0 8d",
+    "egress_cidrs": [],
+    "ingress_cidrs": [
+      {
+        "address": "100.100.133.0",
+        "prefix": "24"
+      }
+    ],
+    "namespace_subnet_prefix": "27",
+    "nsx_edge_cluster": "4807e4c8-390a-4e11-a73c-99cab4234614",
+    "nsx_tier0_gateway": "my-tier0",
+    "pod_cidrs": [
+      {
+        "address": "100.100.64.0",
+        "prefix": "23"
+      }
+    ],
+    "routed_mode": true
+  }
+}

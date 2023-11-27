@@ -3,6 +3,7 @@ jsonFile="/root/vsphere_with_tanzu.json"
 source /nestedVsphere8/bash/tf_init_apply.sh
 source /nestedVsphere8/bash/vcenter_api.sh
 source /nestedVsphere8/bash/ip.sh
+source /nestedVsphere8/bash/nsx/nsx_api.sh
 #
 IFS=$'\n'
 #
@@ -29,10 +30,10 @@ create_subscribed_content_library_json_output="/root/tanzu_content_library.json"
   "${vcsa_sso_domain}" \
   "${TF_VAR_vsphere_nested_password}" \
   "$(jq -c -r .tanzu_local.content_library.subscription_url $jsonFile)" \
-  "$(jq .tanzu_local.content_library.type $jsonFile)" \
-  "$(jq .tanzu_local.content_library.automatic_sync_enabled $jsonFile)" \
-  "$(jq .tanzu_local.content_library.on_demand $jsonFile)" \
-  "$(jq .tanzu_local.content_library.name $jsonFile)" \
+  "$(jq -c -r .tanzu_local.content_library.type $jsonFile)" \
+  "$(jq -c -r .tanzu_local.content_library.automatic_sync_enabled $jsonFile)" \
+  "$(jq -c -r .tanzu_local.content_library.on_demand $jsonFile)" \
+  "$(jq -c -r .tanzu_local.content_library.name $jsonFile)" \
   "${create_subscribed_content_library_json_output}"
 content_library_id=$(jq -c -r .content_library_id ${create_subscribed_content_library_json_output})
 #
@@ -126,11 +127,21 @@ fi
 # vsphere_tanzu_alb_nsx use case
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb"  ]]; then
+  #
+  # retrieve edge cluster id
+  #
+  retrieve_network_id_json_output="/root/retrieve_namespace_edge_cluster_id.json"
+  /bin/bash /nestedVsphere8/bash/nsx/get_edge_cluster.sh \
+           "$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" \
+           "${TF_VAR_nsx_password}" \
+           "$(jq -r .tanzu.supervisor_cluster.namespace_edge_cluster $jsonFile)" \
+           "${retrieve_network_id_json_output}"
+  namespace_edge_cluster_id=$(jq -c -r .namespace_edge_cluster_id ${retrieve_network_id_json_output})
+  #
+  # create supervisor cluster
+  #
   management_tanzu_segment=$(jq -r .tanzu.supervisor_cluster.management_tanzu_segment $jsonFile)
   management_tanzu_cidr=$(jq -c -r --arg segment ${management_tanzu_segment} '.nsx.config.segments_overlay[] | select(.display_name == $segment) | .cidr' $jsonFile)
-  management_tanzu_tier1=$(jq -c -r --arg segment ${management_tanzu_segment} '.nsx.config.segments_overlay[] | select(.display_name == $segment) | .tier1' $jsonFile)
-  management_tanzu_tier0=$(jq -c -r --arg tier1 ${management_tanzu_tier1} '.nsx.config.tier1s[] | select(.display_name == $tier1 $) | .tier0' $jsonFile)
-  management_edge_cluster_name=$(jq -c -r --arg tier0 ${management_tanzu_tier0} '.nsx.config.tier0s[] | select(.display_name == $tier0 $) | .edge_cluster_name' $jsonFile)
   /bin/bash /nestedVsphere8/bash/vcenter/create_supervisor_cluster_nsx.sh "${vcsa_fqdn}" "${vcsa_sso_domain}" "${TF_VAR_vsphere_nested_password}" \
             "${content_library_id}" \
             "${storage_policy_id}" \
@@ -140,17 +151,17 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb"  ]]; then
             "$(jq -r .tanzu.supervisor_cluster.service_cidr $jsonFile | cut -d"/" -f2)" \
             "$(ip_netmask_by_prefix $(echo ${management_tanzu_cidr} | cut -d"/" -f2) "   ++++++")" \
             "$(jq -c -r --arg segment ${management_tanzu_segment} '.nsx.config.segments_overlay[] | select(.display_name == $segment) | .tanzu_supervisor_starting_ip' $jsonFile)" \
-            "$(nextip $(${management_tanzu_cidr} | cut -d"/" -f1 ))" \
+            "$(nextip $(echo ${management_tanzu_cidr} | cut -d"/" -f1 ))" \
             "$(jq -c -r --arg segment ${management_tanzu_segment} '.nsx.config.segments_overlay[] | select(.display_name == $segment) | .tanzu_supervisor_count' $jsonFile)" \
             "${tanzu_supervisor_dvportgroup}" \
+            "$(jq -c -r .vds_network_nsx_overlay_id /root/vds_network_nsx_overlay_id.json)" \
             "$(jq -r .tanzu.supervisor_cluster.namespace_cidr $jsonFile | cut -d"/" -f1)" \
             "$(jq -r .tanzu.supervisor_cluster.namespace_cidr $jsonFile | cut -d"/" -f2)" \
-            "${management_tanzu_tier0}" \
-            "${management_edge_cluster_name}" \
+            "$(jq -r .tanzu.supervisor_cluster.namespace_tier0 $jsonFile)" \
+            "${namespace_edge_cluster_id}" \
             "$(jq -r .tanzu.supervisor_cluster.prefix_per_namespace $jsonFile)" \
             "$(jq -r .tanzu.supervisor_cluster.ingress_cidr $jsonFile | cut -d"/" -f1)" \
             "$(jq -r .tanzu.supervisor_cluster.ingress_cidr $jsonFile | cut -d"/" -f2)" \
-            "$(jq -c -r .networks.nsx.nsx_overlay.vds_name /root/networks.json)" \
             "${cluster_id}"
 fi
 #

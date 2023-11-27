@@ -118,8 +118,12 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
-  /bin/bash /nestedVsphere8/11_vsphere_with_tanzu/apply.sh
+  echo "-----------------------------------------------------"
+  echo "Configuration of vSphere with Tanzu - This should take less than 90 minutes"
+  echo "Starting timestamp: $(date)"
+  /bin/bash /nestedVsphere8/11_vsphere_with_tanzu/apply.sh 2> /nestedVspher8/log/11_vsphere_with_tanzu.stderr 1> /nestedVspher8/log/11_vsphere_with_tanzu.stdin
   if [ $? -ne 0 ] ; then exit 1 ; fi
+  echo "Ending timestamp: $(date)"
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then

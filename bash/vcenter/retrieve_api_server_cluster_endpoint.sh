@@ -2,8 +2,6 @@
 #
 source /nestedVsphere8/bash/vcenter_api.sh
 #
-# vCenter API session creation
-#
 api_host="${1}"
 vsphere_nested_username=administrator
 vcenter_domain="${2}"

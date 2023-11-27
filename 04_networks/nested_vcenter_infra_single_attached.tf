@@ -39,6 +39,14 @@ resource "vsphere_distributed_virtual_switch" "sa_network_nsx_overlay" {
   }
 }
 
+resource "null_resource" "sa_network_nsx_overlay" {
+  count = (var.vsphere_underlay.networks_vsphere_dual_attached == false) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
+  depends_on = [vsphere_distributed_virtual_switch.sa_network_nsx_overlay]
+  provisioner "local-exec" {
+    command = "echo \"{\"vds_network_nsx_overlay_id\": \"${vsphere_distributed_virtual_switch.sa_network_nsx_overlay.id}\"}\" | tee /root/vds_network_nsx_overlay_id.json"
+  }
+}
+
 resource "vsphere_distributed_port_group" "sa_pg_nsx_overlay" {
   count = (var.vsphere_underlay.networks_vsphere_dual_attached == false) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
   name                            = var.networks.nsx.nsx_overlay.port_group_name

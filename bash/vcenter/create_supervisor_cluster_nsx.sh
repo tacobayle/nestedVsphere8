@@ -1,5 +1,9 @@
 #!/bin/bash
 #
+source /nestedVsphere8/bash/vcenter_api.sh
+#
+# https://developer.vmware.com/apis/vsphere-automation/latest/vcenter/api/vcenter/namespace-management/clusters/clusteractionenable/post/
+#
 api_host="${1}"
 vsphere_nested_username=administrator
 vcenter_domain="${2}"
@@ -15,14 +19,14 @@ master_management_network_starting_address="${11}"
 master_management_network_gateway="${12}"
 master_management_network_address_count="${13}"
 tanzu_supervisor_dvportgroup="${14}"
-pod_cidr_address="${15}"
-pod_cidr_prefix="${16}"
-nsx_tier0_gateway="${17}"
-nsx_edge_cluster="${18}"
-namespace_subnet_prefix="${19}"
-ingress_cidr_address="${20}"
-ingress_cidr_prefix="${21}"
-cluster_distributed_switch="${22}"
+cluster_distributed_switch="${15}"
+pod_cidr_address="${16}"
+pod_cidr_prefix="${17}"
+nsx_tier0_gateway="${18}"
+nsx_edge_cluster="${19}"
+namespace_subnet_prefix="${20}"
+ingress_cidr_address="${21}"
+ingress_cidr_prefix="${22}"
 cluster_id="${23}"
 #
 # vCenter API session creation
@@ -79,7 +83,7 @@ json_data='
     ],
     "namespace_subnet_prefix": "'${namespace_subnet_prefix}'",
     "nsx_edge_cluster": "'${nsx_edge_cluster}'",
-    "nsx_tier0_gateway": ""'${nsx_tier0_gateway}'"",
+    "nsx_tier0_gateway": "'${nsx_tier0_gateway}'",
     "pod_cidrs": [
       {
         "address": "'${pod_cidr_address}'",
