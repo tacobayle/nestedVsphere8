@@ -4,32 +4,31 @@ source /nestedVsphere8/bash/vcenter_api.sh
 #
 # vCenter API session creation
 #
-api_host=$1
+api_host="${1}"
 vsphere_nested_username=administrator
-vcenter_domain=$2
-vsphere_nested_password=$3
-workload_ntp_server=$4
-storage_policy_id=$5
-service_cidr_cidr_address=$6
-service_cidr_cidr_prefix=$7
-size_hint=$8
-worker_DNS=$9
-master_management_network_subnet_mask="${10}"
-master_management_network_starting_address="${11}"
-master_management_network_gateway="${12}"
-master_management_network_address_count="${13}"
-tanzu_supervisor_dvportgroup="${14}"
-avi_cert="${15}"
-avi_password="${16}"
-avi_nested_ip="${17}"
-content_library_id="${18}"
-supervisor_primary_workload_network_name="${19}"
-supervisor_primary_workload_network_address_range_address="${20}"
-supervisor_primary_workload_network_address_range_count="${21}"
-supervisor_primary_workload_network_gateway="${22}"
-tanzu_worker_dvportgroup="${23}"
-supervisor_primary_workload_network_subnet_mask="${24}"
-cluster_id="${25}"
+vcenter_domain="${2}"
+vsphere_nested_password="${3}"
+external_gw_ip="${4}"
+storage_policy_id="${5}"
+service_cidr_address="${6}"
+service_cidr_prefix="${7}"
+size_hint="${8}"
+master_management_network_subnet_mask="${9}"
+master_management_network_starting_address="${10}"
+master_management_network_gateway="${11}"
+master_management_network_address_count="${12}"
+tanzu_supervisor_dvportgroup="${13}"
+avi_cert="${14}"
+avi_password="${15}"
+avi_nested_ip="${16}"
+content_library_id="${17}"
+supervisor_primary_workload_network_name="${18}"
+supervisor_primary_workload_network_address_range_address="${19}"
+supervisor_primary_workload_network_address_range_count="${20}"
+supervisor_primary_workload_network_gateway="${21}"
+tanzu_worker_dvportgroup="${22}"
+supervisor_primary_workload_network_subnet_mask="${23}"
+cluster_id="${24}"
 #
 token=$(/bin/bash /nestedVsphere8/bash/create_vcenter_api_session.sh "$vsphere_nested_username" "$vcenter_domain" "$vsphere_nested_password" "$api_host")
 #
@@ -45,21 +44,21 @@ json_data='
  "cluster_proxy_config": {
    "proxy_settings_source": "VC_INHERITED"
  },
- "workload_ntp_servers":["'${workload_ntp_server}'"],
+ "workload_ntp_servers":["'${external_gw_ip}'"],
  "image_storage":
  {
    "storage_policy":"'${storage_policy_id}'"
  },
- "master_NTP_servers":["'${workload_ntp_server}'"],
+ "master_NTP_servers":["'${external_gw_ip}'"],
  "ephemeral_storage_policy":"'${storage_policy_id}'",
  "service_cidr":
  {
-   "address":"'${service_cidr_cidr_address}'",
-   "prefix": "'${service_cidr_cidr_prefix}'"
+   "address":"'${service_cidr_address}'",
+   "prefix": "'${service_cidr_prefix}'"
  },
  "size_hint":"'${size_hint}'",
- "worker_DNS":["'${worker_DNS}'"],
- "master_DNS":["'${worker_DNS}'"],
+ "worker_DNS":["'${external_gw_ip}'"],
+ "master_DNS":["'${external_gw_ip}'"],
  "network_provider":"'${network_provider}'",
  "master_storage_policy":"'${storage_policy_id}'",
  "master_management_network":
