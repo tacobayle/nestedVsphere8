@@ -9,6 +9,7 @@ Several deployments/scenarios are supported:
 - vsphere_tanzu_alb_wo_nsx deploys a nested vSphere with Tanzu (VDS use case) and NSX ALB on the top
 - vsphere_nsx deploys a nested vSphere included NSX (overlay use case)
 - vsphere_nsx_alb deploys a nested vSphere included NSX (overlay use case) and NSX ALB on the top
+- vsphere_nsx_tanzu_alb deploys a nested vSphere with Tanzu included NSX (overlay use case) and NSX ALB on the top
 - vsphere_nsx_alb_telco deploys a nested vSphere included NSX (overlay use case) and NSX ALB (vCenter Cloud) with BGP between Service Engines and tiers 0 - TKGm is included and configured on the top of this along with AKO
 
 You select the scenario/deployment based on the config-map that you will provide (see below).
@@ -78,12 +79,15 @@ https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secret
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx-alb.yml
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx-alb.yml
 
+### vsphere_nsx_tanzu_alb
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-nsx-tanzu-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx-tanzu-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx-tanzu-alb.yml
+
 ### vsphere_nsx_alb_telco
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-nsx-alb-telco.yml
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx-alb-telco.yml
 https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx-alb-telco.yml
-
-### vsphere_nsx_tanzu_alb (under-dev)
 
 ### vsphere_nsx_alb_vcd (under-dev)
 
