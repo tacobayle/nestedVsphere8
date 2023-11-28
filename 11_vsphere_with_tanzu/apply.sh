@@ -20,7 +20,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
     "${TF_VAR_avi_password}" \
     "$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)"
 fi
-exit
 #
 # Create Content Library for tanzu
 #
@@ -167,7 +166,7 @@ fi
 #
 # Wait for supervisor cluster to be running
 #
-/bin/bash /nestedVsphere8/bash/vcenter/retrieve_api_server_cluster_endpoint.sh "${vcsa_fqdn}" "${vcsa_sso_domain}" "${TF_VAR_vsphere_nested_password}"
+/bin/bash /nestedVsphere8/bash/vcenter/wait_for_supervisor_cluster.sh "${vcsa_fqdn}" "${vcsa_sso_domain}" "${TF_VAR_vsphere_nested_password}"
 #
 # Namespace creation
 #
@@ -184,6 +183,7 @@ retrieve_api_server_cluster_endpoint_json_output="/root/retrieve_api_server_clus
 /bin/bash /nestedVsphere8/bash/vcenter/retrieve_api_server_cluster_endpoint.sh "${vcsa_fqdn}" "${vcsa_sso_domain}" "${TF_VAR_vsphere_nested_password}" \
           "${retrieve_api_server_cluster_endpoint_json_output}"
 api_server_cluster_endpoint=$(jq -c -r .api_server_cluster_endpoint ${retrieve_api_server_cluster_endpoint_json_output})
+exit
 #
 # TKC creation
 #
