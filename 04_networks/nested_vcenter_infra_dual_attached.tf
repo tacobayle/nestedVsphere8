@@ -43,7 +43,7 @@ resource "null_resource" "vds_network_nsx_overlay_id" {
   count = (var.vsphere_underlay.networks_vsphere_dual_attached == true) && (var.deployment == "vsphere_nsx" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd") ? 1 : 0
   depends_on = [vsphere_distributed_virtual_switch.network_nsx_overlay]
   provisioner "local-exec" {
-    command = "echo \"{\"vds_network_nsx_overlay_id\": \"${vsphere_distributed_virtual_switch.network_nsx_overlay.id}\"}\" | tee /root/vds_network_nsx_overlay_id.json"
+    command = "echo \"{\"vds_network_nsx_overlay_id\": \"${vsphere_distributed_virtual_switch.network_nsx_overlay[0].id}\"}\" | tee /root/vds_network_nsx_overlay_id.json"
   }
 }
 
