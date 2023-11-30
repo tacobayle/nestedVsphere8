@@ -210,6 +210,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
             tanzu_tier0_index=$(jq -c -r --arg tanzu_tier0 ${tanzu_tier0} '.nsx.config.tier0s | map(.display_name == $tanzu_tier0) | index(true)' $jsonFile)
             namespace_cidr=$(echo $ns | jq -c -r .namespace_cidr)
             new_routes=$(echo $new_routes | jq '. += [{"to": "'${namespace_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+            echo "   ++++++ Route to ${namespace_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
             ingress_cidr=$(echo $ns | jq -c -r .ingress_cidr)
             new_routes=$(echo $new_routes | jq '. += [{"to": "'${ingress_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
             echo "   ++++++ Route to ${ingress_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"

@@ -688,6 +688,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_nsx_app_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_nsx_cloud "/etc/config/variables.json"
+    echo "==> Checking vSphere with Tanzu variables"
     # .tanzu validation
     if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       # tanzu .tanzu.supervisor_cluster validation
