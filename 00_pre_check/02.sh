@@ -189,15 +189,33 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
     #
     #
     if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
-      echo "   +++ Creating external gateway routes to Tanzu CIDRs..."
-      tanzu_tier0=$(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile)
-      tanzu_tier0_index=$(jq -c -r --arg tanzu_tier0 ${tanzu_tier0} '.nsx.config.tier0s | map(.display_name == $tanzu_tier0) | index(true)' $jsonFile)
-      namespace_cidr=$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)
-      new_routes=$(echo $new_routes | jq '. += [{"to": "'${namespace_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
-      echo "   ++++++ Route to ${namespace_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
-      ingress_cidr=$(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
-      new_routes=$(echo $new_routes | jq '. += [{"to": "'${ingress_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
-      echo "   ++++++ Route to ${ingress_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
+      # add routes for supervisor cluster networks cidrs
+      if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
+        echo "   +++ Creating external gateway routes to Tanzu CIDRs for supervisor clusters..."
+        tanzu_tier0=$(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile)
+        tanzu_tier0_index=$(jq -c -r --arg tanzu_tier0 ${tanzu_tier0} '.nsx.config.tier0s | map(.display_name == $tanzu_tier0) | index(true)' $jsonFile)
+        namespace_cidr=$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)
+        new_routes=$(echo $new_routes | jq '. += [{"to": "'${namespace_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+        echo "   ++++++ Route to ${namespace_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
+        ingress_cidr=$(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
+        new_routes=$(echo $new_routes | jq '. += [{"to": "'${ingress_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+        echo "   ++++++ Route to ${ingress_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
+      fi
+      # add routes for namespaces overwritten values
+      if $(jq -e '.tanzu | has("namespaces")' $jsonFile) ; then
+        for ns in $(jq -c -r .tanzu.namespaces[] $jsonFile); do
+          if $(echo $ns | jq -e '.ingress_cidr' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
+            echo "   +++ Creating external gateway routes to Tanzu CIDRs for namespaces..."
+            tanzu_tier0=$(echo $ns | jq -c -r .namespace_tier0)
+            tanzu_tier0_index=$(jq -c -r --arg tanzu_tier0 ${tanzu_tier0} '.nsx.config.tier0s | map(.display_name == $tanzu_tier0) | index(true)' $jsonFile)
+            namespace_cidr=$(echo $ns | jq -c -r .namespace_cidr)
+            new_routes=$(echo $new_routes | jq '. += [{"to": "'${namespace_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+            ingress_cidr=$(echo $ns | jq -c -r .ingress_cidr)
+            new_routes=$(echo $new_routes | jq '. += [{"to": "'${ingress_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+            echo "   ++++++ Route to ${ingress_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
+          fi
+        done
+      fi
     fi
     #
     #
@@ -213,9 +231,24 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
       done
     fi
     if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
-      namespace_cidr=$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)
-      ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'${namespace_cidr}'"]')
-      echo "   ++++++ Prefix ${namespace_cidr} added: OK"
+      if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
+        # add cidrs for supervisor cluster networks
+        echo "   +++ Creating external gateway list for NAT config - Tanzu CIDRs for supervisor cluster..."
+        namespace_cidr=$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)
+        ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'${namespace_cidr}'"]')
+        echo "   ++++++ Prefix ${namespace_cidr} added: OK"
+      fi
+      if $(jq -e '.tanzu | has("namespaces")' $jsonFile) ; then
+        for ns in $(jq -c -r .tanzu.namespaces[] $jsonFile); do
+          if $(echo $ns | jq -e '.ingress_cidr' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
+            # add cidrs for namespaces overwritten values
+            echo "   +++ Creating external gateway list for NAT config - Tanzu CIDRs for namespaces..."
+            namespace_cidr=$(echo $ns | jq -c -r .namespace_cidr)
+            ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'${namespace_cidr}'"]')
+            echo "   ++++++ Prefix ${namespace_cidr} added: OK"
+          fi
+        done
+      fi
     fi
     external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"ip_table_prefixes": '$(echo $ip_table_prefixes)'}')
   fi

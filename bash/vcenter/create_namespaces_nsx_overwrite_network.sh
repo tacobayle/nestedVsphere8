@@ -8,6 +8,12 @@ vsphere_nested_password="${3}"
 vm_classes="${4}"
 storage_policy_id="${5}"
 ns_name="${6}"
+ingress_cidr_address="${7}"
+ingress_cidr_prefix="${8}"
+namespace_network_address="${9}"
+namespace_network_prefix="${10}"
+nsx_tier0_gateway="${11}"
+subnet_prefix_length="${12}"
 #
 # vCenter API session creation
 #
@@ -40,7 +46,28 @@ json_data='
       "policy": "'${storage_policy_id}'"
     }
   ],
+  "namespace_network": {
+    "network": {
+      "egress_cidrs": [],
+      "ingress_cidrs": [
+        {
+          "address": "'${ingress_cidr_address}'",
+          "prefix": '${ingress_cidr_prefix}'
+        }
+      ],
+      "load_balancer_size": "SMALL",
+      "namespace_network_cidrs": [
+        {
+          "address": "'${namespace_network_address}'",
+          "prefix": '${namespace_network_prefix}'
+        }
+      ],
+      "nsx_tier0_gateway": "'${nsx_tier0_gateway}'",
+      "routed_mode": true,
+      "subnet_prefix_length": '${subnet_prefix_length}'
+    },
+    "network_provider": "NSXT_CONTAINER_PLUGIN"
+  },
   "namespace": "'${ns_name}'"
 }'
-echo $json_data | jq .
 vcenter_api 6 10 "POST" $token "${json_data}" $api_host "api/vcenter/namespaces/instances"

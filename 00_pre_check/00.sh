@@ -688,6 +688,84 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_nsx_app_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_nsx_cloud "/etc/config/variables.json"
+    # .tanzu validation
+    if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
+      # tanzu .tanzu.supervisor_cluster validation
+      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.size is defined"
+      if [[ $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile | tr '[:upper:]' [:lower:]) != "tiny" \
+            && $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile | tr '[:upper:]' [:lower:]) != "small" \
+            && $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile | tr '[:upper:]' [:lower:]) != "medium" \
+            && $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile | tr '[:upper:]' [:lower:]) != "large" ]] ; then
+              echo "   +++ ERROR ..tanzu.supervisor_cluster.size should equal to one of the following: 'tiny, small, medium, large'"
+              echo "   +++ https://developer.vmware.com/apis/vsphere-automation/latest/vcenter/data-structures/NamespaceManagement/SizingHint/"
+              exit 255
+      fi
+      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.management_tanzu_segment is defined"
+      if $(jq -e -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment )' $jsonFile > /dev/null) ; then
+        echo "   +++ .tanzu.supervisor_cluster.management_tanzu_segment ref found"
+      else
+        echo "   +++ ERROR .tanzu.supervisor_cluster.management_tanzu_segment ref not found in .nsx.config.segments_overlay[]"
+        exit 255
+      fi
+      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.namespace_edge_cluster' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.namespace_edge_cluster is defined"
+      if $(jq -e -c -r --arg edge_cluster "$(jq -c -r '.tanzu.supervisor_cluster.namespace_edge_cluster' $jsonFile)" '.nsx.config.edge_clusters[] | select( .display_name == $edge_cluster )' $jsonFile > /dev/null) ; then
+        echo "   +++ .tanzu.supervisor_cluster.namespace_edge_cluster ref found"
+      else
+        echo "   +++ ERROR .tanzu.supervisor_cluster.namespace_edge_cluster ref not found in .nsx.config.edge_clusters[]"
+        exit 255
+      fi
+      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.namespace_tier0 is defined"
+      if $(jq -e -c -r --arg tier0 "$(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile)" '.nsx.config.tier0s[] | select( .display_name == $tier0 )' $jsonFile > /dev/null) ; then
+        echo "   +++ .tanzu.supervisor_cluster.namespace_tier0 ref found"
+      else
+        echo "   +++ ERROR .tanzu.supervisor_cluster.namespace_tier0 ref not found in .nsx.config.tier0s[]"
+        exit 255
+      fi
+      test_if_variable_is_valid_cidr "$(jq '-c -r .tanzu.supervisor_cluster.namespace_cidr' $jsonFile)" "   "
+      test_if_variable_is_defined $(jq '-c -r .tanzu.supervisor_cluster.prefix_per_namespace' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.prefix_per_namespace is defined"
+      test_if_variable_is_valid_cidr "$(jq '-c -r .tanzu.supervisor_cluster.ingress_cidr' $jsonFile)" "   "
+      test_if_variable_is_valid_cidr "$(jq '-c -r .tanzu.supervisor_cluster.service_cidr' $jsonFile)" "   "
+      if $(jq -e '.tanzu | has("namespaces")' $jsonFile) ; then
+        # tanzu .tanzu.namespaces validation
+        if $(jq -e '.tanzu.namespaces[].name' $jsonFile > /dev/null) ; then
+          echo "   +++ .tanzu.namespaces[] has name defined"
+        else
+          echo "   +++ ERROR .tanzu.namespaces[] has not a name defined"
+          exit 255
+        fi
+        # tanzu overwrite supervisor cluster values
+        for ns in $(jq -c -r '.tanzu.namespaces[]' $jsonFile)
+        do
+          if $(echo $ns | jq -e '.namespace_cidr' > /dev/null) || \
+             $(echo $ns | jq -e '.namespace_tier0' > /dev/null) || \
+             $(echo $ns | jq -e '.prefix_per_namespace' > /dev/null) || \
+             $(echo $ns | jq -e '.ingress_cidr' > /dev/null) ; then
+            if $(echo $ns | jq -e '.namespace_cidr' > /dev/null) && \
+               $(echo $ns | jq -e '.namespace_tier0' > /dev/null) && \
+               $(echo $ns | jq -e '.prefix_per_namespace' > /dev/null) && \
+               $(echo $ns | jq -e '.ingress_cidr' > /dev/null) ; then
+              if [[ $(echo $ns | jq -c -r '.namespace_cidr') != $(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile) && \
+                    $(echo $ns | jq -c -r '.ingress_cidr') != $(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile) ]] ; then
+                echo "   +++ .tanzu.namespaces called $(echo $ns | jq -c -r '.name') has different values for .namespace_cidr and .ingress_cidr than the supervisor clusters"
+                test_if_variable_is_valid_cidr "$(echo $ns | jq -c -r '.namespace_cidr')" "   "
+                test_if_variable_is_valid_cidr "$(echo $ns | jq -c -r '.ingress_cidr')" "   "
+                if $(jq -e -c -r --arg tier0 "$(echo $ns | jq -c -r '.namespace_tier0')" '.nsx.config.tier0s[] | select( .display_name == $tier0 )' $jsonFile > /dev/null) ; then
+                  echo "   +++ .tanzu.namespaces called $(echo $ns | jq -c -r '.name').namespace_tier0 ref found"
+                else
+                  echo "   +++ ERROR .tanzu.namespaces called $(echo $ns | jq -c -r '.name').namespace_tier0 ref not found in .nsx.config.tier0s[]"
+                  exit 255
+                fi
+              else
+                echo "   +++ ERROR .tanzu.namespaces called $(echo $ns | jq -c -r '.name') has same values for .namespace_cidr or/and .ingress_cidr than the supervisor clusters"
+              fi
+            else
+              echo "   +++ ERROR .tanzu.namespaces[] called $(echo $ns | jq -c -r '.name') should have .namespace_cidr, .namespace_tier0, .prefix_per_namespace, .ingress_cidr - all of them or none of them"
+            fi
+          fi
+          echo "---"
+        done
+      fi
+    fi
     echo ""
     echo "==> Adding .deployment: vsphere_nsx_tanzu_alb"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_tanzu_alb"}')
