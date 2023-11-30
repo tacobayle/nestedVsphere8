@@ -721,10 +721,10 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
         echo "   +++ ERROR .tanzu.supervisor_cluster.namespace_tier0 ref not found in .nsx.config.tier0s[]"
         exit 255
       fi
-      test_if_variable_is_valid_cidr "$(jq '-c -r .tanzu.supervisor_cluster.namespace_cidr' $jsonFile)" "   "
-      test_if_variable_is_defined $(jq '-c -r .tanzu.supervisor_cluster.prefix_per_namespace' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.prefix_per_namespace is defined"
-      test_if_variable_is_valid_cidr "$(jq '-c -r .tanzu.supervisor_cluster.ingress_cidr' $jsonFile)" "   "
-      test_if_variable_is_valid_cidr "$(jq '-c -r .tanzu.supervisor_cluster.service_cidr' $jsonFile)" "   "
+      test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)" "   "
+      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.prefix_per_namespace' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.prefix_per_namespace is defined"
+      test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)" "   "
+      test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.service_cidr' $jsonFile)" "   "
       if $(jq -e '.tanzu | has("namespaces")' $jsonFile) ; then
         # tanzu .tanzu.namespaces validation
         if $(jq -e '.tanzu.namespaces[].name' $jsonFile > /dev/null) ; then
