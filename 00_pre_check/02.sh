@@ -127,6 +127,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
           do
             if [[ $(echo $tier1 | jq -c -r .tier0) == $(echo $tier0 | jq -c -r .display_name) ]] ; then
               new_routes=$(echo $new_routes | jq '. += [{"to": "'$(echo $segment | jq -c -r .cidr)'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
+              echo "            - to: $(echo $segment | jq -c -r .cidr)" | tee /root/external_gw_routes.yml > /dev/null
+              echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
               echo "   ++++++ Route to $(echo $segment | jq -c -r .cidr) via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
             fi
             ((count++))
@@ -149,6 +151,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
             if [[ $(echo $tier0 | jq 'has("bgp")') == "true" ]] ; then
               if [[ $(echo $subnet | jq -c -r .bgp_label) == $(echo $tier0 | jq -c -r .bgp.avi_peer_label) ]] ; then
                 new_routes=$(echo $new_routes | jq '. += [{"to": "'$(echo $subnet | jq -c -r .cidr)'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
+                echo "            - to: $(echo $subnet | jq -c -r .cidr)" | tee -a /root/external_gw_routes.yml > /dev/null
+                echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
                 echo "   +++ Route to $(echo $subnet | jq -c -r .cidr) via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
               fi
             fi
@@ -176,6 +180,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
                 do
                   if [[ $(echo $tier1 | jq -c -r .tier0) == $(echo $tier0 | jq -c -r .display_name) ]] ; then
                     new_routes=$(echo $new_routes | jq '. += [{"to": "'$(echo $network | jq -c -r .avi_ipam_vip.cidr)'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
+                    echo "            - to: $(echo $network | jq -c -r .avi_ipam_vip.cidr)" | tee -a /root/external_gw_routes.yml > /dev/null
+                    echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
                     echo "   ++++++ Route to $(echo $network | jq -c -r .avi_ipam_vip.cidr) via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
                   fi
                   ((count++))
@@ -196,9 +202,13 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
         tanzu_tier0_index=$(jq -c -r --arg tanzu_tier0 ${tanzu_tier0} '.nsx.config.tier0s | map(.display_name == $tanzu_tier0) | index(true)' $jsonFile)
         namespace_cidr=$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)
         new_routes=$(echo $new_routes | jq '. += [{"to": "'${namespace_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+        echo "            - to: ${namespace_cidr}" | tee -a /root/external_gw_routes.yml > /dev/null
+        echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
         echo "   ++++++ Route to ${namespace_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
         ingress_cidr=$(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
         new_routes=$(echo $new_routes | jq '. += [{"to": "'${ingress_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+        echo "            - to: ${ingress_cidr}" | tee -a /root/external_gw_routes.yml > /dev/null
+        echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
         echo "   ++++++ Route to ${ingress_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
       fi
       # add routes for namespaces overwritten values
@@ -210,9 +220,13 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
             tanzu_tier0_index=$(jq -c -r --arg tanzu_tier0 ${tanzu_tier0} '.nsx.config.tier0s | map(.display_name == $tanzu_tier0) | index(true)' $jsonFile)
             namespace_cidr=$(echo $ns | jq -c -r .namespace_cidr)
             new_routes=$(echo $new_routes | jq '. += [{"to": "'${namespace_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+            echo "            - to: ${namespace_cidr}" | tee -a /root/external_gw_routes.yml > /dev/null
+            echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
             echo "   ++++++ Route to ${namespace_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
             ingress_cidr=$(echo $ns | jq -c -r .ingress_cidr)
             new_routes=$(echo $new_routes | jq '. += [{"to": "'${ingress_cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)'"}]')
+            echo "            - to: ${ingress_cidr}" | tee -a /root/external_gw_routes.yml > /dev/null
+            echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
             echo "   ++++++ Route to ${ingress_cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$tanzu_tier0_index"] $jsonFile) added: OK"
           fi
         done

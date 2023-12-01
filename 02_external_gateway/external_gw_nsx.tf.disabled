@@ -144,50 +144,60 @@ resource "null_resource" "adding_ip_to_nsx_external" {
   }
 }
 
-resource "null_resource" "set_initial_state" {
-  count = var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx" ? 1 : 0
-
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command = "echo \"0\" > current_state.txt"
-  }
-}
+#resource "null_resource" "set_initial_state" {
+#  count = var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx" ? 1 : 0
+#  provisioner "local-exec" {
+#    interpreter = ["bash", "-c"]
+#    command = "echo \"0\" > current_state.txt"
+#  }
+#}
 
 
 
 
 resource "null_resource" "update_ip_routes" {
-  depends_on = [null_resource.adding_ip_to_nsx_external, null_resource.set_initial_state]
+  depends_on = [null_resource.adding_ip_to_nsx_external]
 
-  count = var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx" ? length(var.external_gw.routes) : 0
-
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command = "while [[ $(cat current_state.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
-  }
-
-
-  connection {
-    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
-    type        = "ssh"
-    agent       = false
-    user        = "ubuntu"
-    private_key = file("/root/.ssh/id_rsa")
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "echo \"            - to: ${var.external_gw.routes[count.index].to}\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
-      "echo \"              via: ${var.external_gw.routes[count.index].via}\" | sudo tee -a /etc/netplan/50-cloud-init.yaml"
-    ]
-  }
+  count = var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx" ? 1 : 0
 
   provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command = "echo \"${count.index+1}\" > current_state.txt"
+    command = "/bin/bash bash/external_gw_routes.sh"
   }
 
 }
+
+#resource "null_resource" "update_ip_routes" {
+#  depends_on = [null_resource.adding_ip_to_nsx_external, null_resource.set_initial_state]
+#
+#  count = var.deployment == "vsphere_nsx_alb_telco" || var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" || var.deployment == "vsphere_nsx" ? length(var.external_gw.routes) : 0
+#
+#  provisioner "local-exec" {
+#    interpreter = ["bash", "-c"]
+#    command = "while [[ $(cat current_state.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
+#  }
+#
+#
+#  connection {
+#    host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
+#    type        = "ssh"
+#    agent       = false
+#    user        = "ubuntu"
+#    private_key = file("/root/.ssh/id_rsa")
+#  }
+#
+#  provisioner "remote-exec" {
+#    inline = [
+#      "echo \"            - to: ${var.external_gw.routes[count.index].to}\" | sudo tee -a /etc/netplan/50-cloud-init.yaml",
+#      "echo \"              via: ${var.external_gw.routes[count.index].via}\" | sudo tee -a /etc/netplan/50-cloud-init.yaml"
+#    ]
+#  }
+#
+#  provisioner "local-exec" {
+#    interpreter = ["bash", "-c"]
+#    command = "echo \"${count.index+1}\" > current_state.txt"
+#  }
+#
+#}
 
 
 

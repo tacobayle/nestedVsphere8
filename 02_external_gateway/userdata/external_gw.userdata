@@ -86,6 +86,10 @@ write_files:
       sudo chown ubuntu /home/ubuntu/.kube
       sudo chgrp ubuntu /home/ubuntu/.kube
       #
+      mkdir -p /home/ubuntu/routes
+      sudo chown ubuntu /home/ubuntu/routes
+      sudo chgrp ubuntu /home/ubuntu/routes
+      #
       mkdir -p /home/ubuntu/${yaml_directory}
       sudo chown ubuntu /home/ubuntu/${yaml_directory}
       sudo chgrp ubuntu /home/ubuntu/${yaml_directory}
