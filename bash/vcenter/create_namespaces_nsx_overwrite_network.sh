@@ -70,4 +70,5 @@ json_data='
   },
   "namespace": "'${ns_name}'"
 }'
+echo $json_data | jq .
 vcenter_api 6 10 "POST" $token "${json_data}" $api_host "api/vcenter/namespaces/instances"
