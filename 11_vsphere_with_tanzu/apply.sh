@@ -23,7 +23,7 @@ fi
 #
 #
 #
-if $(jq -e '.tanzu | has("supervisor_cluster")' data/supervisor_test.json) ; then
+if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
   #
   # Create Content Library for tanzu
   #
