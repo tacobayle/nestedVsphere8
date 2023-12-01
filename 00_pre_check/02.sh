@@ -115,6 +115,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   mv /nestedVsphere8/02_external_gateway/external_gw_nsx.tf.disabled /nestedVsphere8/02_external_gateway/external_gw_nsx.tf
   #
   new_routes="[]"
+  touch /root/external_gw_routes.yml
   if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
     echo "   +++ Creating external gateway routes to overlay segments..."
     for segment in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
@@ -127,7 +128,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
           do
             if [[ $(echo $tier1 | jq -c -r .tier0) == $(echo $tier0 | jq -c -r .display_name) ]] ; then
               new_routes=$(echo $new_routes | jq '. += [{"to": "'$(echo $segment | jq -c -r .cidr)'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
-              echo "            - to: $(echo $segment | jq -c -r .cidr)" | tee /root/external_gw_routes.yml > /dev/null
+              echo "            - to: $(echo $segment | jq -c -r .cidr)" | tee -a /root/external_gw_routes.yml > /dev/null
               echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
               echo "   ++++++ Route to $(echo $segment | jq -c -r .cidr) via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
             fi
