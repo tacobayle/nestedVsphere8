@@ -13,5 +13,5 @@ echo "${contents}" | tee -a /home/ubuntu/.profile > /dev/null
 #
 /home/ubuntu/bin/kubectl-vsphere login --insecure-skip-tls-verify --vsphere-username administrator@${sso_domain_name} --server=https://${api_server_cluster_endpoint}
 /home/ubuntu/bin/kubectl config use-context ${namespace_ref}
-/home/ubuntu/bin/kubectl apply -f ${remote_path}${cluster_count}.yml
+/home/ubuntu/bin/kubectl apply -f ${remote_path}-${cluster_count}.yml
 #

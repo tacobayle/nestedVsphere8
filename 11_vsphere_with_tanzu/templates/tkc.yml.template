@@ -9,7 +9,7 @@ spec:
       cidrBlocks: ${services_cidrs}
     pods:
       cidrBlocks: ${pods_cidrs}
-    serviceDomain: ${domain}
+    serviceDomain: ${serviceDomain}
   topology:
     class: tanzukubernetescluster
     version: ${k8s_version}---vmware.1-tkg.4
