@@ -88,7 +88,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
       for tkc in $(jq -c -r '.tanzu.tkc_clusters[]' $jsonFile)
       do
         if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
-          if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) != "tenant-mode" ]] ; then
+          if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) == "tenant-mode" ]] ; then
             echo "   +++ adding tenant called $(echo $tkc | jq -c -r '.name') for Tanzu TKC clusters"
             tenants=$(echo $tenants | jq -c -r '. += [{"name": "'$(echo $tkc | jq -c -r '.name')'",
                                                        "local": true,
@@ -99,7 +99,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
                                                          }
                                                        }]')
           fi
-          if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) != "provider-mode" ]] ; then
+          if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) == "provider-mode" ]] ; then
             echo "   +++ adding tenant called $(echo $tkc | jq -c -r '.name') for Tanzu TKC clusters"
             tenants=$(echo $tenants | jq -c -r '. += [{"name": "'$(echo $tkc | jq -c -r '.name')'",
                                                        "local": true,
