@@ -765,6 +765,94 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
             fi
           fi
         done
+        # tanzu .tanzu.tkc_clusters validation
+        if $(jq -e '.tanzu | has("tkc_clusters")' $jsonFile) ; then
+          # .tanzu.tkc_clusters[].name
+          if $(jq -e '.tanzu.tkc_clusters[].name' $jsonFile > /dev/null) ; then
+            echo "   +++ .tanzu.tkc_clusters[] has name defined"
+          else
+            echo "   +++ ERROR .tanzu.tkc_clusters[] has not a name defined"
+            exit 255
+          fi
+          # .tanzu.tkc_clusters[].namespace_ref
+          if $(jq -e '.tanzu.tkc_clusters[].namespace_ref' $jsonFile > /dev/null) ; then
+            echo "   +++ .tanzu.tkc_clusters[] has namespace_ref defined"
+          else
+            echo "   +++ ERROR .tanzu.tkc_clusters[] namespace_ref not a name defined"
+            exit 255
+          fi
+          # .tanzu.tkc_clusters[].k8s_version
+          if $(jq -e '.tanzu.tkc_clusters[].k8s_version' $jsonFile > /dev/null) ; then
+            echo "   +++ .tanzu.tkc_clusters[] has k8s_version defined"
+          else
+            echo "   +++ ERROR .tanzu.tkc_clusters[] k8s_version not a name defined"
+            exit 255
+          fi
+          # .tanzu.tkc_clusters[].control_plane_count
+          if $(jq -e '.tanzu.tkc_clusters[].control_plane_count' $jsonFile > /dev/null) ; then
+            echo "   +++ .tanzu.tkc_clusters[] has control_plane_count defined"
+          else
+            echo "   +++ ERROR .tanzu.tkc_clusters[] control_plane_count not a name defined"
+            exit 255
+          fi
+          # .tanzu.tkc_clusters[].vm_class
+          if $(jq -e '.tanzu.tkc_clusters[].vm_class' $jsonFile > /dev/null) ; then
+            echo "   +++ .tanzu.tkc_clusters[] has vm_class defined"
+          else
+            echo "   +++ ERROR .tanzu.tkc_clusters[] vm_class not a name defined"
+            exit 255
+          fi
+          # .tanzu.tkc_clusters[].workers_count
+          if $(jq -e '.tanzu.tkc_clusters[].workers_count' $jsonFile > /dev/null) ; then
+            echo "   +++ .tanzu.tkc_clusters[] has workers_count defined"
+          else
+            echo "   +++ ERROR .tanzu.tkc_clusters[] workers_count not a name defined"
+            exit 255
+          fi
+          # .tanzu.tkc_clusters[].services_cidrs
+          if $(jq -e '.tanzu.tkc_clusters[].services_cidrs' $jsonFile > /dev/null) ; then
+            echo "   +++ .tanzu.tkc_clusters[] has services_cidrs defined"
+          else
+            echo "   +++ ERROR .tanzu.tkc_clusters[] services_cidrs not a name defined"
+            exit 255
+          fi
+          # .tanzu.tkc_clusters[].pods_cidrs
+          if $(jq -e '.tanzu.tkc_clusters[].pods_cidrs' $jsonFile > /dev/null) ; then
+            echo "   +++ .tanzu.tkc_clusters[] has pods_cidrs defined"
+          else
+            echo "   +++ ERROR .tanzu.tkc_clusters[] pods_cidrs not a name defined"
+            exit 255
+          fi
+          # .tanzu.tkc_clusters[].alb_tenants & .tanzu.tkc_clusters[].namespace_ref
+          for tkc in $(jq -c -r '.tanzu.tkc_clusters[]' $jsonFile)
+          do
+            # check that the namespace_ref exists in .tanzu.namespaces[].name
+            if $(jq -e -c -r --arg namespace "$(echo $tkc | jq -c -r '.namespace_ref')" '.tanzu.namespaces[] | select( .name == $namespace )' $jsonFile > /dev/null) ; then
+              echo "   +++ .tanzu.tkc_clusters called $(echo $tkc | jq -c -r '.name').namespace_ref ref found"
+            else
+              echo "   +++ ERROR .tanzu.tkc_clusters called $(echo $tkc | jq -c -r '.name').namespace_ref ref not found in .tanzu.namespaces[].name"
+              exit 255
+            fi
+            # .tanzu.tkc_clusters[].alb_tenants
+            if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) || \
+               $(echo $tkc | jq -e '.alb_tenant_type' > /dev/null) ; then
+              if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) && \
+                 $(echo $tkc | jq -e '.alb_tenant_type' > /dev/null) ; then
+                if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) != "tenant-mode" \
+                   && $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) !=  "provider-mode" ]] ; then
+                  echo "   +++ ERROR .tanzu.tkc_clusters[] called $(echo $tkc | jq -c -r '.name') should have .alb_tenant_type configures with either 'tenant-mode' or 'provider-mode' - it is $(echo $tkc | jq -c -r '.alb_tenant_type')"
+                  exit 255
+                fi
+                if [[ $(echo $tkc | jq -c -r '.alb_tenant_name' | tr '[:upper:]' [:lower:]) != "admin" ]] ; then
+                  echo "   +++ ERROR .tanzu.tkc_clusters[] called $(echo $tkc | jq -c -r '.name') should have .alb_tenant_name configures 'admin'"
+                  exit 255
+                fi
+              else
+                echo "   +++ ERROR .tanzu.tkc_clusters[] called $(echo $tkc | jq -c -r '.name') should have .alb_tenant_name, .alb_tenant_type - all of them or none of them"
+              fi
+            fi
+          done
+        fi
       fi
     fi
     echo ""
