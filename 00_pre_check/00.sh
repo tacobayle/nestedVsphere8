@@ -843,8 +843,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
                   echo "   +++ ERROR .tanzu.tkc_clusters[] called $(echo $tkc | jq -c -r '.name') should have .alb_tenant_type configures with either 'tenant-mode' or 'provider-mode' - it is $(echo $tkc | jq -c -r '.alb_tenant_type')"
                   exit 255
                 fi
-                if [[ $(echo $tkc | jq -c -r '.alb_tenant_name' | tr '[:upper:]' [:lower:]) != "admin" ]] ; then
-                  echo "   +++ ERROR .tanzu.tkc_clusters[] called $(echo $tkc | jq -c -r '.name') should have .alb_tenant_name configures 'admin'"
+                if [[ $(echo $tkc | jq -c -r '.alb_tenant_name' | tr '[:upper:]' [:lower:]) == "admin" ]] ; then
+                  echo "   +++ ERROR .tanzu.tkc_clusters[] called $(echo $tkc | jq -c -r '.name') should not have .alb_tenant_name configures 'admin'"
                   exit 255
                 fi
               else
