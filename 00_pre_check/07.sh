@@ -36,6 +36,10 @@ echo "   +++ Adding avi_ova_path..."
 avi_ova_path=$(jq -c -r '.avi_ova_path' $localJsonFile)
 avi_json=$(echo $avi_json | jq '. += {"avi_ova_path": "'$(echo $avi_ova_path)'"}')
 #
+echo "   +++ Adding helm_url..."
+helm_url=$(jq -c -r '.helm_url' $localJsonFile)
+avi_json=$(echo $avi_json | jq '.avi += {"helm_url": "'${helm_url}'"}')
+#
 echo "   +++ Adding nsx_alb_se_cl..."
 nsx_alb_se_cl=$(jq -c -r '.nsx_alb_se_cl' $localJsonFile)
 avi_json=$(echo $avi_json | jq '. += {"nsx_alb_se_cl": "'$(echo $nsx_alb_se_cl)'"}')
@@ -97,7 +101,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
                                                          "se_in_provider_context": false,
                                                          "tenant_access_to_provider_se": false
                                                          }
-                                                       }]')
+                                                      }]')
           fi
           if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) == "provider-mode" ]] ; then
             echo "   +++ adding tenant called $(echo $tkc | jq -c -r '.name') for Tanzu TKC clusters"
@@ -108,7 +112,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
                                                          "se_in_provider_context": true,
                                                          "tenant_access_to_provider_se": true
                                                          }
-                                                       }]')
+                                                      }]')
           fi
         fi
       done

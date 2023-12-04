@@ -34,4 +34,11 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
   #
 fi
 #
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
+  #
+  echo "   +++ Adding avi.config.cloud.name..."
+  vsphere_with_tanzu=$(echo $vsphere_with_tanzu | jq '.avi.config.cloud += {"name": "'$(jq -c -r '.nsx_default_cloud_name' /nestedVsphere8/07_nsx_alb/variables.json)'"}')
+  #
+fi
+#
 echo $vsphere_with_tanzu | jq . | tee /root/vsphere_with_tanzu.json > /dev/null

@@ -10,6 +10,7 @@
   "vcenter_default_cloud_name": "Default-Cloud",
   "nsx_default_cloud_name": "dc1_nsx",
   "dhcp_enabled_default": false,
+  "helm_url": "oci://projects.registry.vmware.com/ako/helm-charts/ako",
   "dhcp_enabled_if_vsphere_nsx_tanzu_alb": true,
   "tkgm_user": "tkg",
   "seg_folder_basename": "SEG",
