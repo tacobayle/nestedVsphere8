@@ -125,6 +125,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       "${tanzu_worker_dvportgroup}" \
       "$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.backend.cidr' $jsonFile| cut -d"/" -f2) "   ++++++")'" \
       "${cluster_id}"
+    exit
   fi
   #
   # vsphere_tanzu_alb_nsx use case

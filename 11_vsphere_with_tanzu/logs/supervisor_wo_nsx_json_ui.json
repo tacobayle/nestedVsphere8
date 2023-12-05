@@ -1,0 +1,55 @@
+{
+  "specVersion": "1.0",
+  "supervisorSpec": {
+    "supervisorName": "supervisor1"
+  },
+  "envSpec": {
+    "vcenterDetails": {
+      "vcenterAddress": "vcsa-01.alb123.com",
+      "vcenterCluster": "cluster1"
+    }
+  },
+  "tkgsComponentSpec": {
+    "tkgsStoragePolicySpec": {
+      "masterStoragePolicy": "vSAN Default Storage Policy",
+      "imageStoragePolicy": "vSAN Default Storage Policy",
+      "ephemeralStoragePolicy": "vSAN Default Storage Policy"
+    },
+    "aviComponents": {
+      "aviName": "avi",
+      "aviUsername": "admin",
+      "aviController01Ip": "10.41.134.215:443",
+      "aviCertAuthorityChain": "-----BEGIN CERTIFICATE-----\nMIIC0zCCAbugAwIBAgIUCZwsYc1qy9UK6Oy/cBm9jYwcpXkwDQYJKoZIhvcNAQEL\nBQAwGTEXMBUGA1UEAwwOYWxiLmFsYjEyMy5jb20wHhcNMjMxMTI3MTIwMTA3WhcN\nMjQxMTI2MTIwMTA3WjAZMRcwFQYDVQQDDA5hbGIuYWxiMTIzLmNvbTCCASIwDQYJ\nKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMFQ7kV6ojw0vE20EOXehhkXmCJ7nKHP\niJoC6JIg5jnygxeuw63jAbbwo8zo3JKcgk27QP0OhYWoHurGy5asEg1vi3CzYsOB\n0UHnR3AFxj0v8PNNPAbq91h6e49tKMUJhV9qQ91br9ss+W2/SCQu0ezzJV+1AOUb\n+3kvmD/TEBCGBM0jNRPuBJEV8Ge0s1JIdvbZMpoemBGJTVbjE98k2DdTVF13/EZ/\nWBGO8S7dMIEUXK4wL4EmLeF3Fwj5IXu9/2cqkXviMy1HYYTwwblhVrbkgYEps2R2\ndNxv1MFqa00vTgOie1uy4MP5JE6SDlcbGyZZwSaxshnFjq399zkmnZUCAwEAAaMT\nMBEwDwYDVR0RBAgwBocECimG1zANBgkqhkiG9w0BAQsFAAOCAQEAobidSCgMub6B\n3iETctXrWImv84OYLf5oXdpWntWHMao6iirmp2lqwCEW5A0mIut7AiIgaQIq8es0\nTXXb/yaXJrS/mvpsh80FmLJa+d2wqk4d55b7zi285B/6FWxloRsVf0MbFCwEif/w\neur+4UDfGmCV1Z9uEYhl5LSLQE/WGMLcRl6SBdMlvN5nvxyOHs+PXHp2H4xGs4as\no8qKxih9VaPzTXF2mCWUnPxLoSywf9lSkJR30Aau3A90oRWKNNkQZOEnjlAfqUEb\n0pYhkR7q5nn8Wg1eYgmsk/IH2RkyfbGYtSLoAEn5R8pOGQCtfsKvdCIgYODl4g58\nJYrSQcLV5Q==\n-----END CERTIFICATE-----"
+    },
+    "tkgsMgmtNetworkSpec": {
+      "tkgsMgmtNetworkName": "tanzu-pg",
+      "tkgsMgmtIpAssignmentMode": "STATICRANGE",
+      "tkgsMgmtNetworkStartingIp": "10.0.120.130",
+      "tkgsMgmtNetworkGatewayCidr": "10.0.120.1/24",
+      "tkgsMgmtNetworkDnsServers": [
+        "10.41.134.210"
+      ],
+      "tkgsMgmtNetworkSearchDomains": [],
+      "tkgsMgmtNetworkNtpServers": [
+        "10.41.134.210"
+      ]
+    },
+    "tkgsPrimaryWorkloadNetwork": {
+      "tkgsPrimaryWorkloadNetworkName": "backend-pg",
+      "tkgsPrimaryWorkloadIpAssignmentMode": "STATICRANGE",
+      "tkgsPrimaryWorkloadPortgroupName": "backend-pg",
+      "tkgsPrimaryWorkloadNetworkGatewayCidr": "10.0.118.1/24",
+      "tkgsPrimaryWorkloadNetworkStartRange": "10.0.118.50",
+      "tkgsPrimaryWorkloadNetworkEndRange": "10.0.118.99",
+      "tkgsWorkloadDnsServers": [
+        "10.41.134.210"
+      ],
+      "tkgsWorkloadNtpServers": [
+        "10.41.134.210"
+      ],
+      "tkgsWorkloadServiceCidr": "10.96.0.0/24"
+    },
+    "apiServerDnsNames": [],
+    "controlPlaneSize": "TINY"
+  }
+}

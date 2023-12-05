@@ -53,15 +53,24 @@ d=vsphere-nsx-alb ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml
 ## destroy - create
 d=vsphere-nsx-alb ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0 ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
 
-# vsphere-nsx-alb-telco
+# test
 ## destroy
-d=vsphere-nsx-alb-telco ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh
-d=vsphere-nsx-alb-telco ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0
+d=test ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh
+d=test ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0
 ## create
-d=vsphere-nsx-alb-telco ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
+d=test ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/00_pre_check/00.sh
 ## destroy - create
-d=vsphere-nsx-alb-telco ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0 ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
+d=test ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0 ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
 
+
+# vsphere-nsx-alb
+## destroy
+d=vsphere-nsx-alb ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh
+d=vsphere-nsx-alb; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0
+## create
+d=vsphere-nsx-alb ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
+## destroy - create
+d=vsphere-nsx-alb ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0 ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
 
 # python3 -m http.server
 

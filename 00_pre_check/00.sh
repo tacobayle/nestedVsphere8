@@ -1,331 +1,17 @@
 #!/bin/bash
 #
 source /nestedVsphere8/bash/test_if_variables.sh
+source /nestedVsphere8/bash/data_validation/alb.sh
+source /nestedVsphere8/bash/data_validation/nsx.sh
+source /nestedVsphere8/bash/data_validation/tanzu.sh
 source /nestedVsphere8/bash/ip.sh
 #
 jsonFile="/etc/config/variables.json"
-#
-#
-#
-test_nsx_alb_variables () {
-  echo ""
-  echo "==> Checking NSX ALB Variables with or without NSX"
-  test_if_json_variable_is_defined .avi.ova_url "$1" "   "
-  test_if_json_variable_is_defined .avi.cpu "$1" "   "
-  test_if_json_variable_is_defined .avi.memory "$1" "   "
-  test_if_json_variable_is_defined .avi.disk "$1" "   "
-  test_if_json_variable_is_defined .avi.version "$1" "   "
-  test_if_json_variable_is_defined .avi.config.cloud.service_engine_groups "$1" "   "
-  test_if_json_variable_is_defined .avi.config.domain "$1" "   "
-  test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip "$1") "   "
-  echo "   +++ testing if environment variable TF_VAR_docker_registry_username is not empty" ; if [ -z "$TF_VAR_docker_registry_username" ] ; then exit 255 ; fi
-  echo "   +++ testing if environment variable TF_VAR_docker_registry_password is not empty" ; if [ -z "$TF_VAR_docker_registry_password" ] ; then exit 255 ; fi
-  echo "   +++ testing if environment variable TF_VAR_docker_registry_email is not empty" ; if [ -z "$TF_VAR_docker_registry_email" ] ; then exit 255 ; fi
-  echo "   +++ testing if environment variable TF_VAR_avi_password is not empty" ; if [ -z "$TF_VAR_avi_password" ] ; then exit 255 ; fi
-  echo "   +++ testing if environment variable TF_VAR_avi_old_password is not empty" ; if [ -z "$TF_VAR_avi_old_password" ] ; then exit 255 ; fi
-}
-#
-#
-#
-test_nsx_app_variables () {
-  echo ""
-  echo "==> Checking NSX Apps with NSX"
-  # .nsx.config.segments_overlay[].app_ips
-  count=0
-  for item in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-  do
-    if [[ $(echo $item | jq -c .app_ips) != "null" ]] ; then
-      if [[ $(echo $item | jq -r -c .display_name) == $(jq -c -r .avi.config.cloud.network_management.name "$1") ]] ; then
-        echo "app_ips is not supported on overlay segment $(echo $item | jq -r -c .display_name) because it's defined at .avi.config.cloud.network_management.name - NAT is disabled hence no Internet Access"
-        exit 255
-      fi
-      ((count++))
-      for ip in $(echo $item | jq .app_ips[] -c -r)
-      do
-        test_if_variable_is_valid_ip "$ip" "   "
-      done
-    fi
-  done
-  if [[ $count -eq 0 ]] ; then echo "   +++ .nsx.config.segments_overlay[].app_ips has to be defined at least once to locate where the App servers will be installed" ; exit 255 ; fi
-}
-#
-#
-#
-test_nsx_k8s_variables () {
-  echo ""
-  echo "==> Checking unmanaged_k8s with NSX"
-  # .nsx.config.segments_overlay[].k8s_clusters
-  for item in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-  do
-    if [[ $(echo $item | jq -c .k8s_clusters) != "null" ]] ; then
-      placement_k8s=0
-      for network in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
-      do
-        if [[ $(echo $item | jq -r -c .display_name) == $(echo $network | jq -c -r .name) ]] ; then
-          placement_k8s=1
-        fi
-      done
-      if [[ $placement_k8s -ne 1 ]] ; then
-        echo "With NSX: k8s_clusters is supported only on vip segments defined .avi.config.cloud.networks_data[]"
-        exit 255
-      fi
-      variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": true}')
-      for cluster in $(echo $item | jq -c -r .k8s_clusters[])
-      do
-        test_if_variable_is_defined $(echo $cluster | jq -c .cluster_name) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cluster_name defined"
-        test_if_variable_is_defined $(echo $cluster | jq -c .k8s_version) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a k8s_version defined"
-        test_if_variable_is_defined $(echo $cluster | jq -c .cni) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cni defined"
-        if [[ $(echo $cluster | jq -c -r .cni) == "antrea" || $(echo $cluster | jq -c -r .cni) == "calico" || $(echo $cluster | jq -c -r .cni) == "cilium" ]] ; then
-          echo "   +++ cni is $(echo $cluster | jq -c -r .cni) which is supported"
-        else
-          echo "   +++ cni $(echo $cluster | jq -c -r .cni) is not supported - cni should be either \"calico\" or \"antrea\" or \"cilium\""
-          exit 255
-        fi
-        test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cni_version defined"
-        test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " ".nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cluster_ips defined"
-        if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
-        for ip in $(echo $cluster | jq -c -r .cluster_ips[])
-        do
-          test_if_variable_is_valid_ip "$ip" "   "
-        done
-      done
-    fi
-  done
-}
-#
-#
-#
-test_alb_variables_if_vsphere_nsx_alb_telco () {
-  echo ""
-  echo "==> Checking ALB variables for Telco Use case (NSX with vCenter cloud with BGP)"
-  #
-  # .avi.config.cloud.networks[]
-  #
-  test_if_json_variable_is_defined .avi.config.cloud.networks "$1" "   "
-  for item in $(jq -c -r .avi.config.cloud.networks[] "$1")
-  do
-    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.networks have a name defined"
-    test_if_variable_is_defined $(echo $item | jq -c .avi_ipam_pool) "   " "testing if each .avi.config.cloud.networks[] have a avi_ipam_pool defined"
-    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool | cut -d"-" -f1 )" "   "
-    test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool | cut -d"-" -f2 )" "   "
-    test_if_variable_is_defined $(echo $item | jq -c .management) "   " "testing if each .avi.config.cloud.networks[] have a management defined"
-    if [[ $(jq '.avi.config.cloud.networks[].management' "$1" | grep -c true) != 1 ]] ; then
-      echo "      ++++++ ERROR only one network with management == true  is supported in .avi.config.cloud.networks[]"
-      exit 255
-    fi
-    test_if_variable_is_defined $(echo $item | jq -r .external) "   " "testing if each .avi.config.cloud.networks[] have a external defined"
-    if [[ $(jq '.avi.config.cloud.networks[].external' "$1" | grep -c true) != 1 ]] ; then
-      echo "      ++++++ ERROR only one network with external == true  is supported in .avi.config.cloud.networks[]"
-      exit 255
-    fi
-    if [[ $(echo $item | jq -c .external) == false ]] ; then
-      if [[ $(jq -c -r --arg network_name "$(echo $item | jq -r .name)" '.nsx.config.segments_overlay[] | select(.display_name == $network_name).display_name' "$1") == "" ]] ; then
-        echo "      ++++++ ERROR $(echo $item | jq -r .name) was not found in .nsx.config.segments_overlay[].display_name"
-        exit 255
-      fi
-    fi
-    if [[ $(jq -c -r '.nsx.config.tier0s | map(select(has("bgp"))) | .[].bgp.avi_peer_label' "$1" | uniq -d) != "" ]] ; then
-      echo "      ++++++ ERROR .nsx.config.tier0s[].bgp.avi_peer_label has a duplicate value"
-      exit 255
-    fi
-    if [[ $(jq '.avi.config.cloud.contexts[].routing_options[].label' "$1" | uniq -d ) != "" ]] ; then
-      echo "      ++++++ ERROR .avi.config.cloud.contexts[].routing_options[].label has a duplicate value"
-      exit 255
-    fi
-    for tier0_bgp in $(jq -c -r '.nsx.config.tier0s | map(select(has("bgp"))) | .[].bgp' "$1")
-    do
-      if [[ $(jq -c -r --arg context "$(echo $tier0_bgp | jq -r .avi_context_ref)" '.avi.config.cloud.contexts[] | select(.name == $context).name' "$1") == "" ]] ; then
-        echo "      ++++++ ERROR $(echo $tier0_bgp | jq -r .avi_context_ref) was not found in .avi.config.cloud.contexts[].name"
-        exit 255
-      fi
-      if [[ $(jq --arg context "$(echo $tier0_bgp | jq -r .avi_context_ref)" '.avi.config.cloud.contexts[] | select(.name == $context).routing_options | map(select(.label == "'$(echo $tier0_bgp | jq -r .avi_peer_label)'"))[].label ' "$1") == "" ]] ; then
-        echo "      ++++++ ERROR $(echo $tier0_bgp | jq -r .avi_peer_label) was not found in .avi.config.cloud.contexts[].routing_options[].label"
-        exit 255
-      fi
-    done
-  done
-  #
-  # .avi.config.cloud.additional_subnets[]
-  #
-  test_if_json_variable_is_defined .avi.config.cloud.additional_subnets "$1" "   "
-  for item in $(jq -c -r .avi.config.cloud.additional_subnets[] "$1")
-  do
-    test_if_variable_is_defined $(echo $item | jq -c -r .name_ref) "   " "testing if each .avi.config.cloud.additional_subnets have a name_ref defined"
-    if [[ $(jq -c -r --arg network_name "$(echo $item | jq -c -r .name_ref)" '.avi.config.cloud.networks[] | select(.name == $network_name).name' "$1") == "" ]] ; then
-      echo "      ++++++ ERROR $(echo $item | jq -c -r .name_ref) was not found in .avi.config.cloud.networks[].name"
-      exit 255
-    fi
-    for subnet in $(echo $item | jq -c -r .subnets[])
-    do
-      test_if_variable_is_defined $(echo $subnet | jq -c -r .cidr) "   " "testing if each .avi.config.cloud.additional_subnets[].subnets have a cidr defined"
-      test_if_variable_is_valid_cidr "$(echo $subnet | jq -c -r .cidr)" "   "
-      test_if_variable_is_defined $(echo $subnet | jq -c -r .range) "   " "testing if each .avi.config.cloud.additional_subnets[].subnets have a range defined"
-      test_if_variable_is_valid_ip "$(echo $subnet | jq -c -r .range | cut -d"-" -f1)" "   "
-      test_if_variable_is_valid_ip "$(echo $subnet | jq -c -r .range | cut -d"-" -f2)" "   "
-      test_if_variable_is_defined $(echo $subnet | jq -c -r .type) "   " "testing if each .avi.config.cloud.additional_subnets[].subnets have a type defined"
-      test_if_variable_is_defined $(echo $subnet | jq -c -r .range_type) "   " "testing if each .avi.config.cloud.additional_subnets[].subnets have a range_type defined"
-    done
-  done
-  #
-  # .avi.config.cloud.contexts
-  #
-  echo "   +++ testing avi.config.cloud.contexts"
-  test_if_json_variable_is_defined .avi.config.cloud.contexts "$1" "   "
-  if [[ $(jq '.avi.config.cloud.contexts | length' "$1") != 1 ]] ; then echo "      ++++++ ERROR only one context is supported in .avi.config.cloud.contexts" ; exit 255 ; fi
-  for item in $(jq -c -r .avi.config.cloud.contexts[] "$1")
-  do
-    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.contexts have a name defined"
-    test_if_variable_is_defined $(echo $item | jq -c .ibgp) "   " "testing if each .avi.config.cloud.contexts have a ibgp defined"
-    test_if_variable_is_defined $(echo $item | jq -c .keepalive_interval) "   " "testing if each .avi.config.cloud.contexts have a keepalive_interval defined"
-    test_if_variable_is_defined $(echo $item | jq -c .hold_time) "   " "testing if each .avi.config.cloud.contexts have a hold_time defined"
-    test_if_variable_is_defined $(echo $item | jq -c .local_as) "   " "testing if each .avi.config.cloud.contexts have a local_as defined"
-    test_if_variable_is_defined $(echo $item | jq -c .send_community) "   " "testing if each .avi.config.cloud.contexts have a send_community defined"
-    test_if_variable_is_defined $(echo $item | jq -c .shutdown) "   " "testing if each .avi.config.cloud.contexts have a shutdown defined"
-    test_if_variable_is_defined $(echo $item | jq -c .routing_options) "   " "testing if each .avi.config.cloud.contexts have a routing_options defined"
-    for routing_option in $(echo $item | jq -c -r .routing_options[])
-      do
-        test_if_variable_is_defined $(echo $routing_option | jq -c .advertise_learned_routes) "   " "testing if each .avi.config.cloud.contexts[].routing_options have a advertise_learned_routes defined"
-        test_if_variable_is_defined $(echo $routing_option | jq -c .label) "   " "testing if each .avi.config.cloud.contexts[].routing_options have a label defined"
-        test_if_variable_is_defined $(echo $routing_option | jq -c .max_learn_limit) "   " "testing if each .avi.config.cloud.contexts[].routing_options have a max_learn_limit defined"
-      done
-  done
-  #
-  # .avi.config.cloud.service_engine_groups
-  #
-  test_if_json_variable_is_defined .avi.config.cloud.service_engine_groups "$1" "   "
-  for item in $(jq -c -r .avi.config.cloud.service_engine_groups[] "$1")
-  do
-    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.service_engine_groups[] have a name defined"
-  done
-  #
-  #
-  # .avi.config.cloud.virtual_services
-  #
-  test_if_json_variable_is_defined .avi.config.cloud.virtual_services.dns "$1" "   "
-  for item in $(jq -c -r .avi.config.cloud.virtual_services.dns[] "$1")
-  do
-    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a name defined"
-    test_if_variable_is_defined $(echo $item | jq -c .network_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a network_ref defined"
-    if [[ $(jq -c -r --arg network_name "$(echo $item | jq -r .network_ref)" '.avi.config.cloud.networks[] | select(.name == $network_name).name' "$1") == "" ]] ; then
-      echo "      ++++++ ERROR $(echo $item | jq -r .network_ref) was not found in .avi.config.cloud.networks[].name"
-      exit 255
-    fi
-    test_if_variable_is_defined $(echo $item | jq -c .se_group_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a se_group_ref defined"
-    if [[ $(jq -c -r --arg arg_name "$(echo $item | jq -r .se_group_ref)" '.avi.config.cloud.service_engine_groups[] | select(.name == $arg_name).name' "$1") == "" ]] ; then
-      echo "      ++++++ ERROR $(echo $item | jq -r .se_group_ref) was not found in .avi.config.cloud.service_engine_groups[].name"
-      exit 255
-    fi
-  done
-}
-#
-#
-#
-test_alb_variables_if_nsx_cloud () {
-  echo ""
-  echo "==> Checking ALB with NSX Cloud type"
-  test_if_json_variable_is_defined .avi.config.cloud.type "$1" "   "
-  if [[ $(jq -c -r .avi.config.cloud.type "$1") == "CLOUD_NSXT" ]]; then
-    test_if_json_variable_is_defined .avi.config.cloud.networks_data "$1" "   "
-    test_if_json_variable_is_defined .avi.config.cloud.obj_name_prefix "$1" "   "
-    # .avi.config.cloud.network_management
-    test_if_json_variable_is_defined .avi.config.cloud.network_management.name "$1" "   "
-    avi_cloud_network=0
-    for segment in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-    do
-      if [[ $(echo $segment | jq -r .display_name) == $(jq -c -r .avi.config.cloud.network_management.name "$1") ]] ; then
-        avi_cloud_network=1
-        echo "   ++++++ Avi cloud network found in NSX overlay segments: $(echo $segment | jq -r .display_name), OK"
-      fi
-    done
-    if [[ $avi_cloud_network -eq 0 ]] ; then
-      echo "   ++++++ERROR++++++ $(echo $network | jq -c -r .name) segment not found!!"
-      exit 255
-    fi
-    test_if_variable_is_valid_ip "$(jq -c -r .avi.config.cloud.network_management.avi_ipam_pool_se "$1" | cut -d"-" -f1 )" "   "
-    test_if_variable_is_valid_ip "$(jq -c -r .avi.config.cloud.network_management.avi_ipam_pool_se "$1" | cut -d"-" -f2 )" "   "
-    # .avi.config.cloud.networks_data[]
-    for item in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
-    do
-      test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.networks_data[] have a name defined"
-      test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool_se | cut -d"-" -f1 )" "   "
-      test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_pool_se | cut -d"-" -f2 )" "   "
-      test_if_variable_is_valid_cidr "$(echo $item | jq -c -r .avi_ipam_vip.cidr)" "   "
-      test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f1 )" "   "
-      test_if_variable_is_valid_ip "$(echo $item | jq -c -r .avi_ipam_vip.pool | cut -d"-" -f2 )" "   "
-    done
-    #
-    test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.networks_data[].name" \
-                                                 ".nsx.config.segments_overlay[].display_name" \
-                                                 "$1" \
-                                                 "   +++ Checking name in .avi.config.cloud.networks_data" \
-                                                 "   ++++++ Segment " \
-                                                 "   ++++++ERROR++++++ Segment not found: "
-    # checking that there is a network data with the proper tier1 for each .nsx.config.segments_overlay[].app_ips
-    echo "   +++ Checking that there is a network data with the proper tier1 for each .nsx.config.segments_overlay[].app_ips"
-    for segment in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-    do
-      if [[ $(echo $segment | jq -c .app_ips) != "null" ]] ; then
-        tier1_app_ips=$(echo $segment | jq -c -r .tier1)
-        tier1_app_ips_segment_data=0
-        for network_data in $(jq -c -r .avi.config.cloud.networks_data[] "$1")
-        do
-          for segment_data in $(jq -c -r .nsx.config.segments_overlay[] "$1")
-          do
-            if [[ $(echo $network_data | jq -c .name) == $(echo $segment_data | jq -c .display_name) ]] ; then
-              tier1_segment_data=$(echo $segment_data | jq -c -r .tier1)
-              if [[ $tier1_segment_data == $tier1_app_ips ]] ; then
-                echo "   ++++++ Avi network data found for pool segment $(echo $segment | jq -c .display_name), tier1 $tier1_app_ips: $(echo $network_data | jq -c .name) with tier1: $tier1_segment_data"
-                tier1_app_ips_segment_data=1
-              fi
-            fi
-          done
-        done
-      fi
-    done
-    if [[ $tier1_app_ips_segment_data -eq 0 ]] ; then echo "   ++++++ERROR++++++ no Avi network_data found for $(echo $segment | jq -c .display_name)" ; exit 255 ; fi
-    # .avi.config.cloud.service_engine_groups[]
-    for item in $(jq -c -r .avi.config.cloud.service_engine_groups[] "$1")
-    do
-      test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.service_engine_groups[] have a name defined"
-    done
-    #
-    if [[ $(jq -c -r .avi.config.cloud.virtual_services.dns "$1") != "null" ]]; then
-      for item in $(jq -c -r .avi.config.cloud.virtual_services.dns[] "$1")
-      do
-        test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a name defined"
-        test_if_variable_is_defined $(echo $item | jq -c .network_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a network_ref defined"
-
-        test_if_variable_is_defined $(echo $item | jq -c .se_group_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a se_group_ref defined"
-        for service in $(echo $item | jq -c -r .services[])
-        do
-          test_if_variable_is_defined $(echo $service | jq -c .port) "   " "testing if each .avi.config.cloud.virtual_services.dns[].services have a port defined"
-        done
-      done
-      test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].se_group_ref" \
-                                                   ".avi.config.cloud.service_engine_groups[].name" \
-                                                   "$1" \
-                                                   "   +++ Checking se_group_ref in .avi.config.cloud.virtual_services.dns" \
-                                                   "   ++++++ Service Engine Group " \
-                                                   "   ++++++ERROR++++++ ervice Engine Group not found: "
-      #
-      test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].network_ref" \
-                                                   ".nsx.config.segments_overlay[].display_name" \
-                                                   "$1" \
-                                                   "   +++ Checking network_ref in .avi.config.cloud.virtual_services.dns" \
-                                                   "   ++++++ Segment " \
-                                                   "   ++++++ERROR++++++ Segment not found: "
-    fi
-  fi
-}
-#
-#
-#
 rm -f /root/variables.json
 variables_json=$(jq -c -r . $jsonFile | jq .)
-#
-#
-#
 IFS=$'\n'
+#
+# Env Variables
 #
 echo ""
 echo "==> Checking required environment variables"
@@ -336,8 +22,10 @@ echo "   +++ testing if environment variable TF_VAR_bind_password is not empty" 
 echo "   +++ testing if environment variable TF_VAR_nested_esxi_root_password is not empty" ; if [ -z "$TF_VAR_nested_esxi_root_password" ] ; then exit 255 ; fi
 echo "   +++ testing if environment variable TF_VAR_vsphere_nested_password is not empty" ; if [ -z "$TF_VAR_vsphere_nested_password" ] ; then exit 255 ; fi
 #
+# Underlay vSphere Variables
+#
 echo ""
-echo "==> Checking vSphere Underlay Variables"
+echo "==> Checking Underlay vSphere Variables"
 test_if_json_variable_is_defined .vsphere_underlay.datacenter $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_underlay.cluster $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_underlay.datastore $jsonFile "   "
@@ -363,7 +51,6 @@ do
   echo "   +++ Adding netmask for $network network..."
   netmask=$(ip_netmask_by_prefix $(jq -c -r .vsphere_underlay.networks.vsphere.$network.cidr $jsonFile | cut -d"/" -f2) "   ++++++")
   variables_json=$(echo $variables_json | jq '.vsphere_underlay.networks.vsphere.'$network' += {"netmask": "'$(echo $netmask)'"}')
-  #
 done
 #
 test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.gateway $jsonFile "   "
@@ -378,7 +65,7 @@ done
 test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.vcsa_nested_ip $jsonFile "   "
 test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.vcsa_nested_ip $jsonFile) "   "
 #
-#
+# External Gateway Variables
 #
 echo ""
 echo "==> Checking External Gateway Variables"
@@ -390,10 +77,10 @@ done
 test_if_json_variable_is_defined .external_gw.bind.domain $jsonFile "   "
 test_if_json_variable_is_defined .external_gw.ntp $jsonFile "   "
 #
-#
+# Nested vCenter Variables
 #
 echo ""
-echo "==> Checking vCenter Variables"
+echo "==> Checking Nested vCenter Variables"
 test_if_json_variable_is_defined .vsphere_nested.vcsa_name $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_nested.iso_url $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_nested.esxi.iso_url $jsonFile "   "
@@ -437,14 +124,14 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   fi
   # vSphere alb vSphere networks without Avi config.
   if [[ $(jq -c -r .avi $jsonFile) == "null" ]]; then
-    echo "   ++++++ ERROR: cannot get .vsphere_underlay.networks.alb defined without .avi defined: must be one and the other"
+    echo "   ++++++ ERROR: cannot get .vsphere_underlay.networks.alb defined without .avi defined"
     exit 255
   fi
   # setting unmanaged_k8s_status disabled by default
   variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": false}')
   #
   if [[ $(jq -c -r .vsphere_underlay.networks.alb.se.app_ips $jsonFile) != "null" || $(jq -c -r .vsphere_underlay.networks.alb.se.k8s_clusters $jsonFile) != "null" ]] ; then
-    echo "app_ips or k8s_clusters is not supported on Port Group SE - because NAT is disabled hence no Internet Access"
+    echo "app_ips or k8s_clusters is not supported on Port Group SE - because NAT is disabled hence no Internet Access from this port group"
     exit 255
   fi
   #
@@ -458,10 +145,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
     test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.alb.$network.avi_ipam_pool $jsonFile | cut -d"-" -f2 )" "   "
     #
     if [[ $(jq -c -r .vsphere_underlay.networks.alb.$network.app_ips $jsonFile) != "null" ]] ; then
-      for ip in $(jq -c -r .vsphere_underlay.networks.alb.$network.app_ips[] $jsonFile)
-      do
-        test_if_variable_is_valid_ip "$ip" "   "
-      done
+      test_if_list_contains_ip "${jsonFile}" ".vsphere_underlay.networks.alb.$network.app_ips[]"
     fi
     #
     if [[ $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters $jsonFile) != "null" ]] ; then
@@ -479,10 +163,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
         test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cni_version defined"
         test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cluster_ips defined"
         if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
-        for ip in $(echo $cluster | jq -c -r .cluster_ips[])
-        do
-          test_if_variable_is_valid_ip "$ip" "   "
-        done
+        test_if_list_contains_ip "${jsonFile}" ".vsphere_underlay.networks.alb.$network.cluster_ips[]"
       done
       variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": true}')
     fi
@@ -502,6 +183,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
   #
   if [[ $(jq -c -r .avi $jsonFile) != "null" && $(jq -c -r .tanzu $jsonFile) != "null" ]]; then
     test_nsx_alb_variables "/etc/config/variables.json"
+    test_variables_if_tanzu "/etc/config/variables.json" "vds"
     echo ""
     echo "==> Adding .deployment: vsphere_tanzu_alb_wo_nsx"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_tanzu_alb_wo_nsx"}')
@@ -689,136 +371,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_nsx_app_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_nsx_cloud "/etc/config/variables.json"
-    echo ""
-    echo "==> Checking vSphere with Tanzu variables"
-    # .tanzu validation
-    if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
-      # tanzu .tanzu.supervisor_cluster validation
-      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.size is defined"
-      if [[ $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile | tr '[:upper:]' [:lower:]) != "tiny" \
-            && $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile | tr '[:upper:]' [:lower:]) != "small" \
-            && $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile | tr '[:upper:]' [:lower:]) != "medium" \
-            && $(jq -c -r '.tanzu.supervisor_cluster.size' $jsonFile | tr '[:upper:]' [:lower:]) != "large" ]] ; then
-              echo "   +++ ERROR ..tanzu.supervisor_cluster.size should equal to one of the following: 'tiny, small, medium, large'"
-              echo "   +++ https://developer.vmware.com/apis/vsphere-automation/latest/vcenter/data-structures/NamespaceManagement/SizingHint/"
-              exit 255
-      fi
-      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) "   " "testing if .tanzu.supervisor_cluster.management_tanzu_segment is defined"
-      if $(jq -e -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment )' $jsonFile > /dev/null) ; then
-        echo "   +++ .tanzu.supervisor_cluster.management_tanzu_segment ref found"
-        test_if_variable_is_defined $(jq -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment) | .tanzu_supervisor_starting_ip' $jsonFile) "   +++" "testing if $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) have tanzu_supervisor_starting_ip defined"
-        test_if_variable_is_defined $(jq -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment) | .tanzu_supervisor_count' $jsonFile) "   +++" "testing if $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) have tanzu_supervisor_count defined"
-      else
-        echo "   +++ ERROR .tanzu.supervisor_cluster.management_tanzu_segment ref not found in .nsx.config.segments_overlay[]"
-        exit 255
-      fi
-      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.namespace_edge_cluster' $jsonFile) "   " "testing if .tanzu.supervisor_cluster.namespace_edge_cluster is defined"
-      if $(jq -e -c -r --arg edge_cluster "$(jq -c -r '.tanzu.supervisor_cluster.namespace_edge_cluster' $jsonFile)" '.nsx.config.edge_clusters[] | select( .display_name == $edge_cluster )' $jsonFile > /dev/null) ; then
-        echo "   +++ .tanzu.supervisor_cluster.namespace_edge_cluster ref found"
-      else
-        echo "   +++ ERROR .tanzu.supervisor_cluster.namespace_edge_cluster ref not found in .nsx.config.edge_clusters[]"
-        exit 255
-      fi
-      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile) "   " "testing if .tanzu.supervisor_cluster.namespace_tier0 is defined"
-      if $(jq -e -c -r --arg tier0 "$(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile)" '.nsx.config.tier0s[] | select( .display_name == $tier0 )' $jsonFile > /dev/null) ; then
-        echo "   +++ .tanzu.supervisor_cluster.namespace_tier0 ref found"
-      else
-        echo "   +++ ERROR .tanzu.supervisor_cluster.namespace_tier0 ref not found in .nsx.config.tier0s[]"
-        exit 255
-      fi
-      test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)" "   "
-      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.prefix_per_namespace' $jsonFile) "   " "testing if .tanzu.supervisor_cluster.prefix_per_namespace is defined"
-      test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)" "   "
-      test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.service_cidr' $jsonFile)" "   "
-      if $(jq -e '.tanzu | has("namespaces")' $jsonFile) ; then
-        # tanzu .tanzu.namespaces validation
-        if $(jq -e '.tanzu.namespaces[].name' $jsonFile > /dev/null) ; then
-          echo "   +++ .tanzu.namespaces[] has name defined"
-        else
-          echo "   +++ ERROR .tanzu.namespaces[] has not a name defined"
-          exit 255
-        fi
-        # tanzu overwrite supervisor cluster values
-        for ns in $(jq -c -r '.tanzu.namespaces[]' $jsonFile)
-        do
-          if $(echo $ns | jq -e '.namespace_cidr' > /dev/null) || \
-             $(echo $ns | jq -e '.namespace_tier0' > /dev/null) || \
-             $(echo $ns | jq -e '.prefix_per_namespace' > /dev/null) || \
-             $(echo $ns | jq -e '.ingress_cidr' > /dev/null) ; then
-            if $(echo $ns | jq -e '.namespace_cidr' > /dev/null) && \
-               $(echo $ns | jq -e '.namespace_tier0' > /dev/null) && \
-               $(echo $ns | jq -e '.prefix_per_namespace' > /dev/null) && \
-               $(echo $ns | jq -e '.ingress_cidr' > /dev/null) ; then
-              if [[ $(echo $ns | jq -c -r '.namespace_cidr') != $(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile) && \
-                    $(echo $ns | jq -c -r '.ingress_cidr') != $(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile) ]] ; then
-                echo "   +++ .tanzu.namespaces called $(echo $ns | jq -c -r '.name') has different values for .namespace_cidr and .ingress_cidr than the supervisor clusters"
-                test_if_variable_is_valid_cidr "$(echo $ns | jq -c -r '.namespace_cidr')" "   "
-                test_if_variable_is_valid_cidr "$(echo $ns | jq -c -r '.ingress_cidr')" "   "
-                if $(jq -e -c -r --arg tier0 "$(echo $ns | jq -c -r '.namespace_tier0')" '.nsx.config.tier0s[] | select( .display_name == $tier0 )' $jsonFile > /dev/null) ; then
-                  echo "   +++ .tanzu.namespaces called $(echo $ns | jq -c -r '.name').namespace_tier0 ref found"
-                else
-                  echo "   +++ ERROR .tanzu.namespaces called $(echo $ns | jq -c -r '.name').namespace_tier0 ref not found in .nsx.config.tier0s[]"
-                  exit 255
-                fi
-              else
-                echo "   +++ ERROR .tanzu.namespaces called $(echo $ns | jq -c -r '.name') has same values for .namespace_cidr or/and .ingress_cidr than the supervisor clusters"
-              fi
-            else
-              echo "   +++ ERROR .tanzu.namespaces[] called $(echo $ns | jq -c -r '.name') should have .namespace_cidr, .namespace_tier0, .prefix_per_namespace, .ingress_cidr - all of them or none of them"
-            fi
-          fi
-        done
-        # tanzu .tanzu.tkc_clusters validation
-        if $(jq -e '.tanzu | has("tkc_clusters")' $jsonFile) ; then
-          # .tanzu.tkc_clusters[].name
-          for tkc in $(jq -c -r '.tanzu.tkc_clusters[]' $jsonFile)
-          do
-            test_if_variable_is_defined $(echo $tkc | jq -c .name) "   " "testing if each .tanzu.tkc_clusters[] have a name defined"
-            test_if_list_of_value_is_unique "${jsonFile}" ".tanzu.tkc_clusters[].name"
-            test_if_variable_is_defined $(echo $tkc | jq -c .namespace_ref) "   " "testing if each .tanzu.tkc_clusters[] have a namespace_ref defined"
-            # check that the namespace_ref exists in .tanzu.namespaces[].name
-            if $(jq -e -c -r --arg namespace "$(echo $tkc | jq -c -r '.namespace_ref')" '.tanzu.namespaces[] | select( .name == $namespace )' $jsonFile > /dev/null) ; then
-              echo "   +++ .tanzu.tkc_clusters called $(echo $tkc | jq -c -r '.name').namespace_ref ref found"
-            else
-              echo "   +++ ERROR .tanzu.tkc_clusters called $(echo $tkc | jq -c -r '.name').namespace_ref ref not found in .tanzu.namespaces[].name"
-              exit 255
-            fi
-            test_if_variable_is_defined $(echo $tkc | jq -c .k8s_version) "   " "testing if each .tanzu.tkc_clusters[] have a k8s_version defined"
-            test_if_variable_is_defined $(echo $tkc | jq -c .control_plane_count) "   " "testing if each .tanzu.tkc_clusters[] have a control_plane_count defined"
-            test_if_variable_is_defined $(echo $tkc | jq -c .vm_class) "   " "testing if each .tanzu.tkc_clusters[] have a vm_class defined"
-            test_if_variable_is_defined $(echo $tkc | jq -c .workers_count) "   " "testing if each .tanzu.tkc_clusters[] have a workers_count defined"
-            test_if_variable_is_defined $(echo $tkc | jq -c .services_cidrs) "   " "testing if each .tanzu.tkc_clusters[] have a services_cidrs defined"
-            for cidr in $(echo $tkc | jq -c -r '.services_cidrs[]')
-            do
-              test_if_variable_is_valid_cidr "${cidr}" "   "
-            done
-            test_if_variable_is_defined $(echo $tkc | jq -c .pods_cidrs) "   " "testing if each .tanzu.tkc_clusters[] have a pods_cidrs defined"
-            for cidr in $(echo $tkc | jq -c -r '.pods_cidrs[]')
-            do
-              test_if_variable_is_valid_cidr "${cidr}" "   "
-            done
-            # .tanzu.tkc_clusters[].alb_tenants
-            if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) || \
-               $(echo $tkc | jq -e '.alb_tenant_type' > /dev/null) ; then
-              if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) && \
-                 $(echo $tkc | jq -e '.alb_tenant_type' > /dev/null) ; then
-                if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) != "tenant-mode" \
-                   && $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) !=  "provider-mode" ]] ; then
-                  echo "   +++ ERROR .tanzu.tkc_clusters[] called $(echo $tkc | jq -c -r '.name') should have .alb_tenant_type configures with either 'tenant-mode' or 'provider-mode' - it is $(echo $tkc | jq -c -r '.alb_tenant_type')"
-                  exit 255
-                fi
-                if [[ $(echo $tkc | jq -c -r '.alb_tenant_name' | tr '[:upper:]' [:lower:]) == "admin" ]] ; then
-                  echo "   +++ ERROR .tanzu.tkc_clusters[] called $(echo $tkc | jq -c -r '.name') should not have .alb_tenant_name configures 'admin'"
-                  exit 255
-                fi
-              else
-                echo "   +++ ERROR .tanzu.tkc_clusters[] called $(echo $tkc | jq -c -r '.name') should have .alb_tenant_name, .alb_tenant_type - all of them or none of them"
-              fi
-            fi
-          done
-        fi
-      fi
-    fi
+    test_variables_if_tanzu "/etc/config/variables.json" "nsx"
     echo ""
     echo "==> Adding .deployment: vsphere_nsx_tanzu_alb"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_tanzu_alb"}')

@@ -197,7 +197,7 @@ fi
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]] ; then
   echo "" | tee -a /root/output.txt
   echo "+++++++++++++ Deploy AKO" | tee -a /root/output.txt
-    echo "  > helm install --generate-name $(jq -c -r .avi.config.ako.helm_url $jsonFile) --version $(jq -c -r .avi.config.ako.ako_version $jsonFile) -f values.yml --namespace=avi-system" | tee -a /root/output.txt
+    echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a /root/output.txt
 fi
 #
 # TKGm (telco)
@@ -218,7 +218,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   echo "Add avi-system name space:" | tee -a /root/output.txt >/dev/null 2>&1
   echo "  > kubectl create ns avi-system" | tee -a /root/output.txt >/dev/null 2>&1
   echo "Deploy AKO for your workload clusters:" | tee -a /root/output.txt
-  echo "  > helm install --generate-name $(jq -c -r .avi.config.ako.helm_url $jsonFile) --version $(jq -c -r .avi.config.ako.ako_version $jsonFile) -f values.yml --namespace=avi-system" | tee -a /root/output.txt
+  echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a /root/output.txt
   echo "Connect to the tier0 to check the routes" | tee -a /root/output.txt
   echo "  > get logical-routers" | tee -a /root/output.txt
   echo "  > vrf xxx" | tee -a /root/output.txt

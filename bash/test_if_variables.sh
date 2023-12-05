@@ -7,7 +7,7 @@ test_if_variable_is_defined () {
     exit 255
   fi
 }
-#
+
 test_if_json_variable_is_defined () {
   # $1 key variable to check
   # $2 json file
@@ -17,7 +17,7 @@ test_if_json_variable_is_defined () {
     exit 255
   fi
 }
-#
+
 function test_if_variable_is_valid_ip () {
   # $1 is variable to check
   # $2 indentation message
@@ -35,7 +35,7 @@ function test_if_variable_is_valid_ip () {
   fi
   if [[ $stat -ne 0 ]] ; then echo "$2$1 does not seem to be an IP" ; exit 255 ; fi
 }
-#
+
 function test_if_variable_is_valid_cidr () {
   # $1 is variable to check
   # $2 indentation message
@@ -56,7 +56,7 @@ function test_if_variable_is_valid_cidr () {
   if [[ $prefix -ge 2 && $prefix -le 32 ]]; then test_prefix=0 ; fi
   if [[ $stat -ne 0 || $test_prefix -ne 0 ]] ; then echo "$2$1 does not seem to be a valid CIDR" ; exit 255 ; fi
 }
-#
+
 function test_if_variable_is_netmask () {
   # $1 netmask
   # $2 indentation message
@@ -95,7 +95,7 @@ function test_if_variable_is_netmask () {
   if [[ $1 == "128.0.0.0" ]] ; then error_prefix=0 ; fi
   if [[ error_prefix -eq 1 ]] ; then echo "$2+++ $1 does not seem to be a proper netmask" ; exit 255 ; fi
    }
-#
+
 test_if_ref_from_list_exists_in_another_list () {
   # $1 list + ref to check
   # $2 list + ref to check against
@@ -114,7 +114,7 @@ test_if_ref_from_list_exists_in_another_list () {
   done
   if [[ $check_status -eq 0 ]] ; then echo "$6$ref" ; exit 255 ; fi
 }
-#
+
 test_if_ref_from_a_nested_list_exists_in_another_list () {
   # $1 list + to check
   # $2 ref of nested list
@@ -138,7 +138,7 @@ test_if_ref_from_a_nested_list_exists_in_another_list () {
     done
   done
 }
-#
+
 test_if_ref_from_a_nested_of_nested_list_exists_in_another_list () {
   # $1 nested of nested of list + to check
   # $2 ref of nested list
@@ -166,7 +166,7 @@ test_if_ref_from_a_nested_of_nested_list_exists_in_another_list () {
     done
   done
 }
-#
+
 get_value_from_list_when_match () {
   # $1 value to check
   # $2 key to check
@@ -185,7 +185,7 @@ get_value_from_list_when_match () {
   if [[ $check_status -eq 0 ]] || [[ $value_to_return == "null" ]] ; then echo $8 ; exit 255 ; fi
   echo $7 $value_to_return
 }
-#
+
 test_if_list_of_value_is_unique () {
   # $1 is jsonFile
   # $2 is list and key to check like .tanzu.tkc_clusters[].name
@@ -193,4 +193,16 @@ test_if_list_of_value_is_unique () {
     echo "   ++++++ ERROR $2 is not unique"
     exit 255
   fi
+}
+
+test_if_list_contains_ip () {
+  # $1 jsonFile
+  # $2 json list
+#  echo ${1}
+#  echo ${2}
+  for ip in $(jq -c -r ${2} ${1})
+  do
+#    echo ${ip}
+    test_if_variable_is_valid_ip "${ip}" "   "
+  done
 }
