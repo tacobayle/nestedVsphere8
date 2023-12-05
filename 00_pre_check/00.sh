@@ -707,7 +707,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
       if $(jq -e -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment )' $jsonFile > /dev/null) ; then
         echo "   +++ .tanzu.supervisor_cluster.management_tanzu_segment ref found"
         test_if_variable_is_defined $(jq -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment) | .tanzu_supervisor_starting_ip' $jsonFile) "   +++" "testing if $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) have tanzu_supervisor_starting_ip defined"
-        test_if_variable_is_defined $(jq -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment) | .tanzu_supervisor_count' $jsonFile) "   +++" "testing if $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) have tanzu_supervisor_count defined"      else
+        test_if_variable_is_defined $(jq -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment) | .tanzu_supervisor_count' $jsonFile) "   +++" "testing if $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) have tanzu_supervisor_count defined"
+      else
         echo "   +++ ERROR .tanzu.supervisor_cluster.management_tanzu_segment ref not found in .nsx.config.segments_overlay[]"
         exit 255
       fi
