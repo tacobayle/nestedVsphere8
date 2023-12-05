@@ -639,10 +639,11 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
       test_if_variable_is_valid_ip "$(echo $dhcp_range | cut -d"-" -f2 )" "   "
     done
   done
-  if [[ $(jq -c -r '.nsx.config.segments_overlay[].display_name' $jsonFile | uniq -d) != "" ]] ; then
-    echo "      ++++++ ERROR .nsx.config.segments_overlay[].display_name has a duplicate value"
-    exit 255
-  fi
+  # check uniqueness
+  test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.segments_overlay[].display_name"
+  test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.segments_overlay[].cidr"
+  test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.segments_overlay[].dhcp_ranges"
+  #
   test_if_ref_from_list_exists_in_another_list ".nsx.config.segments_overlay[].tier1" \
                                                ".nsx.config.tier1s[].display_name" \
                                                "$jsonFile" \
@@ -702,21 +703,22 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
               echo "   +++ https://developer.vmware.com/apis/vsphere-automation/latest/vcenter/data-structures/NamespaceManagement/SizingHint/"
               exit 255
       fi
-      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.management_tanzu_segment is defined"
+      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) "   " "testing if .tanzu.supervisor_cluster.management_tanzu_segment is defined"
       if $(jq -e -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment )' $jsonFile > /dev/null) ; then
         echo "   +++ .tanzu.supervisor_cluster.management_tanzu_segment ref found"
-      else
+        test_if_variable_is_defined $(jq -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment) | .tanzu_supervisor_starting_ip' $jsonFile) "   +++" "testing if $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) have tanzu_supervisor_starting_ip defined"
+        test_if_variable_is_defined $(jq -c -r --arg segment "$(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile)" '.nsx.config.segments_overlay[] | select( .display_name == $segment) | .tanzu_supervisor_count' $jsonFile) "   +++" "testing if $(jq -c -r '.tanzu.supervisor_cluster.management_tanzu_segment' $jsonFile) have tanzu_supervisor_count defined"      else
         echo "   +++ ERROR .tanzu.supervisor_cluster.management_tanzu_segment ref not found in .nsx.config.segments_overlay[]"
         exit 255
       fi
-      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.namespace_edge_cluster' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.namespace_edge_cluster is defined"
+      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.namespace_edge_cluster' $jsonFile) "   " "testing if .tanzu.supervisor_cluster.namespace_edge_cluster is defined"
       if $(jq -e -c -r --arg edge_cluster "$(jq -c -r '.tanzu.supervisor_cluster.namespace_edge_cluster' $jsonFile)" '.nsx.config.edge_clusters[] | select( .display_name == $edge_cluster )' $jsonFile > /dev/null) ; then
         echo "   +++ .tanzu.supervisor_cluster.namespace_edge_cluster ref found"
       else
         echo "   +++ ERROR .tanzu.supervisor_cluster.namespace_edge_cluster ref not found in .nsx.config.edge_clusters[]"
         exit 255
       fi
-      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.namespace_tier0 is defined"
+      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile) "   " "testing if .tanzu.supervisor_cluster.namespace_tier0 is defined"
       if $(jq -e -c -r --arg tier0 "$(jq -c -r '.tanzu.supervisor_cluster.namespace_tier0' $jsonFile)" '.nsx.config.tier0s[] | select( .display_name == $tier0 )' $jsonFile > /dev/null) ; then
         echo "   +++ .tanzu.supervisor_cluster.namespace_tier0 ref found"
       else
@@ -724,7 +726,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
         exit 255
       fi
       test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.namespace_cidr' $jsonFile)" "   "
-      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.prefix_per_namespace' $jsonFile) "   " "testing if each .tanzu.supervisor_cluster.prefix_per_namespace is defined"
+      test_if_variable_is_defined $(jq -c -r '.tanzu.supervisor_cluster.prefix_per_namespace' $jsonFile) "   " "testing if .tanzu.supervisor_cluster.prefix_per_namespace is defined"
       test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)" "   "
       test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.service_cidr' $jsonFile)" "   "
       if $(jq -e '.tanzu | has("namespaces")' $jsonFile) ; then
@@ -768,64 +770,11 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
         # tanzu .tanzu.tkc_clusters validation
         if $(jq -e '.tanzu | has("tkc_clusters")' $jsonFile) ; then
           # .tanzu.tkc_clusters[].name
-          if $(jq -e '.tanzu.tkc_clusters[].name' $jsonFile > /dev/null) ; then
-            echo "   +++ .tanzu.tkc_clusters[] has name defined"
-          else
-            echo "   +++ ERROR .tanzu.tkc_clusters[] has not a name defined"
-            exit 255
-          fi
-          # .tanzu.tkc_clusters[].namespace_ref
-          if $(jq -e '.tanzu.tkc_clusters[].namespace_ref' $jsonFile > /dev/null) ; then
-            echo "   +++ .tanzu.tkc_clusters[] has namespace_ref defined"
-          else
-            echo "   +++ ERROR .tanzu.tkc_clusters[] namespace_ref not a name defined"
-            exit 255
-          fi
-          # .tanzu.tkc_clusters[].k8s_version
-          if $(jq -e '.tanzu.tkc_clusters[].k8s_version' $jsonFile > /dev/null) ; then
-            echo "   +++ .tanzu.tkc_clusters[] has k8s_version defined"
-          else
-            echo "   +++ ERROR .tanzu.tkc_clusters[] k8s_version not a name defined"
-            exit 255
-          fi
-          # .tanzu.tkc_clusters[].control_plane_count
-          if $(jq -e '.tanzu.tkc_clusters[].control_plane_count' $jsonFile > /dev/null) ; then
-            echo "   +++ .tanzu.tkc_clusters[] has control_plane_count defined"
-          else
-            echo "   +++ ERROR .tanzu.tkc_clusters[] control_plane_count not a name defined"
-            exit 255
-          fi
-          # .tanzu.tkc_clusters[].vm_class
-          if $(jq -e '.tanzu.tkc_clusters[].vm_class' $jsonFile > /dev/null) ; then
-            echo "   +++ .tanzu.tkc_clusters[] has vm_class defined"
-          else
-            echo "   +++ ERROR .tanzu.tkc_clusters[] vm_class not a name defined"
-            exit 255
-          fi
-          # .tanzu.tkc_clusters[].workers_count
-          if $(jq -e '.tanzu.tkc_clusters[].workers_count' $jsonFile > /dev/null) ; then
-            echo "   +++ .tanzu.tkc_clusters[] has workers_count defined"
-          else
-            echo "   +++ ERROR .tanzu.tkc_clusters[] workers_count not a name defined"
-            exit 255
-          fi
-          # .tanzu.tkc_clusters[].services_cidrs
-          if $(jq -e '.tanzu.tkc_clusters[].services_cidrs' $jsonFile > /dev/null) ; then
-            echo "   +++ .tanzu.tkc_clusters[] has services_cidrs defined"
-          else
-            echo "   +++ ERROR .tanzu.tkc_clusters[] services_cidrs not a name defined"
-            exit 255
-          fi
-          # .tanzu.tkc_clusters[].pods_cidrs
-          if $(jq -e '.tanzu.tkc_clusters[].pods_cidrs' $jsonFile > /dev/null) ; then
-            echo "   +++ .tanzu.tkc_clusters[] has pods_cidrs defined"
-          else
-            echo "   +++ ERROR .tanzu.tkc_clusters[] pods_cidrs not a name defined"
-            exit 255
-          fi
-          # .tanzu.tkc_clusters[].alb_tenants & .tanzu.tkc_clusters[].namespace_ref
           for tkc in $(jq -c -r '.tanzu.tkc_clusters[]' $jsonFile)
           do
+            test_if_variable_is_defined $(echo $tkc | jq -c .name) "   " "testing if each .tanzu.tkc_clusters[] have a name defined"
+            test_if_list_of_value_is_unique "${jsonFile}" ".tanzu.tkc_clusters[].name"
+            test_if_variable_is_defined $(echo $tkc | jq -c .namespace_ref) "   " "testing if each .tanzu.tkc_clusters[] have a namespace_ref defined"
             # check that the namespace_ref exists in .tanzu.namespaces[].name
             if $(jq -e -c -r --arg namespace "$(echo $tkc | jq -c -r '.namespace_ref')" '.tanzu.namespaces[] | select( .name == $namespace )' $jsonFile > /dev/null) ; then
               echo "   +++ .tanzu.tkc_clusters called $(echo $tkc | jq -c -r '.name').namespace_ref ref found"
@@ -833,6 +782,20 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
               echo "   +++ ERROR .tanzu.tkc_clusters called $(echo $tkc | jq -c -r '.name').namespace_ref ref not found in .tanzu.namespaces[].name"
               exit 255
             fi
+            test_if_variable_is_defined $(echo $tkc | jq -c .k8s_version) "   " "testing if each .tanzu.tkc_clusters[] have a k8s_version defined"
+            test_if_variable_is_defined $(echo $tkc | jq -c .control_plane_count) "   " "testing if each .tanzu.tkc_clusters[] have a control_plane_count defined"
+            test_if_variable_is_defined $(echo $tkc | jq -c .vm_class) "   " "testing if each .tanzu.tkc_clusters[] have a vm_class defined"
+            test_if_variable_is_defined $(echo $tkc | jq -c .workers_count) "   " "testing if each .tanzu.tkc_clusters[] have a workers_count defined"
+            test_if_variable_is_defined $(echo $tkc | jq -c .services_cidrs) "   " "testing if each .tanzu.tkc_clusters[] have a services_cidrs defined"
+            for cidr in $(echo $tkc | jq -c -r '.services_cidrs[]')
+            do
+              test_if_variable_is_valid_cidr "${cidr}" "   "
+            done
+            test_if_variable_is_defined $(echo $tkc | jq -c .pods_cidrs) "   " "testing if each .tanzu.tkc_clusters[] have a pods_cidrs defined"
+            for cidr in $(echo $tkc | jq -c -r '.pods_cidrs[]')
+            do
+              test_if_variable_is_valid_cidr "${cidr}" "   "
+            done
             # .tanzu.tkc_clusters[].alb_tenants
             if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) || \
                $(echo $tkc | jq -e '.alb_tenant_type' > /dev/null) ; then

@@ -114,7 +114,7 @@ test_if_ref_from_list_exists_in_another_list () {
   done
   if [[ $check_status -eq 0 ]] ; then echo "$6$ref" ; exit 255 ; fi
 }
-
+#
 test_if_ref_from_a_nested_list_exists_in_another_list () {
   # $1 list + to check
   # $2 ref of nested list
@@ -138,9 +138,7 @@ test_if_ref_from_a_nested_list_exists_in_another_list () {
     done
   done
 }
-
-
-
+#
 test_if_ref_from_a_nested_of_nested_list_exists_in_another_list () {
   # $1 nested of nested of list + to check
   # $2 ref of nested list
@@ -168,7 +166,7 @@ test_if_ref_from_a_nested_of_nested_list_exists_in_another_list () {
     done
   done
 }
-
+#
 get_value_from_list_when_match () {
   # $1 value to check
   # $2 key to check
@@ -186,4 +184,13 @@ get_value_from_list_when_match () {
   done
   if [[ $check_status -eq 0 ]] || [[ $value_to_return == "null" ]] ; then echo $8 ; exit 255 ; fi
   echo $7 $value_to_return
+}
+#
+test_if_list_of_value_is_unique () {
+  # $1 is jsonFile
+  # $2 is list and key to check like .tanzu.tkc_clusters[].name
+  if [[ $(jq -c -r $2 $1 | uniq -d) != "" ]] ; then
+    echo "   ++++++ ERROR $2 is not unique"
+    exit 255
+  fi
 }

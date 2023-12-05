@@ -24,7 +24,7 @@ pause_tanzu_tkc=120
 attempt_tanzu_tkc=1
 while true ; do
   echo "attempt $attempt_tanzu_tkc to get tkc cluster config_status Provisioned"
-  tkc_status=$(/home/ubuntu/bin/kubectl get clusters ${cluster_name} -o json | jq .status.phase)
+  tkc_status=$(/home/ubuntu/bin/kubectl get clusters ${cluster_name} -o json | jq -c -r .status.phase)
   if [[ ${tkc_status} == "Provisioned" ]]; then
     echo "tkc cluster ${cluster_name} is ${tkc_status} after $attempt_tanzu_tkc attempts"
     break 2

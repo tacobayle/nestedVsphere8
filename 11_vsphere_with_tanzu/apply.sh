@@ -233,12 +233,13 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       # variables
       namespace=$(echo $tkc | jq -c -r .namespace_ref)
       # yaml antrea config templating
-      sed -e "s/\${name}/$(echo $tkc | jq -c -r .name)-${cluster_count}/" \
+      sed -e "s/\${name}/$(echo $tkc | jq -c -r .name)/" \
           -e "s/\${namespace_ref}/${namespace}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/antreaconfig.yml.template | tee /root/antreaconfig-${cluster_count}.yml > /dev/null
       # yaml antrea config transfer
       scp -o StrictHostKeyChecking=no /root/antreaconfig-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_antrea_create}-${cluster_count}.yml
       # yaml ClusterBootstrap templating
       sed -e "s/\${name}/$(echo $tkc | jq -c -r .name)/" \
+          -e "s/\${namespace_ref}/${namespace}/" \
           -e "s/\${k8s_version}/$(echo $tkc | jq -c -r .k8s_version)/" \
           -e "s/\${antrea_config_name}/$(echo $tkc | jq -c -r .name)-${cluster_count}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/clusterbootstrap.yml.template | tee /root/clusterbootstrap-${cluster_count}.yml > /dev/null
       # yaml ClusterBootstrap transfer
@@ -291,43 +292,41 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       #
       # ako values templating
       #
-#      if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
-#        tenant="'$(echo $tkc | jq -c -r '.name')'"
-#      else
-#        tenant="admin"
-#      fi
-#      serviceEngineGroupName="Default-Group"
-#      shardVSSize="SMALL"
-#      serviceType="NodePortLocal" # needs to be configured before cluster creation
-#      cniPlugin="antrea"
-#      disableStaticRouteSync="true" # needs to be true if NodePortLocal is enabled
-#      if $(jq -e --arg namespace ${namespace} '.tanzu.namespaces[] | select(.name == $namespace) | .ingress_cidr' $jsonFile > /dev/null) ; then
-#        cidr=$(jq --arg namespace ${namespace} '.tanzu.namespaces[] | select(.name == $namespace) | .ingress_cidr' $jsonFile)
-#      else
-#        cidr=$(jq '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
-#      fi
-#      # retrieve network name build by automation
-#      nsxtT1LR="" # needs to retrieve tier1 path in NSX
-#      # needs to retrieve if the namespace_ref has network overwrite value
-#      # if yes, retrieve the ingress cidr
-#      # if no, retrieve the default network supervisor values
-#      networkName=""
-#      sed -e "s/\${disableStaticRouteSync}/${disableStaticRouteSync}/" \
-#          -e "s/\${clusterName}/$(echo $tkc | jq -c -r .name)/" \
-#          -e "s/\${cniPlugin}/${cniPlugin}/" \
-#          -e "s/\${nsxtT1LR}/${nsxtT1LR}/" \
-#          -e "s@\${cidr}@${cidr}@" \
-#          -e "s/\${networkName}/${networkName}/" \
-#          -e "s/\${serviceType}/${serviceType}/" \
-#          -e "s/\${shardVSSize}/${shardVSSize}/" \
-#          -e "s/\${serviceEngineGroupName}/${serviceEngineGroupName}/" \
-#          -e "s/\${controllerVersion}/$(jq -c -r .avi.version $jsonFile)/" \
-#          -e "s/\${cloudName}/$(jq -c -r .avi.config.cloud.name $jsonFile)/" \
-#          -e "s/\${controllerHost}/$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)/" \
-#          -e "s/\${password}/${TF_VAR_avi_password}/" \
-#          -e "s/\${tenant}/${tenant}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/values.yml.1.11.1.template | tee /root/values-${cluster_count}.yml > /dev/null
-#      # ako values transfer
-#      scp -o StrictHostKeyChecking=no /root/values-${cluster_count}.yml ubuntu@${external_gw_ip}:/home/ubuntu/tkc/ako-values-${cluster_count}.yml
+      if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
+        tenant="'$(echo $tkc | jq -c -r '.name')'"
+      else
+        tenant="admin"
+      fi
+      serviceEngineGroupName="Default-Group"
+      shardVSSize="SMALL"
+      serviceType="NodePortLocal" # needs to be configured before cluster creation
+      cniPlugin="antrea"
+      disableStaticRouteSync="true" # needs to be true if NodePortLocal is enabled
+      if $(jq -e --arg namespace ${namespace} '.tanzu.namespaces[] | select(.name == $namespace) | .ingress_cidr' $jsonFile > /dev/null) ; then
+        cidr=$(jq --arg namespace ${namespace} '.tanzu.namespaces[] | select(.name == $namespace) | .ingress_cidr' $jsonFile)
+      else
+        cidr=$(jq '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
+      fi
+      # retrieve network the name of the tier1 and his path
+      nsxtT1LR="" # needs to retrieve tier1 path in NSX
+      # needs to retrieve the name of network in Avi
+      networkName=""
+      sed -e "s/\${disableStaticRouteSync}/${disableStaticRouteSync}/" \
+          -e "s/\${clusterName}/$(echo $tkc | jq -c -r .name)/" \
+          -e "s/\${cniPlugin}/${cniPlugin}/" \
+          -e "s/\${nsxtT1LR}/${nsxtT1LR}/" \
+          -e "s/\${networkName}/${networkName}/" \
+          -e "s@\${cidr}@${cidr}@" \
+          -e "s/\${serviceType}/${serviceType}/" \
+          -e "s/\${shardVSSize}/${shardVSSize}/" \
+          -e "s/\${serviceEngineGroupName}/${serviceEngineGroupName}/" \
+          -e "s/\${controllerVersion}/$(jq -c -r .avi.version $jsonFile)/" \
+          -e "s/\${cloudName}/$(jq -c -r .avi.config.cloud.name $jsonFile)/" \
+          -e "s/\${controllerHost}/$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)/" \
+          -e "s/\${tenant}/${tenant}/" \
+          -e "s/\${password}/${TF_VAR_avi_password}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/values.yml.1.11.1.template | tee /root/values-${cluster_count}.yml > /dev/null
+      # ako values transfer
+      scp -o StrictHostKeyChecking=no /root/values-${cluster_count}.yml ubuntu@${external_gw_ip}:/home/ubuntu/tkc/ako-values-${cluster_count}.yml
       ((cluster_count++))
     done
   fi
