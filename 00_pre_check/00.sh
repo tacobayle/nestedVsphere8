@@ -149,6 +149,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
     fi
     #
     if [[ $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters $jsonFile) != "null" ]] ; then
+      count_cluster=0
       for cluster in $(jq -c -r .vsphere_underlay.networks.alb.$network.k8s_clusters[] $jsonFile)
       do
         test_if_variable_is_defined $(echo $cluster | jq -c .cluster_name) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cluster_name defined"
@@ -163,7 +164,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) != "null" ]]; then
         test_if_variable_is_defined $(echo $cluster | jq -c .cni_version) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cni_version defined"
         test_if_variable_is_defined $(echo $cluster | jq -c .cluster_ips) "   " "testing if each .vsphere_underlay.networks.alb.$network.k8s_clusters[] have a cluster_ips defined"
         if [[ $(echo $cluster | jq -c -r '.cluster_ips | length') -lt 3 ]] ; then echo "   +++ Amount of cluster_ips should be higher than 3" ; exit 255 ; fi
-        test_if_list_contains_ip "${jsonFile}" ".vsphere_underlay.networks.alb.$network.cluster_ips[]"
+        test_if_list_contains_ip "${jsonFile}" ".vsphere_underlay.networks.alb.$network.k8s_clusters[${count_cluster}].cluster_ips[]"
+         ((count_cluster++))
       done
       variables_json=$(echo $variables_json | jq '. += {"unmanaged_k8s_status": true}')
     fi
