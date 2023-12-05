@@ -109,7 +109,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       "$(jq -r .tanzu.supervisor_cluster.service_cidr $jsonFile | cut -d"/" -f1)" \
       "$(jq -r .tanzu.supervisor_cluster.service_cidr $jsonFile | cut -d"/" -f2)" \
       "$(jq -r .tanzu.supervisor_cluster.size $jsonFile)" \
-      "$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.tanzu.cidr' $jsonFile| cut -d"/" -f2) "   ++++++")" \
+      "$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.tanzu.cidr' $jsonFile | cut -d"/" -f2) "   ++++++")" \
       "$(jq -r .vsphere_underlay.networks.alb.tanzu.tanzu_supervisor_starting_ip $jsonFile)" \
       "$(jq -r .vsphere_underlay.networks.alb.tanzu.external_gw_ip $jsonFile)" \
       "$(jq -r .vsphere_underlay.networks.alb.tanzu.tanzu_supervisor_count $jsonFile)" \
@@ -123,7 +123,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       "$(jq -r .vsphere_underlay.networks.alb.backend.tanzu_workers_count $jsonFile)" \
       "$(jq -r .vsphere_underlay.networks.alb.backend.external_gw_ip $jsonFile)" \
       "${tanzu_worker_dvportgroup}" \
-      "$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.backend.cidr' $jsonFile| cut -d"/" -f2) "   ++++++")'" \
+      "$(ip_netmask_by_prefix $(jq -c -r '.vsphere_underlay.networks.alb.backend.cidr' $jsonFile | cut -d"/" -f2) "   ++++++")" \
       "${cluster_id}"
     exit
   fi

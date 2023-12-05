@@ -178,7 +178,7 @@ fi
 #
 # TANZU wo NSX
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
   echo "" | tee -a /root/output.txt
   echo "+++++ vSphere with Tanzu" | tee -a /root/output.txt
   echo "Authenticate to the supervisor cluster from the external-gateway:" | tee -a /root/output.txt
