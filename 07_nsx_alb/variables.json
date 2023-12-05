@@ -8,6 +8,17 @@
   "avi_config_tag_vcenter_cloud": "v2.01",
   "playbook_env_vcenter_cloud": "vcenter.yml",
   "vcenter_default_cloud_name": "Default-Cloud",
+  "tenants": [
+    {
+      "name": "automation",
+      "local": true,
+      "config_settings": {
+        "tenant_vrf": false,
+        "se_in_provider_context": true,
+        "tenant_access_to_provider_se": true
+      }
+    }
+  ],
   "nsx_default_cloud_name": "dc1_nsx",
   "dhcp_enabled_default": false,
   "helm_url": "oci://projects.registry.vmware.com/ako/helm-charts/ako",
