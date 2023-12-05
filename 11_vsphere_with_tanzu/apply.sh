@@ -240,9 +240,8 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       scp -o StrictHostKeyChecking=no /root/antreaconfig-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_antrea_create}-${cluster_count}.yml
       # yaml ClusterBootstrap templating
       sed -e "s/\${name}/$(echo $tkc | jq -c -r .name)/" \
-          -e "s/\${namespace_ref}/${namespace}/" \
           -e "s/\${k8s_version}/$(echo $tkc | jq -c -r .k8s_version)/" \
-          -e "s/\${antrea_config_name}/$(echo $tkc | jq -c -r .name)-${cluster_count}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/clusterbootstrap.yml.template | tee /root/clusterbootstrap-${cluster_count}.yml > /dev/null
+          -e "s/\${antrea_config_name}/$(echo $tkc | jq -c -r .name)/" /nestedVsphere8/11_vsphere_with_tanzu/templates/clusterbootstrap.yml.template | tee /root/clusterbootstrap-${cluster_count}.yml > /dev/null
       # yaml ClusterBootstrap transfer
       scp -o StrictHostKeyChecking=no /root/clusterbootstrap-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_clusterbootstrap_create}-${cluster_count}.yml
       # yaml cluster templating
@@ -275,8 +274,8 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s/\${sso_domain_name}/${vcsa_sso_domain}/" \
           -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" \
           -e "s/\${namespace_ref}/${namespace}/" \
-          -e "s/\${cluster_bootstrap_name}/$(echo $tkc | jq -c -r .name)-${cluster_count}/" \
-          -e "s/\${antrea_config_name}/$(echo $tkc | jq -c -r .name)-${cluster_count}/" \
+          -e "s/\${cluster_bootstrap_name}/$(echo $tkc | jq -c -r .name)/" \
+          -e "s/\${antrea_config_name}/$(echo $tkc | jq -c -r .name)/" \
           -e "s/\${name}/$(echo $tkc | jq -c -r .name)/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tkc_destroy.sh.template | tee /root/destroy-tkc-${cluster_count}.sh > /dev/null
       # bash destroy transfer
       scp -o StrictHostKeyChecking=no /root/destroy-tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path_destroy}-${cluster_count}.sh

@@ -4,7 +4,6 @@ metadata:
   annotations:
     tkg.tanzu.vmware.com/add-missing-fields-from-tkr: ${k8s_version}---vmware.1-tkg.4
   name: ${name}
-  namespace: ${namespace_ref}
 spec:
   cni:
     refName: antrea.tanzu.vmware.com.1.7.2+vmware.1-tkg.1-advanced
