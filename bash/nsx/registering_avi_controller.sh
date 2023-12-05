@@ -7,8 +7,8 @@ nsx_password=$2
 avi_password=$3
 avi_nested_ip=$4
 #
-cookies_file="nsx_$(basename $0 | cut -d"." -f1)_cookie.txt"
-headers_file="nsx_$(basename $0 | cut -d"." -f1)_header.txt"
+cookies_file="/root/nsx_$(basename $0 | cut -d"." -f1)_cookie.txt"
+headers_file="/root/nsx_$(basename $0 | cut -d"." -f1)_header.txt"
 rm -f $cookies_file $headers_file
 /bin/bash /nestedVsphere8/bash/nsx/create_nsx_api_session.sh admin $nsx_password $nsx_nested_ip $cookies_file $headers_file
 json_data='

@@ -8,8 +8,8 @@ nsx_password="${2}"
 edge_cluster_name="${3}"
 json_output_file="${4}"
 #
-cookies_file="get_edge_clusters_cookies.txt"
-headers_file="get_edge_clusters_headers.txt"
+cookies_file="/root/nsx_$(basename $0 | cut -d"." -f1)_cookie.txt"
+headers_file="/root/nsx_$(basename $0 | cut -d"." -f1)_header.txt"
 #
 rm -f $cookies_file $headers_file
 #
