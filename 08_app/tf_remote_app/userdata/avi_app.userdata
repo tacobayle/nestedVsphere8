@@ -38,6 +38,8 @@ write_files:
       sudo apt install -y apache2
       sudo mv /var/www/html/index.html /var/www/html/index.html.old
       echo -e "Hello World - My IP is ${ip}" | sudo tee /var/www/html/index.html
+      mkdir -p /var/www/html/gslb
+      echo -e "Hello World - This is DC2 - Cloud is NSX - IP is ${ip}" | sudo tee /var/www/html/gslb/index.html
       sudo apt install -y docker.io
       sudo usermod -a -G docker ${username}
       su - ${username}
