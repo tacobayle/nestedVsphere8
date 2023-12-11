@@ -8,6 +8,16 @@
   "avi_config_tag_vcenter_cloud": "v2.01",
   "playbook_env_vcenter_cloud": "vcenter.yml",
   "vcenter_default_cloud_name": "Default-Cloud",
+  "users": [
+    {
+      "username": "automation",
+      "name": "automation",
+      "is_superuser": true,
+      "default_tenant_ref": "",
+      "access": [],
+      "user_profile_ref": "/api/useraccountprofile?name=Default-User-Account-Profile"
+    }
+  ],
   "tenants": [
     {
       "name": "automation",

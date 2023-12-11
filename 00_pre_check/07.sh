@@ -50,11 +50,16 @@ avi_json=$(echo $avi_json | jq '. += {"avi_port_group": "'$(echo $avi_port_group
 #
 if [[ $(jq -c -r .avi.config.tenants $jsonFile) == "null" ]]; then
   tenants=$(jq -c -r '.tenants' $localJsonFile)
+else
+  tenants=$(echo "[]" | jq '. += '$(jq -c -r .avi.config.tenants $jsonFile)'')
+  tenants=$(echo $tenants | jq '. += '$(jq -c -r '.tenants' $localJsonFile)'')
 fi
 #
 if [[ $(jq -c -r .avi.config.users $jsonFile) == "null" ]]; then
-  echo "   +++ Adding avi.config.users... as an empty list"
-  avi_json=$(echo $avi_json | jq '.avi.config += {"users": []}')
+  users=$(jq -c -r '.users' $localJsonFile)
+else
+  users=$(echo "[]" | jq '. += '$(jq -c -r .avi.config.users $jsonFile)'')
+  users=$(echo $users | jq '. += '$(jq -c -r '.users' $localJsonFile)'')
 fi
 #
 echo "   +++ Adding dhcp_enabled on .avi.config.cloud"
@@ -328,8 +333,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
     #
     # .avi.config.users
     #
-    avi_json=$(echo $avi_json | jq '. | del (.avi.config.users)')
-    users=[]
     users=$(echo $users | jq -c -r '. += [{"access": [
                                             {
                                               "role_ref": "/api/role?name=System-Admin",
@@ -343,7 +346,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
                                            "default_tenant_ref": "/api/tenant?name=admin",
                                            "user_profile_ref": "/api/useraccountprofile?name=Default-User-Account-Profile"
                                           }]')
-    avi_json=$(echo $avi_json | jq '.avi.config += {"users": '$(echo $users)'}')
     #
     # .avi.config.cloud.networks_data[]
     #
@@ -600,6 +602,8 @@ avi_fqdn="$(jq -c -r .alb_controller_name /nestedVsphere8/02_external_gateway/va
 sslkeyandcertificate=$(echo $sslkeyandcertificate | jq '. += [{"name": "'$(jq -c -r .tanzu_cert_name /nestedVsphere8/07_nsx_alb/variables.json)'", "format": "SSL_PEM", "certificate_base64": true, "enable_ocsp_stapling": false, "import_key_to_hsm": false, "is_federated": false, "key_base64": true, "type": "SSL_CERTIFICATE_TYPE_SYSTEM", "certificate": {"days_until_expire": 365, "self_signed": true, "version": "2", "signature_algorithm":"sha256WithRSAEncryption", "subject_alt_names": ["'$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)'"], "issuer": {"common_name": "https://'$(echo $avi_fqdn)'", "distinguished_name": "CN='$(echo $avi_fqdn)'"}, "subject": {"common_name": "'$(echo $avi_fqdn)'", "distinguished_name": "CN='$(echo $avi_fqdn)'"}}, "key_params": {"algorithm": "SSL_KEY_ALGORITHM_RSA", "rsa_params": {"exponent": 65537, "key_size": "SSL_KEY_2048_BITS"}}, "ocsp_config": {"failed_ocsp_jobs_retry_interval": 3600, "max_tries": 10, "ocsp_req_interval": 86400, "url_action": "OCSP_RESPONDER_URL_FAILOVER"} }]')
 echo "   +++ Adding avi.config.tenants..."
 avi_json=$(echo $avi_json | jq '.avi.config += {"tenants": '${tenants}'}')
+echo "   +++ Adding avi.config.users..."
+avi_json=$(echo $avi_json | jq '.avi.config += {"users": '$(echo $users)'}')
 echo "   +++ Adding avi.config.sslkeyandcertificate... for tanzu deployment"
 avi_json=$(echo $avi_json | jq '.avi.config += {"sslkeyandcertificate": '$(echo $sslkeyandcertificate)'}')
 echo "   +++ Adding avi.config.portal_configuration.sslkeyandcertificate_ref... for tanzu deployment"
