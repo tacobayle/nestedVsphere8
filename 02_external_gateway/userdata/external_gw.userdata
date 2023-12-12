@@ -86,6 +86,10 @@ write_files:
       sudo chown ubuntu /home/ubuntu/.kube
       sudo chgrp ubuntu /home/ubuntu/.kube
       #
+      mkdir -p /home/ubuntu/avi
+      sudo chown ubuntu /home/ubuntu/avi
+      sudo chgrp ubuntu /home/ubuntu/avi
+      #
       mkdir -p /home/ubuntu/routes
       sudo chown ubuntu /home/ubuntu/routes
       sudo chgrp ubuntu /home/ubuntu/routes
