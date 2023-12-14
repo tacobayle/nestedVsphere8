@@ -151,6 +151,7 @@ echo "ssh your external gateway from the pod:" | tee -a /root/output.txt
 echo "  > ssh -o StrictHostKeyChecking=no ubuntu@external-gw" | tee -a /root/output.txt
 echo "ssh your external gateway from an external node:" | tee -a /root/output.txt
 echo "  > ssh -o StrictHostKeyChecking=no ubuntu@$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)" | tee -a /root/output.txt
+echo "ssh ubuntu password: ${TF_VAR_ubuntu_password}" | tee -a /root/output.txt
 #
 # vSphere
 #
@@ -159,6 +160,9 @@ echo "++++++++++++++++ vSphere" | tee -a /root/output.txt
 echo "Configure your /etc/hosts with the following entry:" | tee -a /root/output.txt
 echo "  > $(jq -r .vsphere_underlay.networks.vsphere.management.vcsa_nested_ip $jsonFile) $(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a /root/output.txt
 echo "vSphere server url: https://$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a /root/output.txt
+echo "ESXi root password: ${TF_VAR_nested_esxi_root_password}" | tee -a /root/output.txt
+echo "vSphere password: ${TF_VAR_vsphere_nested_password}" | tee -a /root/output.txt
+
 #
 # NSX
 #
@@ -166,14 +170,16 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   echo "" | tee -a /root/output.txt
   echo "++++++++++++++++++++ NSX" | tee -a /root/output.txt
   echo "  > NSX manager url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" | tee -a /root/output.txt
+  echo "NSX admin password: ${TF_VAR_nsx_password}" | tee -a /root/output.txt
 fi
 #
-# NSX ALB
+# NSX ALB / Avi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   echo "" | tee -a /root/output.txt
   echo "++++++++++++++++ NSX-ALB" | tee -a /root/output.txt
   echo "  > NSX ALB controller url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)" | tee -a /root/output.txt
+  echo "Avi admin password: ${TF_VAR_avi_password}" | tee -a /root/output.txt
 fi
 #
 # TANZU wo NSX

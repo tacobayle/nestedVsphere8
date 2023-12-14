@@ -10,6 +10,9 @@ IFS=$'\n'
 vcsa_fqdn="$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)"
 vcsa_sso_domain=$(jq -r .vsphere_nested.sso.domain_name $jsonFile)
 external_gw_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
+avi_controller_ip=$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)
+avi_cloud_name=$(jq -c -r .avi.config.cloud.name $jsonFile)
+avi_version=$(jq -c -r .avi.version $jsonFile)
 #
 # registering Avi in the NSX config
 #
@@ -18,7 +21,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
     "$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" \
     "${TF_VAR_nsx_password}" \
     "${TF_VAR_avi_password}" \
-    "$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)"
+    "${avi_controller_ip}"
 fi
 #
 #
@@ -307,10 +310,25 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       else
         cidr=$(jq '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
       fi
-      # retrieve network the name of the tier1 and his path
-      nsxtT1LR="" # needs to retrieve tier1 path in NSX
-      # needs to retrieve the name of network in Avi
-      networkName=""
+      # retrieve the tier1 and his path
+      nsxtT1LR_name="t1-${cluster_id}:$(jq .About.InstanceUuid /root/vcenter_about.json)-${namespace}-rtr"
+      t1_path_json_output="/root/t1_path.json"
+      /bin/bash /nestedVsphere8/bash/nsx/retrieve_t1_id.sh \
+        "$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" \
+        "${TF_VAR_nsx_password}" \
+        "${nsxtT1LR_name}" \
+        "${t1_path_json_output}"
+      nsxtT1LR="$(jq -c -r .t1_path ${t1_path_json_output})"
+      # retrieve the name of network in Avi based on the cidr
+      avi_network_name_json_output="/root/avi_network_name.json"
+      /bin/bash /nestedVsphere8/bash/avi/retrieve_network_name_per_cidr.sh \
+                "${avi_controller_ip}" \
+                "${avi_version}" \
+                "${TF_VAR_avi_password}" \
+                "${avi_cloud_name}" \
+                "$(echo ${cidr} | cut -d"/" -f1)" \
+                "${avi_network_name_json_output}"
+      networkName=$(jq -c -r .network_name ${avi_network_name_json_output})
       sed -e "s/\${disableStaticRouteSync}/${disableStaticRouteSync}/" \
           -e "s/\${clusterName}/$(echo $tkc | jq -c -r .name)/" \
           -e "s/\${cniPlugin}/${cniPlugin}/" \
@@ -321,8 +339,8 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s/\${shardVSSize}/${shardVSSize}/" \
           -e "s/\${serviceEngineGroupName}/${serviceEngineGroupName}/" \
           -e "s/\${controllerVersion}/$(jq -c -r .avi.version $jsonFile)/" \
-          -e "s/\${cloudName}/$(jq -c -r .avi.config.cloud.name $jsonFile)/" \
-          -e "s/\${controllerHost}/$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)/" \
+          -e "s/\${cloudName}/${avi_cloud_name}/" \
+          -e "s/\${controllerHost}/${avi_controller_ip}/" \
           -e "s/\${tenant}/${tenant}/" \
           -e "s/\${password}/${TF_VAR_avi_password}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/values.yml.1.11.1.template | tee /root/values-${cluster_count}.yml > /dev/null
       # ako values transfer

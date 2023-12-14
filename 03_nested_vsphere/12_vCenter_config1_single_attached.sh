@@ -87,6 +87,9 @@ do
   count=$((count+1))
 done
 #
+# save govc about -json
+#
+govc about -json | tee /root/vcenter_about.json
 #
 sleep 5
 #
