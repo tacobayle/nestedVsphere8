@@ -161,6 +161,7 @@ echo "Configure your /etc/hosts with the following entry:" | tee -a /root/output
 echo "  > $(jq -r .vsphere_underlay.networks.vsphere.management.vcsa_nested_ip $jsonFile) $(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a /root/output.txt
 echo "vSphere server url: https://$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a /root/output.txt
 echo "ESXi root password: ${TF_VAR_nested_esxi_root_password}" | tee -a /root/output.txt
+echo "vSphere username: administrator@$(jq -c -r .vsphere_nested.sso.domain_name $jsonFile)" | tee -a /root/output.txt
 echo "vSphere password: ${TF_VAR_vsphere_nested_password}" | tee -a /root/output.txt
 
 #
