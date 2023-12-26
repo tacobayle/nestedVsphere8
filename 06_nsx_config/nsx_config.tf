@@ -172,6 +172,14 @@ resource "nsxt_policy_fixed_segment" "segments" {
   }
 }
 
+resource "null_resource" "nsx_project" {
+  depends_on = [nsxt_policy_fixed_segment.segments]
+  provisioner "local-exec" {
+    command = "/bin/bash /nestedVsphere8/06_nsx_config/nsx_project.sh"
+  }
+}
+
+
 #resource "time_sleep" "wait_for_cert_change" {
 #  depends_on = [nsxt_policy_fixed_segment.segments]
 #  create_duration = "10s"
