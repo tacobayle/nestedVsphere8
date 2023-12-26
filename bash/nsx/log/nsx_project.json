@@ -1,0 +1,43 @@
+{
+  "results": [
+    {
+      "default": false,
+      "site_infos": [
+        {
+          "edge_cluster_paths": [
+            "/infra/sites/default/enforcement-points/default/edge-clusters/717de96e-5f8f-4627-b4f5-4bda23f9844a"
+          ],
+          "site_path": "/infra/sites/default"
+        }
+      ],
+      "tier_0s": [
+        "/infra/tier-0s/my-tier0"
+      ],
+      "external_ipv4_blocks": [],
+      "ipv6_blocks": [],
+      "short_id": "project1",
+      "resource_type": "Project",
+      "id": "project1",
+      "display_name": "project1",
+      "path": "/orgs/default/projects/project1",
+      "relative_path": "project1",
+      "parent_path": "/orgs/default",
+      "remote_path": "",
+      "unique_id": "cee2fef8-0f5b-4cd9-805a-16d215ba61cb",
+      "realization_id": "cee2fef8-0f5b-4cd9-805a-16d215ba61cb",
+      "owner_id": "b38ad319-7e57-4f71-b9e1-b93555c0d861",
+      "marked_for_delete": false,
+      "overridden": false,
+      "_create_time": 1703579710591,
+      "_create_user": "admin",
+      "_last_modified_time": 1703579710591,
+      "_last_modified_user": "admin",
+      "_system_owned": false,
+      "_protection": "NOT_PROTECTED",
+      "_revision": 0
+    }
+  ],
+  "result_count": 1,
+  "sort_by": "display_name",
+  "sort_ascending": true
+}
