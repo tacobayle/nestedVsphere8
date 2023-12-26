@@ -46,6 +46,7 @@
         nested_nsx: "{{ item.nested | default(omit) }}"
         resource_type: "TransportZone"
         display_name: "{{ item.name }}"
+        is_default: True
         tz_type: "{{ item.type }}"
         state: "present"
       loop: "{{ nsx.config.transport_zones }}"
