@@ -1,0 +1,50 @@
+{
+  "service_gateway": {
+    "disable": false,
+    "auto_snat": true
+  },
+  "default_gateway_path": "/infra/tier-0s/my-tier0",
+  "site_infos": [
+    {
+      "edge_cluster_paths": [
+        "/infra/sites/default/enforcement-points/default/edge-clusters/717de96e-5f8f-4627-b4f5-4bda23f9844a"
+      ],
+      "site_path": "/infra/sites/default"
+    }
+  ],
+  "load_balancer_vpc_endpoint": {
+    "enabled": true
+  },
+  "external_ipv4_blocks": [
+    "/infra/ip-blocks/ip_block_pub_project2"
+  ],
+  "private_ipv4_blocks": [
+    "/orgs/default/projects/project2/infra/ip-blocks/ip_block_private_project2"
+  ],
+  "ip_address_type": "IPV4",
+  "ipv6_profile_paths": [],
+  "subnet_profiles": {},
+  "dhcp_config": {
+    "enable_dhcp": true
+  },
+  "short_id": "vpc1",
+  "resource_type": "Vpc",
+  "id": "vpc1",
+  "display_name": "vpc1",
+  "path": "/orgs/default/projects/project2/vpcs/vpc1",
+  "relative_path": "vpc1",
+  "parent_path": "/orgs/default/projects/project2",
+  "remote_path": "",
+  "unique_id": "5cffad0e-d03c-4969-a8d0-29c6eda3afb9",
+  "realization_id": "5cffad0e-d03c-4969-a8d0-29c6eda3afb9",
+  "owner_id": "b38ad319-7e57-4f71-b9e1-b93555c0d861",
+  "marked_for_delete": false,
+  "overridden": false,
+  "_create_time": 1703687914428,
+  "_create_user": "admin",
+  "_last_modified_time": 1703687914428,
+  "_last_modified_user": "admin",
+  "_system_owned": false,
+  "_protection": "NOT_PROTECTED",
+  "_revision": 0
+}
