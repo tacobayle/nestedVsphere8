@@ -5,8 +5,9 @@ source /nestedVsphere8/bash/nsx/nsx_api.sh
 nsx_nested_ip=${1}
 nsx_password=${2}
 project_name=${3}
-edge_cluster_path=${4}
-tier0_path=${5}
+ip_block_path=${4}
+edge_cluster_path=${5}
+tier0_path=${6}
 #
 cookies_file="/root/nsx_$(basename $0 | cut -d"." -f1)_cookie.txt"
 headers_file="/root/nsx_$(basename $0 | cut -d"." -f1)_header.txt"
@@ -25,6 +26,9 @@ json_data='
       ],
       "tier_0s": [
         "'${tier0_path}'"
+      ],
+      "external_ipv4_blocks" : [
+        "'${ip_block_path}'"
       ],
       "display_name": "'${project_name}'"
     }'
