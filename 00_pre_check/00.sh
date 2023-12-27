@@ -334,6 +334,14 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
                                                "   +++ Checking Tiers 1 in segments_overlay" \
                                                "   ++++++ Tier1 " \
                                                "   ++++++ERROR++++++ Tier1 not found: "
+  # .nsx.config.projects
+  for project in $(jq -c -r '.nsx.config.projects[]' ${jsonFile})
+  do
+    test_if_variable_is_defined $(echo $project | jq -c .name) "   " "testing if each .nsx.config.projects[] have a name defined"
+    test_if_variable_is_defined $(echo $project | jq -c .tier0_ref) "   " "testing if each .nsx.config.projects[] have a tier0_ref defined"
+    test_if_variable_is_defined $(echo $project | jq -c .edge_cluster_ref) "   " "testing if each .nsx.config.projects[] have a edge_cluster_ref defined"
+  done
+  test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.projects[].name"
   #
   # vsphere_nsx
   #
@@ -361,9 +369,6 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_nsx_app_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_nsx_cloud "/etc/config/variables.json"
-    echo ""
-    echo "==> Adding .deployment: vsphere_nsx_alb"
-    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb"}')
   fi
   #
   # vsphere_nsx_tanzu_alb

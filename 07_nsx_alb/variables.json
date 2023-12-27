@@ -3,7 +3,7 @@
   "nsx_alb_se_cl": "nsx_alb_se_cl",
   "nsx_alb_controller_if_name": "eth0",
   "avi_config_repo": "https://github.com/tacobayle/ansibleAviConfig",
-  "avi_config_tag_nsx_cloud": "v2.08",
+  "avi_config_tag_nsx_cloud": "v2.13",
   "playbook_env_nsx_cloud": "nsx.yml",
   "avi_config_tag_vcenter_cloud": "v2.01",
   "playbook_env_vcenter_cloud": "vcenter.yml",

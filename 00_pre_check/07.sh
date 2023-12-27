@@ -293,6 +293,27 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
     avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.dhcp_enabled)')
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"dhcp_enabled": "'$(echo $dhcp_enabled)'"}')
   fi
+  #
+  if $(jq -e '.avi.config.cloud | has("vpc_mode")' $jsonFile) ; then
+    if [[ $(jq -c -r '.avi.config.cloud.vpc_mode' $jsonFile) == "true" || $(jq -c -r '.avi.config.cloud.vpc_mode' $jsonFile) == "True" ]]; then
+      # vpc mode is set to true
+      echo "   +++ .avi.config.cloud.vpc_mode is set to true"
+      echo "   +++ setting up .avi.config.cloud.dhcp_enabled to true"
+      avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.dhcp_enabled)')
+      avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"dhcp_enabled": true}')
+    else
+      # vpc mode is not set to true
+      echo "   +++ setting up .avi.config.cloud.vpc_mode to false"
+      avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.vpc_mode)')
+      avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"vpc_mode": false}')
+    fi
+  else
+    # vpc mode is unset
+    echo "   +++ setting up .avi.config.cloud.vpc_mode to false"
+    avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.vpc_mode)')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"vpc_mode": false}')
+  fi
+  #
 fi
 #
 # ALB with vCenter Cloud use cases
