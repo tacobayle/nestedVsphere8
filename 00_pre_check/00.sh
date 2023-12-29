@@ -464,6 +464,9 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_nsx_app_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_nsx_cloud "/etc/config/variables.json"
+    echo ""
+    echo "==> Adding .deployment: vsphere_nsx_alb"
+    variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb"}')
   fi
   #
   # vsphere_nsx_tanzu_alb
