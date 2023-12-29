@@ -114,6 +114,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   #
   mv /nestedVsphere8/02_external_gateway/external_gw_nsx.tf.disabled /nestedVsphere8/02_external_gateway/external_gw_nsx.tf
   #
+  #
+  #
   new_routes="[]"
   touch /root/external_gw_routes.yml
   if [[ $(jq -c -r '.nsx.config.segments_overlay | length' $jsonFile) -gt 0 ]] ; then
@@ -137,6 +139,29 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
         fi
       done
     done
+  fi
+  #
+  # project vpc use case // add external routes to EXTERNAL ip blocks referred in project
+  #
+  if $(jq -e '.nsx.config | has("ip_blocks")' $jsonFile) ; then
+    if $(jq -e '.nsx.config | has("projects")' $jsonFile) ; then
+      echo "   +++ Creating external gateway routes to ip blocks referred in project..."
+      for project in $(jq -c -r '.nsx.config.projects[]' ${jsonFile})
+      do
+        count=0
+        cidr=$(jq -c -r --arg arg "$(echo ${project} | jq -c -r '.ip_block_ref')" '.nsx.config.ip_blocks[] | select( .name == $arg and .visibility == "EXTERNAL" ) | .cidr' $jsonFile)
+        for tier0 in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
+        do
+          if [[ $(echo ${project} | jq -c -r .tier0_ref) == $(echo $tier0 | jq -c -r .display_name) ]] ; then
+            new_routes=$(echo $new_routes | jq '. += [{"to": "'${cidr}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
+            echo "            - to: ${cidr}" | tee -a /root/external_gw_routes.yml > /dev/null
+            echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
+            echo "   ++++++ Route to ${cidr} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
+          fi
+          ((count++))
+        done
+      done
+    fi
   fi
   #
   if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
@@ -246,6 +271,22 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
         fi
       done
     fi
+    #
+    # project vpc use case // add external routes to EXTERNAL ip blocks referred in project
+    #
+    if $(jq -e '.nsx.config | has("ip_blocks")' $jsonFile) ; then
+      if $(jq -e '.nsx.config | has("projects")' $jsonFile) ; then
+        for project in $(jq -c -r '.nsx.config.projects[]' ${jsonFile})
+        do
+          cidr=$(jq -c -r --arg arg "$(echo ${project} | jq -c -r '.ip_block_ref')" '.nsx.config.ip_blocks[] | select( .name == $arg and .visibility == "EXTERNAL" ) | .cidr' $jsonFile)
+          ip_table_prefixes=$(echo $ip_table_prefixes | jq '. += ["'${cidr}'"]')
+          echo "   ++++++ Prefix ${cidr} added: OK"
+        done
+      fi
+    fi
+    #
+    #
+    #
     if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
       if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
         # add cidrs for supervisor cluster networks

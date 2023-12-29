@@ -335,52 +335,107 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
                                                "   ++++++ Tier1 " \
                                                "   ++++++ERROR++++++ Tier1 not found: "
   # .nsx.config.ip_blocks
-  for ip_block in $(jq -c -r '.nsx.config.ip_blocks[]' ${jsonFile})
-  do
-    test_if_variable_is_defined $(echo $ip_block | jq -c .name) "   " "testing if each .nsx.config.ip_blocks[] have a name defined"
-    test_if_variable_is_defined $(echo $ip_block | jq -c .cidr) "   " "testing if each .nsx.config.ip_blocks[] have a cidr defined"
-    test_if_variable_is_defined $(echo $ip_block | jq -c .visibility) "   " "testing if each .nsx.config.ip_blocks[] have a visibility defined"
-    if $(echo ${ip_block} | jq -e '.nsx.config | has("project_ref")') ; then
-      if $(jq -e -c -r --arg arg "$(echo $ip_block | jq -c -r '.project_ref')" '.nsx.config.projects[] | select( .name == $arg )' ${jsonFile} > /dev/null) ; then
-        echo "   +++ .nsx.config.ip_block called $(echo $ip_block | jq -c .name).project_ref found"
-      else
-        echo "   +++ ERROR .nsx.config.ip_block called $(echo $ip_block | jq -c .name).project_ref not found in .nsx.config.projects[].name"
+  if $(jq -e '.nsx.config | has("ip_blocks")' $jsonFile) ; then
+    for ip_block in $(jq -c -r '.nsx.config.ip_blocks[]' ${jsonFile})
+    do
+      test_if_variable_is_defined $(echo $ip_block | jq -c -r .name) "   " "testing if each .nsx.config.ip_blocks[] have a name defined"
+      test_if_variable_is_defined $(echo $ip_block | jq -c -r .cidr) "   " "testing if each .nsx.config.ip_blocks[] have a cidr defined"
+      test_if_variable_is_valid_cidr "$(echo $ip_block | jq -c -r .cidr)" "   "
+      test_if_variable_is_defined $(echo $ip_block | jq -c -r .visibility) "   " "testing if each .nsx.config.ip_blocks[] have a visibility defined"
+      if [[ $(echo $ip_block | jq -c -r .visibility) != "PRIVATE" \
+         && $(echo $ip_block | jq -c -r .visibility) !=  "EXTERNAL" ]] ; then
+        echo "   +++ ERROR .nsx.config.ip_blocks[] called $(echo $ip_block | jq -c -r .name) should have .visibility configures with either 'PRIVATE' or 'EXTERNAL'"
         exit 255
       fi
-    fi
-  done
-  test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.ip_blocks[].name"
-  test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.ip_blocks[].cidr"
+      if $(echo ${ip_block} | jq -e -c -r '. | has("project_ref")') ; then
+        if $(jq -e '.nsx.config | has("projects")' $jsonFile) ; then
+          if $(jq -e -c -r --arg arg "$(echo ${ip_block} | jq -r -c .project_ref)" '.nsx.config.projects[] | select( .name == $arg )' ${jsonFile} > /dev/null) ; then
+            echo "   +++ .nsx.config.ip_block called $(echo $ip_block | jq -c -r .name).project_ref found in .nsx.config.projects[].name"
+          else
+            echo "   +++ ERROR .nsx.config.ip_block called $(echo $ip_block | jq -c -r .name).project_ref not found in .nsx.config.projects[].name"
+            exit 255
+          fi
+        else
+          echo "   +++ ERROR .nsx.config.ip_block called $(echo $ip_block | jq -c - r .name).project_ref not found: .nsx.config.projects[] is not defined"
+          exit 255
+        fi
+      fi
+    done
+    test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.ip_blocks[].name"
+    test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.ip_blocks[].cidr"
+  fi
   # .nsx.config.projects
-  for project in $(jq -c -r '.nsx.config.projects[]' ${jsonFile})
-  do
-    test_if_variable_is_defined $(echo $project | jq -c .name) "   " "testing if each .nsx.config.projects[] have a name defined"
-    test_if_variable_is_defined $(echo $project | jq -c .ip_block_ref) "   " "testing if each .nsx.config.projects[] have a ip_block_ref defined"
-    test_if_variable_is_defined $(echo $project | jq -c .tier0_ref) "   " "testing if each .nsx.config.projects[] have a tier0_ref defined"
-    test_if_variable_is_defined $(echo $project | jq -c .edge_cluster_ref) "   " "testing if each .nsx.config.projects[] have a edge_cluster_ref defined"
-  done
-  test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.projects[].name"
-  test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.projects[].ip_block_ref"
-  #
-  if $(jq -e -c -r --arg arg "$(echo $project | jq -c .ip_block_ref)" '.nsx.config.ip_blocks[] | select( .name == $arg )' ${jsonFile} > /dev/null) ; then
-    echo "   +++ .nsx.config.projects called $(echo $project | jq -c .name).ip_block_ref ref found"
-  else
-    echo "   +++ ERROR .nsx.config.projects called $(echo $project | jq -c .name).ip_block_ref not found in .nsx.config.ip_blocks[].name"
-    exit 255
+  if $(jq -e '.nsx.config | has("projects")' $jsonFile) ; then
+    for project in $(jq -c -r '.nsx.config.projects[]' ${jsonFile})
+    do
+      test_if_variable_is_defined $(echo $project | jq -c -r .name) "   " "testing if each .nsx.config.projects[] have a name defined"
+      test_if_variable_is_defined $(echo $project | jq -c -r .ip_block_ref) "   " "testing if each .nsx.config.projects[] have a ip_block_ref defined"
+      test_if_variable_is_defined $(echo $project | jq -c -r .tier0_ref) "   " "testing if each .nsx.config.projects[] have a tier0_ref defined"
+      test_if_variable_is_defined $(echo $project | jq -c -r .edge_cluster_ref) "   " "testing if each .nsx.config.projects[] have a edge_cluster_ref defined"
+    done
+    test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.projects[].name"
+    test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.projects[].ip_block_ref"
+    #
+    if $(jq -e '.nsx.config | has("ip_blocks")' $jsonFile) ; then
+      if $(jq -e -c -r --arg arg "$(echo $project | jq -c -r .ip_block_ref)" '.nsx.config.ip_blocks[] | select( .name == $arg )' ${jsonFile} > /dev/null) ; then
+        echo "   +++ .nsx.config.projects called $(echo $project | jq -c -r .name).ip_block_ref found in .nsx.config.tier0s[].display_name"
+      else
+        echo "   +++ ERROR .nsx.config.projects called $(echo $project | jq -c -r .name).ip_block_ref not found in .nsx.config.ip_blocks[].name"
+        exit 255
+      fi
+    else
+      echo "   +++ ERROR .nsx.config.projects called $(echo $project | jq -c -r .name).ip_block_ref not found in .nsx.config.ip_blocks[].name: .nsx.config.ip_blocks[] is not defined"
+      exit 255
+    fi
+    #
+    if $(jq -e -c -r --arg arg "$(echo $project | jq -c -r .tier0_ref)" '.nsx.config.tier0s[] | select( .display_name == $arg )' ${jsonFile} > /dev/null) ; then
+      echo "   +++ .nsx.config.projects called $(echo $project | jq -c -r .name).tier0_ref found in .nsx.config.tier0s[].display_name"
+    else
+      echo "   +++ ERROR .nsx.config.projects called $(echo $project | jq -c -r .name).tier0_ref not found in .nsx.config.tier0s[].display_name"
+      exit 255
+    fi
+    #
+    if $(jq -e -c -r --arg arg "$(echo $project | jq -c -r .edge_cluster_ref)" '.nsx.config.edge_clusters[] | select( .display_name == $arg )' ${jsonFile} > /dev/null) ; then
+      echo "   +++ .nsx.config.projects called $(echo $project | jq -c -r .name).edge_cluster_ref found in .nsx.config.edge_clusters[].display_name"
+    else
+      echo "   +++ ERROR .nsx.config.projects called $(echo $project | jq -c -r .name).edge_cluster_ref not found in .nsx.config.edge_clusters[].display_name"
+      exit 255
+    fi
   fi
-  #
-  if $(jq -e -c -r --arg arg "$(echo $project | jq -c .tier0_ref)" '.nsx.config.tier0s[] | select( .display_name == $arg )' ${jsonFile} > /dev/null) ; then
-    echo "   +++ .nsx.config.projects called $(echo $project | jq -c .name).tier0_ref ref found"
-  else
-    echo "   +++ ERROR .nsx.config.projects called $(echo $project | jq -c .name).tier0_ref not found in .nsx.config.tier0s[].display_name"
-    exit 255
-  fi
-  #
-  if $(jq -e -c -r --arg arg "$(echo $project | jq -c .edge_cluster_ref)" '.nsx.config.edge_clusters[] | select( .display_name == $arg )' ${jsonFile} > /dev/null) ; then
-    echo "   +++ .nsx.config.projects called $(echo $project | jq -c .name).edge_cluster_ref ref found"
-  else
-    echo "   +++ ERROR .nsx.config.projects called $(echo $project | jq -c .name).edge_cluster_ref not found in .nsx.config.edge_clusters[].display_name"
-    exit 255
+  # .nsx.config.vpcs
+  if $(jq -e '.nsx.config | has("vpcs")' $jsonFile) ; then
+    if $(jq -e '.nsx.config | has("projects") | not' $jsonFile) ; then
+      echo "   +++ ERROR .nsx.config.vpc mandates .nsx.config.projects[] to be defined"
+      exit 255
+    fi
+    for vpc in $(jq -c -r '.nsx.config.vpcs[]' ${jsonFile})
+    do
+      test_if_variable_is_defined $(echo $vpc | jq -c -r .name) "   " "testing if each .nsx.config.vpcs[] have a name defined"
+      test_if_variable_is_defined $(echo $vpc | jq -c -r .project_ref) "   " "testing if each .nsx.config.vpcs[] have a project_ref defined"
+      test_if_variable_is_defined $(echo $vpc | jq -c -r .ip_block_private_ref) "   " "testing if each .nsx.config.vpcs[] have a ip_block_private_ref defined"
+      test_if_variable_is_defined $(echo $vpc | jq -c -r .ip_block_public_ref) "   " "testing if each .nsx.config.vpcs[] have a ip_block_public_ref defined"
+    done
+    if $(jq -e -c -r --arg arg "$(echo $vpc | jq -c -r .project_ref)" '.nsx.config.projects[] | select( .name == $arg )' ${jsonFile} > /dev/null) ; then
+      echo "   +++ .nsx.config.vpc called $(echo $vpc | jq -c -r .name).project_ref ref found in .nsx.config.projects[].name"
+    else
+      echo "   +++ ERROR .nsx.config.vpc called $(echo $project | jq -c -r .name).project_ref not found in .nsx.config.projects[].name"
+      exit 255
+    fi
+    if $(jq -e -c -r --arg arg "$(echo $vpc | jq -c -r .ip_block_public_ref)" '.nsx.config.projects[] | select( .ip_block_ref == $arg )' ${jsonFile} > /dev/null) ; then
+      echo "   +++ .nsx.config.vpc called $(echo $vpc | jq -c -r .name).ip_block_public_ref ref found in .nsx.config.projects[].ip_block_ref"
+    else
+      echo "   +++ ERROR .nsx.config.vpc called $(echo $project | jq -c -r .name).ip_block_public_ref not found in .nsx.config.projects[].ip_block_ref"
+      exit 255
+    fi
+    if $(jq -e -c -r --arg arg "$(echo $vpc | jq -c -r .ip_block_private_ref)" '.nsx.config.ip_blocks[] | select( .name == $arg and .visibility == "PRIVATE")' ${jsonFile} > /dev/null) ; then
+      echo "   +++ .nsx.config.vpc called $(echo $vpc | jq -c -r .name).ip_block_private_ref ref found in .nsx.config.ip_blocks[].name"
+    else
+      echo "   +++ ERROR .nsx.config.vpc called $(echo $project | jq -c -r .name).ip_block_private_ref not found in .nsx.config.projects[].name with visibility == PRIVATE"
+      exit 255
+    fi
+    test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.vpcs[].project_ref"
+    test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.vpcs[].ip_block_private_ref"
+    test_if_list_of_value_is_unique "${jsonFile}" ".nsx.config.vpcs[].ip_block_public_ref"
   fi
   #
   # vsphere_nsx
