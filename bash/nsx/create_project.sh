@@ -32,4 +32,4 @@ json_data='
       ],
       "display_name": "'${project_name}'"
     }'
-nsx_api 6 10 "PATCH" $cookies_file $headers_file "${json_data}" $nsx_nested_ip "policy/api/v1/orgs/default/projects/${project_name}"
+nsx_api 2 2 "PATCH" $cookies_file $headers_file "${json_data}" $nsx_nested_ip "policy/api/v1/orgs/default/projects/${project_name}"

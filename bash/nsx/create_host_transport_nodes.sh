@@ -13,7 +13,7 @@ headers_file="create_host_transport_nodes_headers.txt"
 rm -f $cookies_file $headers_file
 #
 /bin/bash /nestedVsphere8/bash/nsx/create_nsx_api_session.sh admin $TF_VAR_nsx_password $nsx_nested_ip $cookies_file $headers_file
-nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/fabric/compute-collections"
+nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/fabric/compute-collections"
 compute_collections=$(echo $response_body)
 IFS=$'\n'
 for item in $(echo $compute_collections | jq -c -r .results[])
@@ -22,7 +22,7 @@ do
     compute_collection_external_id=$(echo $item | jq -r .external_id)
   fi
 done
-nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/infra/host-transport-node-profiles"
+nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/infra/host-transport-node-profiles"
 transport_node_profiles=$(echo $response_body)
 IFS=$'\n'
 for item in $(echo $transport_node_profiles | jq -c -r .results[])
@@ -31,7 +31,7 @@ do
     transport_node_profile_id=$(echo $item | jq -r .id)
   fi
 done
-nsx_api 6 10 "POST" $cookies_file $headers_file '{"resource_type": "TransportNodeCollection", "display_name": "TransportNodeCollection-1", "description": "Transport Node Collections 1", "compute_collection_id": "'$compute_collection_external_id'", "transport_node_profile_id": "'$transport_node_profile_id'"}' $nsx_nested_ip "api/v1/transport-node-collections"
+nsx_api 2 2 "POST" $cookies_file $headers_file '{"resource_type": "TransportNodeCollection", "display_name": "TransportNodeCollection-1", "description": "Transport Node Collections 1", "compute_collection_id": "'$compute_collection_external_id'", "transport_node_profile_id": "'$transport_node_profile_id'"}' $nsx_nested_ip "api/v1/transport-node-collections"
 #
 # waiting for host transport node to be ready
 #

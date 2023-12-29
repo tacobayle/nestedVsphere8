@@ -24,6 +24,25 @@ app_cidr=[]
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
+  # project vpc use case //
+  #
+  app_segments_vpc=[]
+  folders_vpc=[]
+  if $(jq -e '.nsx.config | has("ip_blocks")' $jsonFile) ; then
+    if $(jq -e '.nsx.config | has("projects")' $jsonFile) ; then
+      if $(jq -e '.nsx.config | has("vpcs")' $jsonFile) ; then
+        for vpc in $(jq -c -r '.nsx.config.vpcs[]' ${jsonFile})
+        do
+          app_segments_vpc=$(echo $app_segments_vpc | jq '. += ["'$(echo $vpc | jq -c -r .name)'-subnet"]')
+          app_segments_vpc=$(echo $app_segments_vpc | jq '. += ["'$(echo $vpc | jq -c -r .name)'-subnet"]')
+          folders_vpc=$(echo $folders_vpc | jq '. += ["'$(echo $vpc | jq -c -r .project_ref)'-'$(echo $vpc | jq -c -r .name)'-apps-servers"]')
+        done
+      fi
+    fi
+  fi
+  #
+  #
+  #
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
   do
     if [[ $(echo $item | jq -c .app_ips) != "null" ]] ; then
@@ -56,6 +75,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   mv /nestedVsphere8/08_app/template_file_nsx.tf.disabled /nestedVsphere8/08_app/template_file_nsx.tf
   mv /nestedVsphere8/08_app/template_file.tf /nestedVsphere8/08_app/template_file.tf.disabled
   #
+  app_json=$(echo $app_json | jq '. += {"app_segments_vpc": '$(echo $app_segments_vpc)'}')
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then

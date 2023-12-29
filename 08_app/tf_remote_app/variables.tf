@@ -8,5 +8,7 @@ variable "ubuntu_password" {}
 variable "app_segments" {}
 variable "app_cidr" {}
 variable "app_ips" {}
+variable "app_segments_vpc" {}
+variable "folders_vpc" {}
 variable "docker_registry_username" {}
 variable "docker_registry_password" {}

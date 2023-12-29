@@ -31,7 +31,7 @@ do
   new_json=$(echo $new_json | jq -c -r '. | del (.ha_vips)')
   new_json=$(echo $new_json | jq -c -r '. | del (.bgp)')
   echo "creating the tier0 called $(echo $tier0 | jq -r -c .display_name)"
-  nsx_api 6 10 "PUT" $cookies_file $headers_file "$(echo $new_json)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)"
+  nsx_api 2 2 "PUT" $cookies_file $headers_file "$(echo $new_json)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)"
   #curl -k -s -X PUT -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" -d $(echo $new_json) https://$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)
 done
 #
@@ -41,7 +41,7 @@ new_json={}
 for tier0 in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
 do
   if [[ $(echo $tier0 | jq 'has("edge_cluster_name")') == "true" ]] ; then
-    nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/edge-clusters"
+    nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/edge-clusters"
     edge_clusters=$(echo $response_body | jq -c -r .results[])
     for cluster in $edge_clusters
     do
@@ -51,7 +51,7 @@ do
     done
     new_json="{\"edge_cluster_path\": \"/infra/sites/default/enforcement-points/default/edge-clusters/$edge_cluster_id\"}"
     echo "associate the tier0 called $(echo $tier0 | jq -r -c .display_name) with edge cluster name $(echo $tier0 | jq -r -c .edge_cluster_name)"
-    nsx_api 6 10 "PUT" $cookies_file $headers_file "$(echo $new_json)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default"
+    nsx_api 2 2 "PUT" $cookies_file $headers_file "$(echo $new_json)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default"
 #    curl -k -s -X PUT -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" -d $(echo $new_json) https://$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default
   fi
 done
@@ -68,7 +68,7 @@ do
       ip_index=$((ip_index+1))
       new_json=$(echo $new_json | jq .)
       new_json=$(echo $new_json | jq '. += {"display_name": "'$(echo $interface | jq -r .display_name)'"}')
-      nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/infra/segments"
+      nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/infra/segments"
       segments=$(echo $response_body | jq -c -r .results[])
       for segment in $segments
       do
@@ -77,7 +77,7 @@ do
         fi
       done
       new_json=$(echo $new_json | jq '. += {"segment_path": "'$segment_path'"}')
-      nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/edge-clusters"
+      nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/edge-clusters"
       edge_clusters=$(echo $response_body | jq -c -r .results[])
       for cluster in $edge_clusters
       do
@@ -93,7 +93,7 @@ do
       done
       new_json=$(echo $new_json | jq '. += {"edge_path": "/infra/sites/default/enforcement-points/default/edge-clusters/'$(echo $edge_cluster_id)'/edge-nodes/'$(echo $edge_node_id)'"}')
       echo "adding interface to the tier0 called $(echo $tier0 | jq -r -c .display_name)"
-      nsx_api 6 10 "PATCH" $cookies_file $headers_file "$(echo $new_json)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/interfaces/$(echo $interface | jq -r -c .display_name)"
+      nsx_api 2 2 "PATCH" $cookies_file $headers_file "$(echo $new_json)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/interfaces/$(echo $interface | jq -r -c .display_name)"
 #      curl -k -s -X PATCH -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" -d $(echo $new_json) https://$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/interfaces/$(echo $interface | jq -r -c .display_name)
     done
   fi
@@ -107,7 +107,7 @@ do
     for route in $(echo $tier0 | jq -c -r .static_routes[])
     do
       echo "Adding route: $route to the tier0 called $(echo $tier0 | jq -r -c .display_name)"
-      nsx_api 6 10 "PATCH" $cookies_file $headers_file "$(echo $route)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/static-routes/$(echo $route | jq -r -c .display_name)"
+      nsx_api 2 2 "PATCH" $cookies_file $headers_file "$(echo $route)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/static-routes/$(echo $route | jq -r -c .display_name)"
 #      curl -k -s -X PATCH -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" -d $(echo $route) https://$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/static-routes/$(echo $route | jq -r -c .display_name)
     done
   fi
@@ -120,7 +120,7 @@ new_json="{\"display_name\": \"default\", \"ha_vip_configs\": []}"
 for tier0 in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
 do
   if [[ $(echo $tier0 | jq 'has("ha_vips")') == "true" ]] ; then
-    nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/edge-clusters"
+    nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/edge-clusters"
     edge_clusters=$(echo $response_body | jq -c -r .results[])
     for cluster in $edge_clusters
     do
@@ -140,7 +140,7 @@ do
       ip_index=$((ip_index+1))
     done
     echo "adding HA to the tier0 called $(echo $tier0 | jq -r -c .display_name)"
-    nsx_api 6 10 "PATCH" $cookies_file $headers_file "$(echo $new_json)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default"
+    nsx_api 2 2 "PATCH" $cookies_file $headers_file "$(echo $new_json)" $nsx_nested_ip "policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default"
 #    curl -k -s -X PATCH -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" -d $(echo $new_json) https://$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default
   fi
 done
@@ -151,16 +151,16 @@ for tier0 in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
 do
   if [[ $(echo $tier0 | jq 'has("bgp")') == "true" ]] ; then
     echo "Enabling BGP on tier0 called: $(echo $tier0 | jq -r -c .display_name) with local AS: $(echo $tier0 | jq -r -c .bgp.local_as_num)"
-    nsx_api 6 10 "PATCH" $cookies_file $headers_file '{"enabled": "true", "local_as_num": "'$(echo $tier0 | jq -r -c .bgp.local_as_num)'", "ecmp": "'$(echo $tier0 | jq -r -c .bgp.ecmp)'"}' "$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/bgp"
+    nsx_api 2 2 "PATCH" $cookies_file $headers_file '{"enabled": "true", "local_as_num": "'$(echo $tier0 | jq -r -c .bgp.local_as_num)'", "ecmp": "'$(echo $tier0 | jq -r -c .bgp.ecmp)'"}' "$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/bgp"
     echo "retrieving tier0 called: $(echo $tier0 | jq -r -c .display_name) interfaces details"
-    nsx_api 6 10 "GET" $cookies_file $headers_file '' "$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/interfaces"
+    nsx_api 2 2 "GET" $cookies_file $headers_file '' "$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/interfaces"
     tier0_interfaces=$(echo $response_body)
     tier0_interfaces_ips="[]"
     for interface in $(echo $tier0_interfaces | jq -c -r .results[])
     do
       tier0_interfaces_ips=$(echo $tier0_interfaces_ips | jq -c -r '. += ['$(echo $interface | jq -c '.subnets[0].ip_addresses[0]')']')
     done
-    nsx_api 6 10 "GET" $cookies_file $headers_file '' "$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/interfaces"
+    nsx_api 2 2 "GET" $cookies_file $headers_file '' "$nsx_nested_ip/policy/api/v1/infra/tier-0s/$(echo $tier0 | jq -r -c .display_name)/locale-services/default/interfaces"
     neighbor_count=1
     for neighbor in $(echo $tier0 | jq -c -r .bgp.neighbors[])
     do

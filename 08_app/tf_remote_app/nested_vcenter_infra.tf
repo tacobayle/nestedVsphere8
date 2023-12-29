@@ -23,3 +23,8 @@ data "vsphere_network" "app" {
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 
+data "vsphere_network" "app_vpc" {
+  count = length(var.app_segments_vpc)
+  name = var.app_segments_vpc[count.index]
+  datacenter_id = data.vsphere_datacenter.dc_nested.id
+}

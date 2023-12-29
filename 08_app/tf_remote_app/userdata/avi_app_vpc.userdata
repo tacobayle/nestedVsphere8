@@ -1,0 +1,32 @@
+#cloud-config
+users:
+  - default
+
+ssh_pwauth: True
+
+chpasswd:
+  list: |
+    ubuntu:${password}
+  expire: False
+
+hostname: ${hostname}
+
+write_files:
+  - content: |
+      #!/bin/bash
+      sudo apt update
+      sudo apt install -y apache2
+      sudo mv /var/www/html/index.html /var/www/html/index.html.old
+      ifPrimary=`ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//"`
+      ip=`ip address show dev $ifPrimary | grep -v inet6 | grep inet | awk '{print $2}' | cut -d"/" -f1`
+      echo -e "Hello World - My IP is $ip" | sudo tee /var/www/html/index.html
+      echo "cloud init done" | tee /tmp/cloudInitDone.log
+    path: /opt/bootstrap.sh
+    permissions: 0755
+
+  - content: |
+      ${username} ALL=(ALL) NOPASSWD:ALL
+    path: /etc/sudoers.d/${username}
+
+runcmd:
+  - /opt/bootstrap.sh

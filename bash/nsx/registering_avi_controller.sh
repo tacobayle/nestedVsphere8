@@ -18,4 +18,4 @@ json_data='
   "infra_admin_username" : "admin",
   "infra_admin_password" : "'${avi_password}'"
 }'
-nsx_api 6 10 "PUT" $cookies_file $headers_file "${json_data}" $nsx_nested_ip "policy/api/v1/infra/alb-onboarding-workflow"
+nsx_api 2 2 "PUT" $cookies_file $headers_file "${json_data}" $nsx_nested_ip "policy/api/v1/infra/alb-onboarding-workflow"

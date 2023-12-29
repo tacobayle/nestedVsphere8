@@ -17,7 +17,7 @@ headers_file="create_edge_nodes_headers.txt"
 rm -f $cookies_file $headers_file
 #
 /bin/bash /nestedVsphere8/bash/nsx/create_nsx_api_session.sh admin $TF_VAR_nsx_password $nsx_nested_ip $cookies_file $headers_file
-nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/fabric/compute-managers"
+nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/fabric/compute-managers"
 compute_managers=$(echo $response_body)
 IFS=$'\n'
 for item in $(echo $compute_managers | jq -c -r .results[])
@@ -81,7 +81,7 @@ do
     new_json=$(echo $new_json | jq '.host_switch_spec.host_switches['$host_switch_count'] += {"transport_zone_endpoints": []}')
     for host_switch_profile_name in $(echo $host_switch | jq -r .host_switch_profile_names[])
     do
-      nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/host-switch-profiles"
+      nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/host-switch-profiles"
       host_switch_profiles=$(echo $response_body)
 #      host_switch_profiles=$(curl -k -s -X GET -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" https://$nsx_nested_ip/api/v1/host-switch-profiles)
       IFS=$'\n'
@@ -95,7 +95,7 @@ do
     done
     for tz_name in $(echo $host_switch | jq -r .transport_zone_names[])
     do
-      nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/transport-zones"
+      nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/transport-zones"
       transport_zones=$(echo $response_body)
 #      transport_zones=$(curl -k -s -X GET -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" https://$nsx_nested_ip/api/v1/transport-zones)
       IFS=$'\n'
@@ -108,7 +108,7 @@ do
       new_json=$(echo $new_json | jq '.host_switch_spec.host_switches['$host_switch_count'].transport_zone_endpoints += [{"transport_zone_id": "'$transport_zone_id'"}]')
     done
     if [[ $(echo $new_json | jq '.host_switch_spec.host_switches['$host_switch_count']' | grep ip_pool_name) ]] ; then
-      nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/infra/ip-pools"
+      nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/infra/ip-pools"
       ip_pools=$(echo $response_body)
 #      ip_pools=$(curl -k -s -X GET -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" https://$nsx_nested_ip/policy/api/v1/infra/ip-pools)
       IFS=$'\n'
@@ -128,7 +128,7 @@ do
   new_json=$(echo $new_json | jq '. +=  {"maintenance_mode": "DISABLED"}')
   new_json=$(echo $new_json | jq '. +=  {"display_name":"'$name'"}')
   new_json=$(echo $new_json | jq '. +=  {"node_deployment_info": {"resource_type":"EdgeNode", "deployment_type": "VIRTUAL_MACHINE", "deployment_config": { "vm_deployment_config": {"vc_id": "'$vc_id'", "compute_id": "'$compute_id'", "storage_id": "'$storage_id'", "management_network_id": "'$management_network_id'", "management_port_subnets": [{"ip_addresses": ["'$ip'"], "prefix_length": '$prefix_length'}], "default_gateway_addresses": ["'$gateway'"], "data_network_ids": '$(echo $data_network_ids | jq -r -c .)', "reservation_info": { "memory_reservation" : {"reservation_percentage": 100 }, "cpu_reservation": { "reservation_in_shares": "HIGH_PRIORITY", "reservation_in_mhz": 0 }}, "resource_allocation": {"cpu_count": '$cpu', "memory_allocation_in_mb": '$memory' }, "placement_type": "VsphereDeploymentConfig"}, "form_factor": "MEDIUM", "node_user_settings": {"cli_username": "admin", "root_password": "'$TF_VAR_nsx_password'", "cli_password": "'$TF_VAR_nsx_password'"}}, "node_settings": {"hostname": "'$fqdn'", "enable_ssh": true, "allow_ssh_root_login": true }}}')
-  nsx_api 6 10 "POST" $cookies_file $headers_file "$(echo $new_json | jq -r -c)" $nsx_nested_ip "api/v1/transport-nodes"
+  nsx_api 2 2 "POST" $cookies_file $headers_file "$(echo $new_json | jq -r -c)" $nsx_nested_ip "api/v1/transport-nodes"
   new_edge_node_response=$(echo $response_body)
   new_edge_node_id=$(echo $new_edge_node_response | jq -r .id)
   edge_ids=$(echo $edge_ids | jq '. += ["'$(echo $new_edge_node_id)'"]')
@@ -142,14 +142,14 @@ IFS=$'\n'
 retry_a=80
 pause_a=60
 attempt_a=0
-#nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/infra/sites/default/enforcement-points/default/host-transport-nodes/state"
+#nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/infra/sites/default/enforcement-points/default/host-transport-nodes/state"
 #compute_manager_runtime=$(echo $response_body)
 #node_count=$(echo $compute_manager_runtime | jq -c -r '.results | length')
 for edge_id in $(echo $edge_ids | jq -c -r .[] ); do
   while true ; do
     echo "attempt $attempt_a to get node id $edge_id ready"
-    # before 4.1.1 nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/infra/sites/default/enforcement-points/default/host-transport-nodes/state"
-    nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/transport-nodes/state"
+    # before 4.1.1 nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/infra/sites/default/enforcement-points/default/host-transport-nodes/state"
+    nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "policy/api/v1/transport-nodes/state"
     edge_runtime=$(echo $response_body)
     for item in $(echo $edge_runtime | jq -c -r .results[])
     do

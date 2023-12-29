@@ -23,7 +23,7 @@ do
   new_json=$(echo $new_json | jq '.['$edge_cluster_count'] += {"members": []}')
   for name_edge_cluster in $(echo $edge_cluster | jq -r .members_name[])
   do
-    nsx_api 6 10 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/transport-nodes"
+    nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/transport-nodes"
     edge_node_ids=$(echo $response_body)
 #    edge_node_ids=$(curl -k -s -X GET -b cookies.txt -H "`grep X-XSRF-TOKEN headers.txt`" -H "Content-Type: application/json" https://$nsx_nested_ip/api/v1/transport-nodes)
     IFS=$'\n'

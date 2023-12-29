@@ -6,6 +6,7 @@ IFS=$'\n'
 #
 nsx_manager=$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)
 nsx_password=${TF_VAR_nsx_password}
+external_gw_ip=$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)
 #
 # ip block creation only for project default
 #
@@ -145,7 +146,8 @@ if $(jq -e '.nsx.config | has("ip_blocks")' $jsonFile) ; then
           "${edge_cluster_path}" \
           "${tier0_path}" \
           "${ip_block_external_path}" \
-          "${ip_block_private_path}"
+          "${ip_block_private_path}" \
+          "${external_gw_ip}"
       done
     fi
   fi

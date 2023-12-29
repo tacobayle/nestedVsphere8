@@ -10,6 +10,7 @@ edge_cluster_path=${5}
 tier0_path=${6}
 external_ipv4_block=${7}
 private_ipv4_block=${8}
+dns_ip=${9}
 #
 cookies_file="/root/nsx_$(basename $0 | cut -d"." -f1)_cookie.txt"
 headers_file="/root/nsx_$(basename $0 | cut -d"." -f1)_header.txt"
@@ -44,9 +45,23 @@ json_data='
     "ipv6_profile_paths": [],
     "subnet_profiles": {},
     "dhcp_config": {
-      "enable_dhcp": true
+      "enable_dhcp": true,
+      "dns_client_config": {
+        "dns_server_ips": [
+          "'${dns_ip}'"
+        ]
+      }
     },
     "display_name": "'${vpc_name}'"
   }'
-
-nsx_api 6 10 "PATCH" $cookies_file $headers_file "${json_data}" $nsx_nested_ip "policy/api/v1/orgs/default/projects/${project_name}/vpcs/${vpc_name}"
+#
+nsx_api 2 2 "PATCH" $cookies_file $headers_file "${json_data}" $nsx_nested_ip "policy/api/v1/orgs/default/projects/${project_name}/vpcs/${vpc_name}"
+#
+json_data='
+  {
+    "ipv4_subnet_size": 32,
+    "access_mode": "Private",
+    "display_name": "'${vpc_name}'-subnet"
+  }'
+#
+nsx_api 2 2 "PATCH" $cookies_file $headers_file "${json_data}" $nsx_nested_ip "policy/api/v1/orgs/default/projects/${project_name}/vpcs/${vpc_name}/subnets/subnet-1"
