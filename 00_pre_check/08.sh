@@ -24,7 +24,7 @@ app_cidr=[]
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
-  # project vpc use case //
+  # project vpc use case
   #
   app_segments_vpc=[]
   folders_vpc=[]
