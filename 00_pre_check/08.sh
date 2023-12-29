@@ -76,6 +76,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   mv /nestedVsphere8/08_app/template_file.tf /nestedVsphere8/08_app/template_file.tf.disabled
   #
   app_json=$(echo $app_json | jq '. += {"app_segments_vpc": '$(echo $app_segments_vpc)'}')
+  app_json=$(echo $app_json | jq '. += {"folders_vpc": '$(echo $folders_vpc)'}')
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
