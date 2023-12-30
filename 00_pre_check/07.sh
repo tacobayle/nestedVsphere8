@@ -309,6 +309,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
             avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.vpc_mode)')
             avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"vpc_mode": true}')
             avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"dhcp_enabled": true}')
+            mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx_vpc.tf.disabled /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf
           fi
         fi
       fi
