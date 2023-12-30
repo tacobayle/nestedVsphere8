@@ -59,6 +59,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
     echo "   +++ variable nsx_password is already in /nestedVsphere8/08_app/tf_remote_app/variables.tf"
   else
     echo "   +++ Adding variable nsx_password in /nestedVsphere8/08_app/tf_remote_app/variables.tf"
+    echo '' | tee -a /nestedVsphere8/08_app/tf_remote_app/variables.tf > /dev/null
     echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/08_app/tf_remote_app/variables.tf > /dev/null
   fi
   #
@@ -66,6 +67,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
     echo "   +++ variable nsx_password is already in /nestedVsphere8/08_app/variables.tf"
   else
     echo "   +++ Adding variable nsx_password in /nestedVsphere8/08_app/variables.tf"
+    echo '' | tee -a /nestedVsphere8/08_app/tf_remote_app/variables.tf > /dev/null
     echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/08_app/variables.tf > /dev/null
   fi
   #
