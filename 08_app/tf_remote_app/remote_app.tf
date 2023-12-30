@@ -145,18 +145,4 @@ resource "vsphere_virtual_machine" "avi_app_vpc" {
       user-data   = base64encode(data.template_file.avi_app_vpc_userdata[count.index].rendered)
     }
   }
-
-  connection {
-    host        = self.default_ip_address
-    type        = "ssh"
-    agent       = false
-    user        = var.app.username
-    private_key = file("/home/ubuntu/.ssh/id_rsa")
-  }
-
-  provisioner "remote-exec" {
-    inline      = [
-      "while [ ! -f /tmp/cloudInitDone.log ]; do sleep 1; done"
-    ]
-  }
 }
