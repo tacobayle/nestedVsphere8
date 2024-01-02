@@ -21,13 +21,13 @@ app_json=$(echo $app_json | jq '. += {"app": '$(echo $app)'}')
 app_segments=[]
 app_ips=[]
 app_cidr=[]
+app_segments_vpc=[]
+folders_vpc=[]
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
   # project vpc use case
   #
-  app_segments_vpc=[]
-  folders_vpc=[]
   if $(jq -e '.nsx.config | has("ip_blocks")' $jsonFile) ; then
     if $(jq -e '.nsx.config | has("projects")' $jsonFile) ; then
       if $(jq -e '.nsx.config | has("vpcs")' $jsonFile) ; then
@@ -77,8 +77,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   mv /nestedVsphere8/08_app/template_file_nsx.tf.disabled /nestedVsphere8/08_app/template_file_nsx.tf
   mv /nestedVsphere8/08_app/template_file.tf /nestedVsphere8/08_app/template_file.tf.disabled
   #
-  app_json=$(echo $app_json | jq '. += {"app_segments_vpc": '$(echo $app_segments_vpc)'}')
-  app_json=$(echo $app_json | jq '. += {"folders_vpc": '$(echo $folders_vpc)'}')
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
@@ -99,6 +97,12 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
 fi
 echo "   +++ Adding app_segments..."
 app_json=$(echo $app_json | jq '. += {"app_segments": '$(echo $app_segments)'}')
+echo "   +++ Adding app_cidr..."
 app_json=$(echo $app_json | jq '. += {"app_cidr": '$(echo $app_cidr)'}')
+echo "   +++ Adding app_ips..."
 app_json=$(echo $app_json | jq '. += {"app_ips": '$(echo $app_ips)'}')
+echo "   +++ Adding app_segments_vpc..."
+app_json=$(echo $app_json | jq '. += {"app_segments_vpc": '$(echo $app_segments_vpc)'}')
+echo "   +++ Adding folders_vpc..."
+app_json=$(echo $app_json | jq '. += {"folders_vpc": '$(echo $folders_vpc)'}')
 echo $app_json | jq . | tee /root/app.json > /dev/null
