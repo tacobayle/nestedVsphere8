@@ -190,7 +190,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   count=1
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
   do
-    if [[ $(echo $item | jq -c .app_ips) != "null" ]] ; then
+    if [[ $(echo $item | jq -c -r .app_ips) != "null" && $(echo $item | jq -c -r .avi_config) != "false" ]] ; then
       if [[ $count -eq 1 ]] ; then
         type="nsx-group-based"
         pool_name=$(jq -c -r '.app.nsxt_group_name' /nestedVsphere8/08_app/variables.json)
@@ -565,7 +565,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
           done
       fi
       #
-      if [[ $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile) != "null" ]] ; then
+      if [[ $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile) != "null" && $(echo $item | jq -c -r .avi_config) != "false" ]] ; then
         type="V4"
         pool_name="pool$count-hello"
         default_server_port=$(jq -c -r '.app.hello_world_app_tcp_port' /nestedVsphere8/08_app/variables.json)
