@@ -70,13 +70,43 @@ echo ""
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 #
+# outputs
+#
+output_file="${output_file}"
+rm -f ${output_file}
+echo ""
+echo ""
+echo "+++++++++++++++++ O U T P U T S +++++++++++++++++++++" | tee ${output_file} >/dev/null 2>&1
+#
 /bin/bash /nestedVsphere8/02_external_gateway/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 scp -o StrictHostKeyChecking=no ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/.ssh/id_rsa /root/.ssh/id_rsa_external >/dev/null 2>&1
 scp -o StrictHostKeyChecking=no ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/.ssh/id_rsa.pub /root/.ssh/id_rsa_external.pub >/dev/null 2>&1
 #
+# outputs external gw
+#
+echo "" | tee -a ${output_file} >/dev/null 2>&1
+echo "+++++++ external-gateway" | tee -a ${output_file} >/dev/null 2>&1
+echo "ssh your external gateway from the pod:" | tee -a ${output_file} >/dev/null 2>&1
+echo "  > ssh -o StrictHostKeyChecking=no ubuntu@external-gw" | tee -a ${output_file} >/dev/null 2>&1
+echo "ssh your external gateway from an external node:" | tee -a ${output_file} >/dev/null 2>&1
+echo "  > ssh -o StrictHostKeyChecking=no ubuntu@$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
+echo "ssh ubuntu password: ${TF_VAR_ubuntu_password}" | tee -a ${output_file} >/dev/null 2>&1
+#
 /bin/bash /nestedVsphere8/03_nested_vsphere/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
+#
+# outputs vSphere
+#
+echo "" | tee -a ${output_file} >/dev/null 2>&1
+echo "++++++++++++++++ vSphere" | tee -a ${output_file} >/dev/null 2>&1
+echo "Configure your /etc/hosts with the following entry:" | tee -a ${output_file} >/dev/null 2>&1
+echo "  > $(jq -r .vsphere_underlay.networks.vsphere.management.vcsa_nested_ip $jsonFile) $(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
+echo "vSphere server url: https://$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
+echo "ESXi root password: ${TF_VAR_nested_esxi_root_password}" | tee -a ${output_file} >/dev/null 2>&1
+echo "vSphere username: administrator@$(jq -c -r .vsphere_nested.sso.domain_name $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
+echo "vSphere password: ${TF_VAR_vsphere_nested_password}" | tee -a ${output_file} >/dev/null 2>&1
+#
 echo "waiting for 20 minutes to finish the vCenter config..."
 sleep 1200
 #
@@ -95,6 +125,15 @@ fi
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/06_nsx_config/apply.sh
   if [ $? -ne 0 ] ; then exit 1 ; fi
+  #
+  # outputs NSX
+  #
+  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+    echo "" | tee -a ${output_file} >/dev/null 2>&1
+    echo "++++++++++++++++++++ NSX" | tee -a ${output_file} >/dev/null 2>&1
+    echo "  > NSX manager url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
+    echo "NSX admin password: ${TF_VAR_nsx_password}" | tee -a ${output_file} >/dev/null 2>&1
+  fi
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
@@ -110,11 +149,24 @@ fi
 if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
   /bin/bash /nestedVsphere8/09_unmanaged_k8s_clusters/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
+  #
+  # Output unmanaged K8s clusters
+  #
+  echo "" | tee -a ${output_file} >/dev/null 2>&1
+  echo "+++++++++++++ Deploy AKO" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/10_nsx_alb_config/apply.sh
   if [ $? -ne 0 ] ; then exit 1 ; fi
+  #
+  # output Avi
+  #
+  echo "" | tee -a ${output_file} >/dev/null 2>&1
+  echo "++++++++++++++++ NSX-ALB" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > NSX ALB controller url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
+  echo "Avi admin password: ${TF_VAR_avi_password}" | tee -a ${output_file} >/dev/null 2>&1
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
@@ -124,117 +176,61 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c
   /bin/bash /nestedVsphere8/11_vsphere_with_tanzu/apply.sh 2> /nestedVsphere8/log/11_vsphere_with_tanzu.stderr 1> /nestedVsphere8/log/11_vsphere_with_tanzu.stdin
   if [ $? -ne 0 ] ; then exit 1 ; fi
   echo "Ending timestamp: $(date)"
+  #
+  # output Tanzu wo NSX
+  #
+  echo "" | tee -a ${output_file} >/dev/null 2>&1
+  echo "+++++ vSphere with Tanzu" | tee -a ${output_file} >/dev/null 2>&1
+  echo "Authenticate to the supervisor cluster from the external-gateway:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > /bin/bash /home/ubuntu/tanzu/auth_supervisor.sh" | tee -a ${output_file} >/dev/null 2>&1
+  echo "Authenticate to a specific tkc cluster from the external-gateway:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > /bin/bash /home/ubuntu/tkc/auth-tkc-*.sh" | tee -a ${output_file} >/dev/null 2>&1
+  echo "Add docker credential in your tkc cluster:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > /home/ubuntu/bin/kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${TF_VAR_docker_registry_username} --docker-password=****** --docker-email=${TF_VAR_docker_registry_email}" | tee -a ${output_file} >/dev/null 2>&1
+  echo '  > /home/ubuntu/bin/kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a ${output_file} >/dev/null 2>&1
+  echo "Enable deployment creation:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > /home/ubuntu/bin/kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated" | tee -a ${output_file} >/dev/null 2>&1
+  echo "+++++++++++++ Deploy AKO" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
 fi
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   /bin/bash /nestedVsphere8/12_tkgm/apply.sh
   if [ $? -ne 0 ] ; then exit 1 ; fi
+  #
+  # Output TKGm (telco)
+  #
+  echo "" | tee -a ${output_file} >/dev/null 2>&1
+  echo "+++++ TKGm" | tee -a ${output_file} >/dev/null 2>&1
+  echo "To Access your TKG workload cluster from the external gw:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > tanzu cluster list" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > tanzu cluster kubeconfig get $(jq -c -r .tkg.clusters.workloads[0].name $jsonFile) --admin" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > kubectl config use-context $(jq -c -r .tkg.clusters.workloads[0].name $jsonFile)-admin@$(jq -c -r .tkg.clusters.workloads[0].name $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
+  echo "To ssh your TKG cluster node(s):" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > kubectl get nodes -o json | jq -r .items[].status.addresses[1].address" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > ssh capv@ip_of_tanzu_node -i $(jq -c -r .tkg.clusters.public_key_path /root/tkgm.json)" | tee -a ${output_file} >/dev/null 2>&1
+  echo "Add docker credential in your TKG cluster:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${TF_VAR_docker_registry_username} --docker-password=****** --docker-email=${TF_VAR_docker_registry_email}" | tee -a ${output_file} >/dev/null 2>&1
+  echo '  > kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a ${output_file} >/dev/null 2>&1
+  echo "Add avi-system name space:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > kubectl create ns avi-system" | tee -a ${output_file} >/dev/null 2>&1
+  echo "Deploy AKO for your workload clusters:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
+  echo "Connect to the tier0 to check the routes" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > get logical-routers" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > vrf xxx" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > get route" | tee -a ${output_file} >/dev/null 2>&1
 fi
 #
 #if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
 #  /bin/bash /nestedVsphere8/13_vcd_appliance/apply.sh
 ##   if [ $? -ne 0 ] ; then exit 1 ; fi
 #fi
-#
-# outputs
-#
-rm -f /root/output.txt
-echo ""
-echo ""
-echo "+++++++++++++++++ O U T P U T S +++++++++++++++++++++" | tee /root/output.txt
-#
-# external gw
-#
-echo "" | tee -a /root/output.txt
-echo "+++++++ external-gateway" | tee -a /root/output.txt
-echo "ssh your external gateway from the pod:" | tee -a /root/output.txt
-echo "  > ssh -o StrictHostKeyChecking=no ubuntu@external-gw" | tee -a /root/output.txt
-echo "ssh your external gateway from an external node:" | tee -a /root/output.txt
-echo "  > ssh -o StrictHostKeyChecking=no ubuntu@$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)" | tee -a /root/output.txt
-echo "ssh ubuntu password: ${TF_VAR_ubuntu_password}" | tee -a /root/output.txt
-#
-# vSphere
-#
-echo "" | tee -a /root/output.txt
-echo "++++++++++++++++ vSphere" | tee -a /root/output.txt
-echo "Configure your /etc/hosts with the following entry:" | tee -a /root/output.txt
-echo "  > $(jq -r .vsphere_underlay.networks.vsphere.management.vcsa_nested_ip $jsonFile) $(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a /root/output.txt
-echo "vSphere server url: https://$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)" | tee -a /root/output.txt
-echo "ESXi root password: ${TF_VAR_nested_esxi_root_password}" | tee -a /root/output.txt
-echo "vSphere username: administrator@$(jq -c -r .vsphere_nested.sso.domain_name $jsonFile)" | tee -a /root/output.txt
-echo "vSphere password: ${TF_VAR_vsphere_nested_password}" | tee -a /root/output.txt
-
-#
-# NSX
-#
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
-  echo "" | tee -a /root/output.txt
-  echo "++++++++++++++++++++ NSX" | tee -a /root/output.txt
-  echo "  > NSX manager url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" | tee -a /root/output.txt
-  echo "NSX admin password: ${TF_VAR_nsx_password}" | tee -a /root/output.txt
-fi
-#
-# NSX ALB / Avi
-#
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
-  echo "" | tee -a /root/output.txt
-  echo "++++++++++++++++ NSX-ALB" | tee -a /root/output.txt
-  echo "  > NSX ALB controller url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)" | tee -a /root/output.txt
-  echo "Avi admin password: ${TF_VAR_avi_password}" | tee -a /root/output.txt
-fi
-#
-# TANZU wo NSX
-#
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
-  echo "" | tee -a /root/output.txt
-  echo "+++++ vSphere with Tanzu" | tee -a /root/output.txt
-  echo "Authenticate to the supervisor cluster from the external-gateway:" | tee -a /root/output.txt
-  echo "  > /bin/bash /home/ubuntu/tanzu/auth_supervisor.sh" | tee -a /root/output.txt
-  echo "Authenticate to a specific tkc cluster from the external-gateway:" | tee -a /root/output.txt
-  echo "  > /bin/bash /home/ubuntu/tkc/auth-tkc-*.sh" | tee -a /root/output.txt
-  echo "Add docker credential in your tkc cluster:" | tee -a /root/output.txt
-  echo "  > /home/ubuntu/bin/kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${TF_VAR_docker_registry_username} --docker-password=****** --docker-email=${TF_VAR_docker_registry_email}" | tee -a /root/output.txt
-  echo '  > /home/ubuntu/bin/kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a /root/output.txt
-  echo "Enable deployment creation:" | tee -a /root/output.txt
-  echo "  > /home/ubuntu/bin/kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated" | tee -a /root/output.txt
-fi
-#
-# Tanzu or unmanaged K8s clusters
-#
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]] ; then
-  echo "" | tee -a /root/output.txt
-  echo "+++++++++++++ Deploy AKO" | tee -a /root/output.txt
-    echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a /root/output.txt
-fi
-#
-# TKGm (telco)
-#
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
-  echo "" | tee -a /root/output.txt
-  echo "+++++ TKGm" | tee -a /root/output.txt
-  echo "To Access your TKG workload cluster from the external gw:" | tee -a /root/output.txt
-  echo "  > tanzu cluster list" | tee -a /root/output.txt
-  echo "  > tanzu cluster kubeconfig get $(jq -c -r .tkg.clusters.workloads[0].name $jsonFile) --admin" | tee -a /root/output.txt
-  echo "  > kubectl config use-context $(jq -c -r .tkg.clusters.workloads[0].name $jsonFile)-admin@$(jq -c -r .tkg.clusters.workloads[0].name $jsonFile)" | tee -a /root/output.txt
-  echo "To ssh your TKG cluster node(s):" | tee -a /root/output.txt
-  echo "  > kubectl get nodes -o json | jq -r .items[].status.addresses[1].address" | tee -a /root/output.txt
-  echo "  > ssh capv@ip_of_tanzu_node -i $(jq -c -r .tkg.clusters.public_key_path /root/tkgm.json)" | tee -a /root/output.txt
-  echo "Add docker credential in your TKG cluster:" | tee -a /root/output.txt >/dev/null 2>&1
-  echo "  > kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${TF_VAR_docker_registry_username} --docker-password=****** --docker-email=${TF_VAR_docker_registry_email}" | tee -a /root/output.txt >/dev/null 2>&1
-  echo '  > kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a /root/output.txt >/dev/null 2>&1
-  echo "Add avi-system name space:" | tee -a /root/output.txt >/dev/null 2>&1
-  echo "  > kubectl create ns avi-system" | tee -a /root/output.txt >/dev/null 2>&1
-  echo "Deploy AKO for your workload clusters:" | tee -a /root/output.txt
-  echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a /root/output.txt
-  echo "Connect to the tier0 to check the routes" | tee -a /root/output.txt
-  echo "  > get logical-routers" | tee -a /root/output.txt
-  echo "  > vrf xxx" | tee -a /root/output.txt
-  echo "  > get route" | tee -a /root/output.txt
-fi
+cat ${output_file}
 #
 # Transfer output to external-gw
 #
-scp -o StrictHostKeyChecking=no /root/output.txt ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/output.txt >/dev/null 2>&1
+scp -o StrictHostKeyChecking=no ${output_file} ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/output.txt >/dev/null 2>&1
 ssh -o StrictHostKeyChecking=no -t ubuntu@$(jq  -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) 'echo "cat /home/ubuntu/output.txt" | tee -a /home/ubuntu/.profile'
 #
 #
