@@ -74,8 +74,6 @@ if [ $? -ne 0 ] ; then exit 1 ; fi
 #
 output_file="${output_file}"
 rm -f ${output_file}
-echo ""
-echo ""
 echo "+++++++++++++++++ O U T P U T S +++++++++++++++++++++" | tee ${output_file} >/dev/null 2>&1
 #
 /bin/bash /nestedVsphere8/02_external_gateway/apply.sh
