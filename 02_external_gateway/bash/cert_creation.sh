@@ -40,3 +40,4 @@ echo "IP.1 = ${ip}" | tee -a ${directory}/${name}.v3.ext >/dev/null 2>&1
 openssl x509 -req -in ${directory}/${name}.csr -CA ${directory}/${ca_name}.crt -passin pass:${ca_private_key_passphrase} -CAkey ${directory}/${ca_name}.key -CAcreateserial -out ${directory}/${name}.crt -days 730 -sha256 -extfile ${directory}/${name}.v3.ext >/dev/null 2>&1
 #
 curl https://raw.githubusercontent.com/vmware/alb-sdk/eng/python/avi/sdk/samples/clone_vs.py -o /home/ubuntu/clone_vs.py -s
+chmod u+x /home/ubuntu/clone_vs.py
