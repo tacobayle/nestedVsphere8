@@ -72,7 +72,7 @@ if [ $? -ne 0 ] ; then exit 1 ; fi
 #
 # outputs
 #
-output_file="${output_file}"
+output_file="/root/output.txt"
 rm -f ${output_file}
 echo "+++++++++++++++++ O U T P U T S +++++++++++++++++++++" | tee ${output_file} >/dev/null 2>&1
 #
