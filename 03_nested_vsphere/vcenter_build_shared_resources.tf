@@ -42,7 +42,7 @@ data "template_file" "expect_script" {
     vsphere_nested_password = var.vsphere_nested_password
     vcenter_fqdn = "${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
     vcenter_dc = var.vsphere_nested.datacenter
-    vcenter_cluster = "${var.vsphere_nested.cluster_basename}-${count.index + 1}"
+    vcenter_cluster = var.vsphere_nested.cluster_list[count.index]
   }
 }
 

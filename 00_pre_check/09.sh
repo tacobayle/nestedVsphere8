@@ -65,10 +65,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
         unmanaged_k8s_masters_gw=$(echo $unmanaged_k8s_masters_gw | jq '. += ["'$(jq -c -r .vsphere_underlay.networks.alb.$network.external_gw_ip $jsonFile)'"]')
         unmanaged_k8s_masters_version=$(echo $unmanaged_k8s_masters_version | jq '. += ["'$(echo $cluster | jq -c -r .k8s_version)'"]')
         if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
-          echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
+          echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / master node will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
           unmanaged_k8s_masters_vsphere_cluster=$(echo $unmanaged_k8s_masters_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
         else
-          echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
+          echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / master node will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
           unmanaged_k8s_masters_vsphere_cluster=$(echo $unmanaged_k8s_masters_vsphere_cluster | jq '. += ["'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"]')
         fi
         unmanaged_k8s_masters_cni=$(echo $unmanaged_k8s_masters_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
@@ -95,10 +95,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
           unmanaged_k8s_workers_cluster_name=$(echo $unmanaged_k8s_workers_cluster_name | jq '. += ["'$(echo $cluster | jq -c -r .cluster_name)'"]')
           unmanaged_k8s_workers_version=$(echo $unmanaged_k8s_workers_version | jq '. += ["'$(echo $cluster | jq -c -r .k8s_version)'"]')
           if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
-            echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
+            echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / worker ${count} node will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
             unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
           else
-            echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
+            echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / worker ${count} will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
             unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"]')
           fi
           unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
@@ -128,10 +128,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
         unmanaged_k8s_masters_gw=$(echo $unmanaged_k8s_masters_gw | jq '. += ["'$(echo $item | jq -c -r .cidr | cut -d"/" -f1 | sed 's/[0-9]\+$/1/')'"]')
         unmanaged_k8s_masters_version=$(echo $unmanaged_k8s_masters_version | jq '. += ["'$(echo $cluster | jq -c -r .k8s_version)'"]')
         if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
-          echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
+          echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / master node will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
           unmanaged_k8s_masters_vsphere_cluster=$(echo $unmanaged_k8s_masters_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
         else
-          echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
+          echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / master node will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
           unmanaged_k8s_masters_vsphere_cluster=$(echo $unmanaged_k8s_masters_vsphere_cluster | jq '. += ["'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"]')
         fi
         unmanaged_k8s_masters_cni=$(echo $unmanaged_k8s_masters_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
@@ -158,10 +158,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
           unmanaged_k8s_workers_cluster_name=$(echo $unmanaged_k8s_workers_cluster_name | jq '. += ["'$(echo $cluster | jq -c -r .cluster_name)'"]')
           unmanaged_k8s_workers_version=$(echo $unmanaged_k8s_workers_version | jq '. += ["'$(echo $cluster | jq -c -r .k8s_version)'"]')
           if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
-            echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
+            echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / worker ${count} will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
             unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
           else
-            echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
+            echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / worker ${count} will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
             unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"]')
           fi
           unmanaged_k8s_workers_cni=$(echo $unmanaged_k8s_workers_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
