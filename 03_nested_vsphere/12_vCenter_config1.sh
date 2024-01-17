@@ -39,9 +39,9 @@ count=1
 for ip in $(jq -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
 do
   if [[ $count -ne 1 ]] ; then
-    cluster_count=$(((${count}+$(jq -c -r '.vsphere_nested.cluster_list | length' $jsonFile)-1)/$(jq -c -r '.vsphere_nested.cluster_list | length' $jsonFile)))
+    cluster_count=$(((${count}-1)/$(jq -c -r '.vsphere_nested.cluster_esxi_count' $jsonFile)))
     load_govc_env_with_cluster "$(jq -c -r .vsphere_nested.cluster_list[${cluster_count}] $jsonFile)"
-    echo "Adding host $ip in the cluster"
+    echo "Adding host $ip in cluster $(jq -c -r .vsphere_nested.cluster_list[${cluster_count}] $jsonFile)"
     govc cluster.add -hostname "$(jq -r .vsphere_nested.esxi.basename $jsonFile)$count.$(jq -r .external_gw.bind.domain $jsonFile)" -username "root" -password "$TF_VAR_nested_esxi_root_password" -noverify
   fi
   count=$((count+1))
