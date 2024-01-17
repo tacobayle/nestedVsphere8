@@ -44,6 +44,10 @@ do
   do
     test_if_variable_is_valid_ip $ip "   "
   done
+  if [[ $(jq -r '.vsphere_underlay.networks.vsphere.'$network'.esxi_ips | length' $jsonFile) -lt $(jq -r '.vsphere_underlay.networks.vsphere.management.esxi_ips | length' $jsonFile) ]] ; then
+    echo "   +++ .vsphere_underlay.networks.vsphere.'$network'.esxi_ips don't get enought IP(s)"
+    exit 255
+  fi
   #
   echo "   +++ Adding prefix for $network network..."
   prefix=$(jq -c -r .vsphere_underlay.networks.vsphere.$network.cidr $jsonFile | cut -d"/" -f2)
@@ -53,6 +57,7 @@ do
   netmask=$(ip_netmask_by_prefix $(jq -c -r .vsphere_underlay.networks.vsphere.$network.cidr $jsonFile | cut -d"/" -f2) "   ++++++")
   variables_json=$(echo $variables_json | jq '.vsphere_underlay.networks.vsphere.'$network' += {"netmask": "'$(echo $netmask)'"}')
 done
+
 #
 test_if_json_variable_is_defined .vsphere_underlay.networks.vsphere.management.gateway $jsonFile "   "
 test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.gateway $jsonFile) "   "
