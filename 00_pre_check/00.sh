@@ -45,7 +45,7 @@ do
     test_if_variable_is_valid_ip $ip "   "
   done
   if [[ $(jq -r '.vsphere_underlay.networks.vsphere.'$network'.esxi_ips | length' $jsonFile) -lt $(jq -r '.vsphere_underlay.networks.vsphere.management.esxi_ips | length' $jsonFile) ]] ; then
-    echo "   +++ .vsphere_underlay.networks.vsphere.'$network'.esxi_ips don't get enought IP(s)"
+    echo "   +++ .vsphere_underlay.networks.vsphere.$network.esxi_ips don't get enought IP(s)"
     exit 255
   fi
   #
