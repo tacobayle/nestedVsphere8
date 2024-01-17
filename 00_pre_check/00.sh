@@ -94,9 +94,9 @@ cluster_esxi_count=$(jq -r .vsphere_nested.cluster_esxi_count $jsonFile)
 count_cluster=$(($(jq -r '.vsphere_underlay.networks.vsphere.management.esxi_ips | length' $jsonFile)/${cluster_esxi_count}))
 variables_json=$(echo $variables_json | jq '.vsphere_nested += {"count_cluster": '$(echo $count_cluster)'}')
 cluster_list="[]"
-for cluster in {1..$count_cluster}
+for cluster in $(seq 1 ${count_cluster})
 do
-  cluster_list=$(echo $cluster_list | jq  '. += ["'$(jq -r .vsphere_nested.cluster_basename $jsonFile)'-'${cluster}'"])')
+  cluster_list=$(echo $cluster_list | jq  '. += ["'$(jq -c -r .vsphere_nested.cluster_basename $jsonFile)-${cluster}'"]')
 done
 echo "   +++ Adding a .vsphere_nested.cluster_list"
 variables_json=$(echo $variables_json | jq '.vsphere_nested += {"cluster_list": '$(echo $cluster_list)'}')
