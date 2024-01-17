@@ -3,7 +3,7 @@ data "vsphere_datacenter" "dc_nested" {
 }
 
 data "vsphere_compute_cluster" "compute_cluster_nested" {
-  name          = var.vsphere_nested.cluster
+  name          = var.nsx.cluster_ref
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 
@@ -13,7 +13,7 @@ data "vsphere_datastore" "datastore_nested" {
 }
 
 data "vsphere_resource_pool" "resource_pool_nested" {
-  name          = "${var.vsphere_nested.cluster}/Resources"
+  name          = "${var.nsx.cluster_ref}/Resources"
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 

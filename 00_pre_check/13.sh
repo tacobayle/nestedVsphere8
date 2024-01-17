@@ -33,6 +33,13 @@ echo "   +++ Adding vcd_port_group_db..."
 vcd_port_group_db=$(jq -c -r '.networks.vsphere.VSAN.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
 vcd_json=$(echo $vcd_json | jq '. += {"vcd_port_group_db": "'$(echo $vcd_port_group_db)'"}')
 #
+if $(jq -e '.vcd | has("cluster_ref")' $jsonFile) ; then
+  echo "   +++ VCD will be installed on the top of cluster $(jq -c -r '.vcd.cluster_ref' $jsonFile)"
+else
+  echo "   +++ Adding .vcd.cluster_ref..."
+  vcd_json=$(echo $vcd_json | jq '.nsx += {"cluster_ref": "'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"}')
+fi
+#
 echo "   +++ Adding vcd_appliance..."
 vcd_appliance=$(jq -c -r '.vcd_appliance' $localJsonFile)
 vcd_json=$(echo $vcd_json | jq '. += {"vcd_appliance": '$(echo $vcd_appliance)'}')

@@ -6,4 +6,5 @@ variable "vcd_port_group_mgmt" {}
 variable "vcd_port_group_db" {}
 variable "vsphere_underlay" {}
 variable "vcd_appliance" {}
+variable "vcd" {}
 variable "vcd_root_password" {}

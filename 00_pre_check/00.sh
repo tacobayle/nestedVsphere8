@@ -4,6 +4,7 @@ source /nestedVsphere8/bash/test_if_variables.sh
 source /nestedVsphere8/bash/data_validation/alb.sh
 source /nestedVsphere8/bash/data_validation/nsx.sh
 source /nestedVsphere8/bash/data_validation/tanzu.sh
+source /nestedVsphere8/bash/data_validation/tkg.sh
 source /nestedVsphere8/bash/ip.sh
 #
 jsonFile="/etc/config/variables.json"
@@ -85,7 +86,20 @@ test_if_json_variable_is_defined .vsphere_nested.vcsa_name $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_nested.iso_url $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_nested.esxi.iso_url $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_nested.datacenter $jsonFile "   "
-test_if_json_variable_is_defined .vsphere_nested.cluster $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.cluster_basename $jsonFile "   "
+test_if_json_variable_is_defined .vsphere_nested.cluster_esxi_count $jsonFile "   "
+if [[ $(jq -c -r '.vsphere_nested.cluster_esxi_count' $jsonFile) -lt 3 ]] ; then echo "   +++ At least 3 ESXi hosts per cluster are required" ; exit 255 ; fi
+echo "   +++ Adding a count_cluster"
+cluster_esxi_count=$(jq -r .vsphere_nested.cluster_esxi_count $jsonFile)
+count_cluster=$(($(jq -r '.vsphere_underlay.networks.vsphere.management.esxi_ips | length' $jsonFile)/${cluster_esxi_count}))
+variables_json=$(echo $variables_json | jq '.vsphere_nested += {"count_cluster": '$(echo $count_cluster)'}')
+cluster_list="[]"
+for cluster in {1..$count_cluster}
+do
+  cluster_list=$(echo $cluster_list | jq  '. += ["'$(jq -r .vsphere_nested.cluster_basename $jsonFile)'-'${cluster}'"])')
+done
+echo "   +++ Adding a .vsphere_nested.cluster_list"
+variables_json=$(echo $variables_json | jq '.vsphere_nested += {"cluster_list": '$(echo $cluster_list)'}')
 test_if_json_variable_is_defined .vsphere_nested.sso.domain_name $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_nested.timezone $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_nested.esxi.iso_url $jsonFile "   "
@@ -238,6 +252,14 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.start $jsonFile)" "   "
   test_if_variable_is_valid_ip "$(jq -c -r .vsphere_underlay.networks.nsx.overlay_edge.nsx_pool.end $jsonFile)" "   "
   test_if_json_variable_is_defined .nsx.ova_url $jsonFile "   "
+  if $(jq -e '.nsx | has("cluster_ref")' $jsonFile) ; then
+    if $(echo $variables_json | jq -e -c -r --arg arg "$(jq -c -r '.nsx.cluster_ref' $jsonFile)" '.vsphere_nested.cluster_list[] | select( . == $arg )'> /dev/null) ; then
+      echo "   +++ .nsx.cluster_ref found"
+    else
+      echo "   +++ ERROR .nsx.cluster_ref not found in .vsphere_nested.cluster_list[]"
+      exit 255
+    fi
+  fi
   test_if_json_variable_is_defined .nsx.config.edge_node.size $jsonFile "   "
   if [[ $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) != "small" && \
         $(jq -c -r '.nsx.config.edge_node.size' $jsonFile | tr '[:upper:]' [:lower:]) != "medium" && \
@@ -452,6 +474,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_nsx_alb_variables "/etc/config/variables.json"
     test_nsx_k8s_variables "/etc/config/variables.json"
     test_alb_variables_if_vsphere_nsx_alb_telco "/etc/config/variables.json"
+    test_tkg "/etc/config/variables.json"
     echo ""
     echo "==> Adding .deployment: vsphere_nsx_alb_telco"
     variables_json=$(echo $variables_json | jq '. += {"deployment": "vsphere_nsx_alb_telco"}')

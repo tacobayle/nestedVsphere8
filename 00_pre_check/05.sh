@@ -18,6 +18,13 @@ echo "   +++ Adding nsx_ova_path..."
 nsx_ova_path=$(jq -c -r '.nsx_ova_path' $localJsonFile)
 nsx_json=$(echo $nsx_json | jq '. += {"nsx_ova_path": "'$(echo $nsx_ova_path)'"}')
 #
+if $(jq -e '.nsx | has("cluster_ref")' $jsonFile) ; then
+  echo "   +++ NSX will be installed on the top of cluster $(jq -c -r '.nsx.cluster_ref' $jsonFile)"
+else
+  echo "   +++ Adding .nsx.cluster_ref..."
+  nsx_json=$(echo $nsx_json | jq '.nsx += {"cluster_ref": "'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"}')
+fi
+#
 echo "   +++ Adding dhcp_servers_api_endpoint..."
 dhcp_servers_api_endpoint=$(jq -c -r '.dhcp_servers_api_endpoint' $localJsonFile)
 nsx_json=$(echo $nsx_json | jq '.nsx.config += {"dhcp_servers_api_endpoint": "'$(echo $dhcp_servers_api_endpoint)'"}')

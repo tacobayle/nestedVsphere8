@@ -9,6 +9,8 @@ vsphere_nested_password=$TF_VAR_vsphere_nested_password
 #
 source /nestedVsphere8/bash/govc/variables.sh
 #
+IFS=$'\n'
+#
 # Cleaning unused Standard vswitch config and VM port group
 #
 echo "++++++++++++++++++++++++++++++++"
@@ -34,10 +36,13 @@ done
 #
 # VSAN Configuration
 #
-load_govc_env
-echo "Enabling VSAN configuration"
-govc cluster.change -drs-enabled -ha-enabled -vsan-enabled -vsan-autoclaim "$(jq -r .vsphere_nested.cluster $jsonFile)"
-IFS=$'\n'
+for cluster in $(jq -r .vsphere_nested.cluster_list[] $jsonFile)
+do
+  load_govc_env_with_cluster "${cluster}"
+  echo "Enabling VSAN configuration for cluster called ${cluster}"
+  govc cluster.change -drs-enabled -ha-enabled -vsan-enabled -vsan-autoclaim "${cluster}"
+done
+# Adding host in VSAN config.
 count=0
 for ip in $(jq -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
 do

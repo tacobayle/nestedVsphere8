@@ -34,6 +34,7 @@ resource "null_resource" "wait_vsca" {
 // see vcenter_config_dual_atached.tf or vcenter_config_single_attached.tf
 
 data "template_file" "expect_script" {
+  count = length(var.vsphere_nested.cluster_list)
   template = file("${path.module}/templates/expect_script.sh.template")
   vars = {
     vcenter_username        = "administrator"
@@ -41,11 +42,12 @@ data "template_file" "expect_script" {
     vsphere_nested_password = var.vsphere_nested_password
     vcenter_fqdn = "${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
     vcenter_dc = var.vsphere_nested.datacenter
-    vcenter_cluster = var.vsphere_nested.cluster
+    vcenter_cluster = "${var.vsphere_nested.cluster_basename}-${count.index + 1}"
   }
 }
 
 resource "null_resource" "execute_expect_script" {
+  count = length(var.vsphere_nested.cluster_list)
   depends_on = [null_resource.dual_uplink_update_multiple_vds, null_resource.vsan_config]
   connection {
     host        = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
@@ -56,14 +58,14 @@ resource "null_resource" "execute_expect_script" {
   }
 
   provisioner "file" {
-    content = data.template_file.expect_script.rendered
-    destination = "/tmp/vcenter_expect.sh"
+    content = data.template_file.expect_script[count.index].rendered
+    destination = "/tmp/vcenter_expect_cluster${count.index + 1}.sh"
   }
 
   provisioner "remote-exec" {
     inline      = [
-      "chmod u+x /tmp/vcenter_expect.sh",
-      "/tmp/vcenter_expect.sh"
+      "chmod u+x /tmp/vcenter_expect_cluster${count.index + 1}.sh",
+      "/tmp/vcenter_expect_cluster${count.index + 1}.sh"
     ]
   }
 }

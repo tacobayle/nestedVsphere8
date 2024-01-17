@@ -7,11 +7,20 @@ load_govc_esxi () {
   unset GOVC_URL
 }
 
-load_govc_env () {
+load_govc_env_with_cluster () {
   export GOVC_USERNAME="$vsphere_nested_username@$vcenter_domain"
   export GOVC_PASSWORD=$vsphere_nested_password
   export GOVC_DATACENTER=$(jq -r .vsphere_nested.datacenter $jsonFile)
   export GOVC_INSECURE=true
-  export GOVC_CLUSTER=$(jq -r .vsphere_nested.cluster $jsonFile)
+  export GOVC_CLUSTER=$1
   export GOVC_URL=$api_host
+}
+
+load_govc_env_wo_cluster () {
+  export GOVC_USERNAME="$vsphere_nested_username@$vcenter_domain"
+  export GOVC_PASSWORD=$vsphere_nested_password
+  export GOVC_DATACENTER=$(jq -r .vsphere_nested.datacenter $jsonFile)
+  export GOVC_INSECURE=true
+  export GOVC_URL=$api_host
+  unset GOVC_CLUSTER
 }

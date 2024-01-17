@@ -75,12 +75,10 @@ data "template_file" "govc_image_creation" {
   template = file("templates/govc_image_creation.sh.template")
   vars = {
     dc = var.vsphere_nested.datacenter
-    cluster = var.vsphere_nested.cluster
     vsphere_url = "administrator@${var.vsphere_nested.sso.domain_name}:${var.vsphere_nested_password}@${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
     ova_folder_template = var.tkg.ova_folder_template
     ova_basename = basename(var.tkg.ova_location)
     ova_network = var.tkg.ova_network
-    cluster = var.vsphere_nested.cluster
   }
 }
 
@@ -102,7 +100,7 @@ data "template_file" "govc_mgmt" {
   template = file("templates/govc_mgmt.sh.template")
   vars = {
     dc = var.vsphere_nested.datacenter
-    cluster = var.vsphere_nested.cluster
+    cluster = var.tkg.clusters.management.cluster_ref
     vsphere_url = "administrator@${var.vsphere_nested.sso.domain_name}:${var.vsphere_nested_password}@${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
     mgmt_folder = var.tkg.clusters.management.name
     vcenter_resource_pool = var.tkg.clusters.management.name
@@ -113,7 +111,7 @@ data "template_file" "govc_mgmt_destroy" {
   template = file("templates/govc_mgmt_destroy.sh.template")
   vars = {
     dc = var.vsphere_nested.datacenter
-    cluster = var.vsphere_nested.cluster
+    cluster = var.tkg.clusters.management.cluster_ref
     vsphere_url = "administrator@${var.vsphere_nested.sso.domain_name}:${var.vsphere_nested_password}@${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
     mgmt_folder = var.tkg.clusters.management.name
     vcenter_resource_pool = var.tkg.clusters.management.name
@@ -144,7 +142,7 @@ data "template_file" "govc_workloads" {
   template = file("templates/govc_workers.sh.template")
   vars = {
     dc = var.vsphere_nested.datacenter
-    cluster = var.vsphere_nested.cluster
+    cluster = var.tkg.clusters.workloads[count.index].cluster_ref
     vsphere_url = "administrator@${var.vsphere_nested.sso.domain_name}:${var.vsphere_nested_password}@${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
     vcenter_folder = var.tkg.clusters.workloads[count.index].name
     vcenter_resource_pool = var.tkg.clusters.workloads[count.index].name
@@ -156,7 +154,7 @@ data "template_file" "govc_workloads_destroy" {
   template = file("templates/govc_workers_destroy.sh.template")
   vars = {
     dc = var.vsphere_nested.datacenter
-    cluster = var.vsphere_nested.cluster
+    cluster = var.tkg.clusters.workloads[count.index].cluster_ref
     vsphere_url = "administrator@${var.vsphere_nested.sso.domain_name}:${var.vsphere_nested_password}@${var.vsphere_nested.vcsa_name}.${var.external_gw.bind.domain}"
     vcenter_folder = var.tkg.clusters.workloads[count.index].name
     vcenter_resource_pool = var.tkg.clusters.workloads[count.index].name

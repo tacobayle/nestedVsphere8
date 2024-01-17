@@ -15,6 +15,14 @@ test_nsx_alb_variables () {
   echo "   +++ testing if environment variable TF_VAR_docker_registry_email is not empty" ; if [ -z "$TF_VAR_docker_registry_email" ] ; then exit 255 ; fi
   echo "   +++ testing if environment variable TF_VAR_avi_password is not empty" ; if [ -z "$TF_VAR_avi_password" ] ; then exit 255 ; fi
   echo "   +++ testing if environment variable TF_VAR_avi_old_password is not empty" ; if [ -z "$TF_VAR_avi_old_password" ] ; then exit 255 ; fi
+  if $(jq -e '.avi | has("cluster_ref")' "${1}") ; then
+    if $(echo $variables_json | jq -e -c -r --arg arg "$(jq -c -r '.avi.cluster_ref' "${1}")" '.vsphere_nested.cluster_list[] | select( . == $arg )'> /dev/null) ; then
+      echo "   +++ .avi.cluster_ref found"
+    else
+      echo "   +++ ERROR .avi.cluster_ref not found in .vsphere_nested.cluster_list[]"
+      exit 255
+    fi
+  fi
 }
 
 test_nsx_app_variables () {

@@ -18,6 +18,13 @@ tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"avi_username": "
 echo "   +++ Adding avi_cloud_name on tkg.clusters.management"
 tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"avi_cloud_name": "'$(jq -c -r '.vcenter_default_cloud_name' /nestedVsphere8/07_nsx_alb/variables.json)'"}')
 #
+if $(jq -e '.tkg.clusters.management | has("cluster_ref")' $jsonFile) ; then
+  echo "   +++ TKG will be installed on the top of cluster $(jq -c -r '.tkg.clusters.management.cluster_ref' $jsonFile)"
+else
+  echo "   +++ Adding .tkg.clusters.management.cluster_ref..."
+  tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"cluster_ref": "'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"}')
+fi
+#
 echo "   +++ Adding public_key_path on tkg.clusters.management"
 tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"public_key_path": "/root/.ssh/id_rsa_external.pub"}')
 #
@@ -39,6 +46,12 @@ do
   cluster=$(echo $cluster | jq '. += {"ako_tenant_ref": "'$(echo $cluster | jq -c -r .name)'"}')
   echo "   +++ add ako_service_engine_group_ref in workload cluster called $(echo $cluster | jq -c -r .name)"
   cluster=$(echo $cluster | jq '. += {"ako_service_engine_group_ref": "'$(echo $cluster | jq -c -r .name)'"}')
+  if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
+    echo "   +++ TKG Workload will be installed on the top of cluster $(echo $cluster | jq -c -r '.cluster_ref')"
+  else
+    echo "   +++ add cluster_ref in workload cluster called $(echo $cluster | jq -c -r .name)"
+    cluster=$(echo $cluster | jq '. += {"cluster_ref": "'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"}')
+  fi
   workload_clusters_list=$(echo $workload_clusters_list | jq '. += ['$(echo $cluster | jq -c -r .)']')
 done
 tkgm_json=$(echo $tkgm_json | jq '. | del (.tkg.clusters.workloads)')

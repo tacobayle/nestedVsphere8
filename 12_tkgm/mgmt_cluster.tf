@@ -21,7 +21,7 @@ data "template_file" "mgmt" {
     avi_password_base64 = base64encode(var.avi_password)
     avi_username = var.tkg.clusters.management.avi_username
     datacenter = var.vsphere_nested.datacenter
-    cluster = var.vsphere_nested.cluster
+    cluster = var.tkg.clusters.management.cluster_ref
     vcenter_folder = var.tkg.clusters.management.name
     vcenter_resource_pool = var.tkg.clusters.management.name
     vcenter_password_base64 = base64encode(var.vsphere_nested_password)

@@ -107,6 +107,7 @@ echo "vSphere password: ${TF_VAR_vsphere_nested_password}" | tee -a ${output_fil
 #
 echo "waiting for 20 minutes to finish the vCenter config..."
 sleep 1200
+exit
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" || $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
   /bin/bash /nestedVsphere8/04_networks/apply.sh

@@ -13,7 +13,7 @@ source /nestedVsphere8/bash/govc/variables.sh
 #
 # Network config
 #
-load_govc_env
+load_govc_env_wo_cluster
 IFS=$'\n'
 count=1
 for ip in $(jq -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)

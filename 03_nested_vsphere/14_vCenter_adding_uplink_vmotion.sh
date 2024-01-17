@@ -4,6 +4,8 @@ source /nestedVsphere8/bash/vcenter_api.sh
 #
 jsonFile="/root/nested_vsphere.json"
 #
+IFS=$'\n'
+#
 api_host="$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)"
 vsphere_nested_username=administrator
 vcenter_domain=$(jq -r .vsphere_nested.sso.domain_name $jsonFile)
@@ -13,8 +15,7 @@ source /nestedVsphere8/bash/govc/variables.sh
 #
 # Network config
 #
-load_govc_env
-IFS=$'\n'
+load_govc_env_wo_cluster
 count=1
 for ip in $(jq -r .vsphere_underlay.networks.vsphere.management.esxi_ips[] $jsonFile)
 do

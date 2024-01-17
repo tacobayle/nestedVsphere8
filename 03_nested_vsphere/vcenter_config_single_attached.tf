@@ -5,7 +5,7 @@ resource "null_resource" "vcenter_configure1_single_attached" {
   depends_on = [null_resource.wait_vsca]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
-    command = "/bin/bash 12_vCenter_config1_single_attached.sh"
+    command = "/bin/bash 12_vCenter_config1.sh"
   }
 }
 
@@ -440,6 +440,6 @@ resource "null_resource" "vsan_config" {
   depends_on = [null_resource.test_vcenter_health_after_esxi_reconfig]
   count = var.vsphere_underlay.networks_vsphere_dual_attached == false ? 1 : 0
   provisioner "local-exec" {
-    command = "/bin/bash 18_vCenter_VSAN_config.sh"
+    command = "/bin/bash 13_vCenter_config2.sh"
   }
 }

@@ -23,6 +23,14 @@ test_nsx_k8s_variables () {
         test_if_variable_is_defined $(echo $cluster | jq -c .cluster_name) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cluster_name defined"
         test_if_variable_is_defined $(echo $cluster | jq -c .k8s_version) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a k8s_version defined"
         test_if_variable_is_defined $(echo $cluster | jq -c .cni) "   " "testing if each .nsx.config.segments_overlay.$(echo $item | jq -r -c .display_name).k8s_clusters[] have a cni defined"
+        if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
+          if $(echo $variables_json | jq -e -c -r --arg arg "$(echo $cluster | jq -c -r '.cluster_ref')" '.vsphere_nested.cluster_list[] | select( . == $arg )'> /dev/null) ; then
+            echo "   +++ .k8s_clusters[].cluster_ref found"
+          else
+            echo "   +++ ERROR .k8s_clusters[].cluster_ref not found in .vsphere_nested.cluster_list[] - cluster called $(echo $cluster | jq -c -r '.cluster_name')"
+            exit 255
+          fi
+        fi
         if [[ $(echo $cluster | jq -c -r .cni) == "antrea" || $(echo $cluster | jq -c -r .cni) == "calico" || $(echo $cluster | jq -c -r .cni) == "cilium" ]] ; then
           echo "   +++ cni is $(echo $cluster | jq -c -r .cni) which is supported"
         else

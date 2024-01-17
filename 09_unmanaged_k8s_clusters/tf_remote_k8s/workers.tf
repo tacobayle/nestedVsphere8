@@ -1,31 +1,31 @@
 data "vsphere_folder" "k8s_workers_folders"{
-  count = length(var.unmanaged_k8s_workers_cluster_name)
+  count = length(var.unmanaged_k8s.workers_cluster_name)
   depends_on = [vsphere_folder.k8s]
-  path = "/${var.vsphere_nested.datacenter}/vm/${var.k8s.folder_basename}-${var.unmanaged_k8s_workers_cluster_name[count.index]}"
+  path = "/${var.vsphere_nested.datacenter}/vm/${var.k8s.folder_basename}-${var.unmanaged_k8s.workers_cluster_name[count.index]}"
 }
 
 
 data "template_file" "k8s_workers_userdata" {
-  count = length(var.unmanaged_k8s_workers_ips)
+  count = length(var.unmanaged_k8s.workers_ips)
   template = file("${path.module}/userdata/k8s.userdata")
   vars = {
     username     = var.k8s.username
-    hostname     = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_count[count.index]}"
+    hostname     = "${var.k8s.worker_basename}-${var.unmanaged_k8s.workers_count[count.index]}"
     password      = var.ubuntu_password
     pubkey       = file("/home/ubuntu/.ssh/id_rsa.pub")
     netplan_file  = var.k8s.netplan_file
-    prefix = split("/", var.unmanaged_k8s_workers_cidr[count.index])[1]
-    ip = var.unmanaged_k8s_workers_ips[count.index]
-    default_gw = var.unmanaged_k8s_workers_gw[count.index]
+    prefix = split("/", var.unmanaged_k8s.workers_cidr[count.index])[1]
+    ip = var.unmanaged_k8s.workers_ips[count.index]
+    default_gw = var.unmanaged_k8s.workers_gw[count.index]
     dns = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
   }
 }
 
 resource "vsphere_virtual_machine" "workers" {
-  count = length(var.unmanaged_k8s_workers_ips)
-  name             = "${var.unmanaged_k8s_workers_cluster_name[count.index]}-${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_count[count.index]}"
+  count = length(var.unmanaged_k8s.workers_ips)
+  name             = "${var.unmanaged_k8s.workers_cluster_name[count.index]}-${var.k8s.worker_basename}-${var.unmanaged_k8s.workers_count[count.index]}"
   datastore_id     = data.vsphere_datastore.datastore_nested.id
-  resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
+  resource_pool_id = data.vsphere_resource_pool.resource_pool_nested_workers[count.index].id
   folder           = data.vsphere_folder.k8s_workers_folders[count.index].path
 
   network_interface {
@@ -39,7 +39,7 @@ resource "vsphere_virtual_machine" "workers" {
 
   disk {
     size             = var.k8s.worker_disk
-    label            = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_count[count.index]}.lab_vmdk"
+    label            = "${var.k8s.worker_basename}-${var.unmanaged_k8s.workers_count[count.index]}.lab_vmdk"
     thin_provisioned = true
   }
 
@@ -53,14 +53,14 @@ resource "vsphere_virtual_machine" "workers" {
 
   vapp {
     properties = {
-      hostname    = "${var.k8s.worker_basename}-${var.unmanaged_k8s_workers_count[count.index]}"
+      hostname    = "${var.k8s.worker_basename}-${var.unmanaged_k8s.workers_count[count.index]}"
       public-keys = file("/home/ubuntu/.ssh/id_rsa.pub")
       user-data   = base64encode(data.template_file.k8s_workers_userdata[count.index].rendered)
     }
   }
 
   connection {
-    host        = var.unmanaged_k8s_workers_ips[count.index]
+    host        = var.unmanaged_k8s.workers_ips[count.index]
     type        = "ssh"
     agent       = false
     user        = var.k8s.username
@@ -77,33 +77,33 @@ resource "vsphere_virtual_machine" "workers" {
 resource "null_resource" "clear_ssh_keys_workers" {
 
   depends_on = [vsphere_virtual_machine.workers]
-  count = length(var.unmanaged_k8s_workers_ips)
+  count = length(var.unmanaged_k8s.workers_ips)
 
   provisioner "local-exec" {
-    command = "ssh-keygen -f \"/home/${var.k8s.username}/.ssh/known_hosts\" -R \"${var.unmanaged_k8s_workers_ips[count.index]}\" || true"
+    command = "ssh-keygen -f \"/home/${var.k8s.username}/.ssh/known_hosts\" -R \"${var.unmanaged_k8s.workers_ips[count.index]}\" || true"
   }
 }
 
 data "template_file" "k8s_bootstrap_workers" {
   template = file("${path.module}/templates/k8s_bootstrap_workers.template")
-  count = length(var.unmanaged_k8s_workers_ips)
+  count = length(var.unmanaged_k8s.workers_ips)
   vars = {
     net_plan_file = var.k8s.netplan_file
-    K8s_version = var.unmanaged_k8s_workers_version[count.index]
+    K8s_version = var.unmanaged_k8s.workers_version[count.index]
     Docker_version = var.k8s.docker_version
     docker_registry_username = var.docker_registry_username
     docker_registry_password = var.docker_registry_password
-    cni_name = var.unmanaged_k8s_workers_cni[count.index]
-    cni_version = var.unmanaged_k8s_workers_cni_version[count.index]
+    cni_name = var.unmanaged_k8s.workers_cni[count.index]
+    cni_version = var.unmanaged_k8s.workers_cni_version[count.index]
   }
 }
 
 resource "null_resource" "k8s_bootstrap_workers" {
-  count = length(var.unmanaged_k8s_workers_ips)
+  count = length(var.unmanaged_k8s.workers_ips)
   depends_on = [vsphere_virtual_machine.workers]
 
   connection {
-    host = var.unmanaged_k8s_workers_ips[count.index]
+    host = var.unmanaged_k8s.workers_ips[count.index]
     type = "ssh"
     agent = false
     user = "ubuntu"
@@ -122,19 +122,19 @@ resource "null_resource" "k8s_bootstrap_workers" {
 }
 
 resource "null_resource" "copy_join_command_to_workers" {
-  count = length(var.unmanaged_k8s_workers_ips)
+  count = length(var.unmanaged_k8s.workers_ips)
   depends_on = [null_resource.copy_join_command_to_tf, null_resource.k8s_bootstrap_workers]
 
   provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no join-command-${var.unmanaged_k8s_workers_associated_master_ips[count.index]} ubuntu@${var.unmanaged_k8s_workers_ips[count.index]}:/home/ubuntu/join-command"
+    command = "scp -o StrictHostKeyChecking=no join-command-${var.unmanaged_k8s.workers_associated_master_ips[count.index]} ubuntu@${var.unmanaged_k8s.workers_ips[count.index]}:/home/ubuntu/join-command"
   }
 }
 
 resource "null_resource" "join_cluster" {
   depends_on = [null_resource.copy_join_command_to_workers]
-  count = length(var.unmanaged_k8s_workers_ips)
+  count = length(var.unmanaged_k8s.workers_ips)
   connection {
-    host        = var.unmanaged_k8s_workers_ips[count.index]
+    host        = var.unmanaged_k8s.workers_ips[count.index]
     type        = "ssh"
     agent       = false
     user = "ubuntu"
