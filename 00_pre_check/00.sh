@@ -101,7 +101,7 @@ variables_json=$(echo $variables_json | jq '.vsphere_nested += {"count_cluster":
 cluster_list="[]"
 for cluster in $(seq 1 ${count_cluster})
 do
-  cluster_list=$(echo $cluster_list | jq  '. += ["'$(jq -c -r .vsphere_nested.cluster_basename $jsonFile)-${cluster}'"]')
+  cluster_list=$(echo $cluster_list | jq  '. += ["'$(jq -c -r .vsphere_nested.cluster_basename $jsonFile)${cluster}'"]')
 done
 echo "   +++ Adding a .vsphere_nested.cluster_list"
 variables_json=$(echo $variables_json | jq '.vsphere_nested += {"cluster_list": '$(echo $cluster_list)'}')

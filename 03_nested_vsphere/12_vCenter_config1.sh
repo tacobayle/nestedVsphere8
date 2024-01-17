@@ -85,7 +85,7 @@ sleep 5
 #
 echo "++++++++++++++++++++++++++++++++"
 echo "Update vCenter Appliance port group location"
-load_govc_env_with_cluster "$(jq -r .vsphere_nested.cluster_basename $jsonFile)-1"
+load_govc_env_with_cluster "$(jq -r .vsphere_nested.cluster_list[0] $jsonFile)"
 govc vm.network.change -vm $(jq -r .vsphere_nested.vcsa_name $jsonFile) -net $(jq -r .networks.vsphere.management.port_group_name $jsonFile) ethernet-0 &
 govc_pid=$(echo $!)
 echo "Waiting 5 secs to check if vCenter VM is UP"

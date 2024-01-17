@@ -65,7 +65,7 @@ if [[ $(jq -c -r .vsphere_nested.public_ntp $jsonFile) == true ]] ; then
                   .new_vcsa.esxi.username = "root" |
                   .new_vcsa.esxi.password = "'$TF_VAR_nested_esxi_root_password'" |
                   .new_vcsa.esxi.VCSA_cluster.datacenter = "'$(jq -r .vsphere_nested.datacenter $jsonFile)'" |
-                  .new_vcsa.esxi.VCSA_cluster.cluster = "'$(jq -r .vsphere_nested.cluster_basename $jsonFile)'-1" |
+                  .new_vcsa.esxi.VCSA_cluster.cluster = "'$(jq -r .vsphere_nested.cluster_list[0] $jsonFile)'" |
                   .new_vcsa.esxi.VCSA_cluster.disks_for_vsan.cache_disk[0] = "'$(jq -r .cache_disk $jsonFile)'" |
                   .new_vcsa.esxi.VCSA_cluster.disks_for_vsan.capacity_disk[0] = "'$(jq -r .capacity_disk $jsonFile)'" |
                   .new_vcsa.esxi.VCSA_cluster.enable_vsan_esa = '$(jq -r .enable_vsan_esa $jsonFile)' |
