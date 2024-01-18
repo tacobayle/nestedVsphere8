@@ -107,7 +107,7 @@ do
   if [[ ${count_datastore} -eq 0 ]] ; then
     datastore_list=$(echo $datastore_list | jq  '. += ["vsanDatastore"]')
   else
-    datastore_list=$(echo $datastore_list | jq  '. += ["vsanDatastore ('$(count_datastore)')"]')
+    datastore_list=$(echo $datastore_list | jq  '. += ["vsanDatastore ('${count_datastore}')"]')
   fi
   ((count_datastore++))
 done
