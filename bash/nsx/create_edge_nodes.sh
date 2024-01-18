@@ -52,14 +52,30 @@ do
     data_network_ids=$(echo $data_network_ids | jq '. += ["'$data_network_id'"]')
   fi
 done
-vcenter_api 6 10 "GET" $token "" $api_host "api/vcenter/resource-pool"
-vcenter_resource_pools=$(echo $response_body)
-for item in $(echo $vcenter_resource_pools| jq -c -r .[])
+#
+# select the first cluster to place the edge node
+#
+vcenter_api 6 10 "GET" $token "" $api_host "api/vcenter/cluster"
+vcenter_clusters=$(echo $response_body)
+#
+# [{"drs_enabled":true,"cluster":"domain-c17","name":"cluster-2","ha_enabled":true},{"drs_enabled":true,"cluster":"domain-c8","name":"cluster-1","ha_enabled":true}]
+#
+for cluster in $(echo $vcenter_clusters | jq -c -r .[])
 do
-  if [[ $(echo $item | jq -r .name) == "Resources" ]] ; then
-    compute_id=$(echo $item | jq -r .resource_pool)
+  if [[ $(echo $cluster | jq -r -c .name) == $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile) ]] ; then
+    vcenter_api 6 10 "GET" $token "" $api_host "api/vcenter/cluster/$(echo $cluster | jq -r -c .cluster)"
+    # {"name":"cluster-2","resource_pool":"resgroup-18"}
+    compute_id=$(echo $response_body | jq -r .resource_pool)
   fi
 done
+#vcenter_api 6 10 "GET" $token "" $api_host "api/vcenter/resource-pool"
+#vcenter_resource_pools=$(echo $response_body)
+#for item in $(echo $vcenter_resource_pools| jq -c -r .[])
+#do
+#  if [[ $(echo $item | jq -r .name) == "Resources" ]] ; then
+#    compute_id=$(echo $item | jq -r .resource_pool)
+#  fi
+#done
 edge_ids="[]"
 for edge_index in $(seq 1 $(jq -r '.vsphere_underlay.networks.vsphere.management.nsx_edge_nested_ips | length' $jsonFile ))
 do
