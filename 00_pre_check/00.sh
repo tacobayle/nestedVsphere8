@@ -99,12 +99,22 @@ cluster_esxi_count=$(jq -r .vsphere_nested.cluster_esxi_count $jsonFile)
 count_cluster=$(($(jq -r '.vsphere_underlay.networks.vsphere.management.esxi_ips | length' $jsonFile)/${cluster_esxi_count}))
 variables_json=$(echo $variables_json | jq '.vsphere_nested += {"count_cluster": '$(echo $count_cluster)'}')
 cluster_list="[]"
+datastore_list="[]"
+count_datastore=0
 for cluster in $(seq 1 ${count_cluster})
 do
   cluster_list=$(echo $cluster_list | jq  '. += ["'$(jq -c -r .vsphere_nested.cluster_basename $jsonFile)${cluster}'"]')
+  if [[ ${count_datastore} -eq 0 ]] ; then
+    datastore_list=$(echo $datastore_list | jq  '. += ["vsanDatastore"]')
+  else
+    datastore_list=$(echo $datastore_list | jq  '. += ["vsanDatastore ('$(count_datastore)')"]')
+  fi
+  ((count_datastore++))
 done
 echo "   +++ Adding a .vsphere_nested.cluster_list"
 variables_json=$(echo $variables_json | jq '.vsphere_nested += {"cluster_list": '$(echo $cluster_list)'}')
+echo "   +++ Adding a .vsphere_nested.datastore_list"
+variables_json=$(echo $variables_json | jq '.vsphere_nested += {"datastore_list": '$(echo $datastore_list)'}')
 test_if_json_variable_is_defined .vsphere_nested.sso.domain_name $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_nested.timezone $jsonFile "   "
 test_if_json_variable_is_defined .vsphere_nested.esxi.iso_url $jsonFile "   "

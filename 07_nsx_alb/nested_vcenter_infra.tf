@@ -3,12 +3,12 @@ data "vsphere_datacenter" "dc_nested" {
 }
 
 data "vsphere_compute_cluster" "compute_cluster_nested" {
-  name          = var.avi.cluster
+  name          = var.avi.cluster_ref
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 
 data "vsphere_datastore" "datastore_nested" {
-  name = "vsanDatastore"
+  name = var.avi.datastore_ref
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 

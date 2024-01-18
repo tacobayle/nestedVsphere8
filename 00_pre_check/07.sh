@@ -26,9 +26,12 @@ avi_json=$(echo $avi_json | jq '.external_gw += {"alb_controller_name": "'$(echo
 #
 if $(jq -e '.avi | has("cluster_ref")' $jsonFile) ; then
   echo "   +++ Avi will be installed on the top of cluster $(jq -c -r '.avi.cluster_ref' $jsonFile)"
+  vsan_datastore_index=$(jq -c -r --arg arg "$(jq -c -r '.avi.cluster_ref' $jsonFile)" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
+  avi_json=$(echo $avi_json | jq '.avi += {"datastore_ref": "'$(jq -c -r '.vsphere_nested.datastore_list['${vsan_datastore_index}']' $jsonFile)'"}')
 else
   echo "   +++ Adding .avi.cluster_ref..."
   avi_json=$(echo $avi_json | jq '.avi += {"cluster_ref": "'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"}')
+  avi_json=$(echo $avi_json | jq '.avi += {"datastore_ref": "vsanDatastore"}')
 fi
 #
 echo "   +++ seg_folder_basename"

@@ -8,7 +8,7 @@ data "vsphere_compute_cluster" "compute_cluster_nested" {
 }
 
 data "vsphere_datastore" "datastore_nested" {
-  name = "vsanDatastore"
+  name = var.vsphere_nested.datastore_list[0]
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 

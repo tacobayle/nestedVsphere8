@@ -20,9 +20,12 @@ nsx_json=$(echo $nsx_json | jq '. += {"nsx_ova_path": "'$(echo $nsx_ova_path)'"}
 #
 if $(jq -e '.nsx | has("cluster_ref")' $jsonFile) ; then
   echo "   +++ NSX will be installed on the top of cluster $(jq -c -r '.nsx.cluster_ref' $jsonFile)"
+  vsan_datastore_index=$(jq -c -r --arg arg "$(jq -c -r '.nsx.cluster_ref' $jsonFile)" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
+  nsx_json=$(echo $nsx_json | jq '.nsx += {"datastore_ref": "'$(jq -c -r '.vsphere_nested.datastore_list['${vsan_datastore_index}']' $jsonFile)'"}')
 else
   echo "   +++ Adding .nsx.cluster_ref..."
   nsx_json=$(echo $nsx_json | jq '.nsx += {"cluster_ref": "'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"}')
+  nsx_json=$(echo $nsx_json | jq '.nsx += {"datastore_ref": "vsanDatastore"}')
 fi
 #
 echo "   +++ Adding dhcp_servers_api_endpoint..."
