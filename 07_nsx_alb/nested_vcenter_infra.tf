@@ -12,7 +12,6 @@ data "vsphere_resource_pool" "resource_pool_nested" {
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 
-
 data "vsphere_network" "vcenter_network_mgmt_nested" {
   name = var.avi_port_group
   datacenter_id = data.vsphere_datacenter.dc_nested.id
