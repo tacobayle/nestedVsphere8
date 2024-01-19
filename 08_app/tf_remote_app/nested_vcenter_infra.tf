@@ -2,11 +2,6 @@ data "vsphere_datacenter" "dc_nested" {
   name = var.vsphere_nested.datacenter
 }
 
-data "vsphere_compute_cluster" "compute_cluster_nested" {
-  name          = var.vsphere_nested.cluster_list[0]
-  datacenter_id = data.vsphere_datacenter.dc_nested.id
-}
-
 data "vsphere_datastore" "datastore_nested" {
   name = var.vsphere_nested.datastore_list[0]
   datacenter_id = data.vsphere_datacenter.dc_nested.id
