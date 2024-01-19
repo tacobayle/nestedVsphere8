@@ -25,6 +25,7 @@ unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '. += {"ubu
 unmanaged_k8s_clusters_nodes=[]
 unmanaged_k8s_masters_ips=[]
 unmanaged_k8s_masters_vsphere_cluster=[]
+unmanaged_k8s_masters_vsphere_datastore=[]
 unmanaged_k8s_masters_segments=[]
 unmanaged_k8s_masters_cidr=[]
 unmanaged_k8s_masters_gw=[]
@@ -40,6 +41,7 @@ unmanaged_k8s_workers_count=[]
 unmanaged_k8s_workers_associated_master_ips=[]
 unmanaged_k8s_workers_ips=[]
 unmanaged_k8s_workers_vsphere_cluster=[]
+unmanaged_k8s_workers_vsphere_datastore=[]
 unmanaged_k8s_workers_segments=[]
 unmanaged_k8s_workers_cidr=[]
 unmanaged_k8s_workers_gw=[]
@@ -67,9 +69,12 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
         if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
           echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / master node will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
           unmanaged_k8s_masters_vsphere_cluster=$(echo $unmanaged_k8s_masters_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
+          vsan_datastore_index=$(jq -c -r --arg arg "$(echo $cluster | jq -c -r '.cluster_ref')" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
+          unmanaged_k8s_masters_vsphere_datastore=$(echo $unmanaged_k8s_masters_vsphere_datastore | jq '. += ["'$(jq -c -r '.vsphere_nested.datastore_list['${vsan_datastore_index}']' $jsonFile)'"]')
         else
           echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / master node will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
           unmanaged_k8s_masters_vsphere_cluster=$(echo $unmanaged_k8s_masters_vsphere_cluster | jq '. += ["'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"]')
+          unmanaged_k8s_masters_vsphere_datastore=$(echo $unmanaged_k8s_masters_vsphere_datastore | jq '. += ["vsanDatastore"]')
         fi
         unmanaged_k8s_masters_cni=$(echo $unmanaged_k8s_masters_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
         unmanaged_k8s_masters_cni_version=$(echo $unmanaged_k8s_masters_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version)'"]')
@@ -96,10 +101,13 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
           unmanaged_k8s_workers_version=$(echo $unmanaged_k8s_workers_version | jq '. += ["'$(echo $cluster | jq -c -r .k8s_version)'"]')
           if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
             echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / worker ${count} node will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
+            vsan_datastore_index=$(jq -c -r --arg arg "$(echo $cluster | jq -c -r '.cluster_ref')" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
+            unmanaged_k8s_workers_vsphere_datastore=$(echo $unmanaged_k8s_masters_vsphere_datastore | jq '. += ["'$(jq -c -r '.vsphere_nested.datastore_list['${vsan_datastore_index}']' $jsonFile)'"]')
             unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
           else
             echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / worker ${count} will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
             unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"]')
+            unmanaged_k8s_workers_vsphere_datastore=$(echo $unmanaged_k8s_masters_vsphere_datastore | jq '. += ["vsanDatastore"]')
           fi
           unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
           unmanaged_k8s_workers_cni=$(echo $unmanaged_k8s_workers_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
@@ -130,9 +138,12 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
         if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
           echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / master node will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
           unmanaged_k8s_masters_vsphere_cluster=$(echo $unmanaged_k8s_masters_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
+          vsan_datastore_index=$(jq -c -r --arg arg "$(echo $cluster | jq -c -r '.cluster_ref')" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
+          unmanaged_k8s_masters_vsphere_datastore=$(echo $unmanaged_k8s_masters_vsphere_datastore | jq '. += ["'$(jq -c -r '.vsphere_nested.datastore_list['${vsan_datastore_index}']' $jsonFile)'"]')
         else
           echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / master node will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
           unmanaged_k8s_masters_vsphere_cluster=$(echo $unmanaged_k8s_masters_vsphere_cluster | jq '. += ["'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"]')
+          unmanaged_k8s_masters_vsphere_datastore=$(echo $unmanaged_k8s_masters_vsphere_datastore | jq '. += ["vsanDatastore"]')
         fi
         unmanaged_k8s_masters_cni=$(echo $unmanaged_k8s_masters_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
         unmanaged_k8s_masters_cni_version=$(echo $unmanaged_k8s_masters_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version)'"]')
@@ -160,9 +171,12 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
           if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
             echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / worker ${count} will be installed on the top of vSphere cluster $(echo $cluster | jq -c -r  '.cluster_ref')"
             unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
+            vsan_datastore_index=$(jq -c -r --arg arg "$(echo $cluster | jq -c -r '.cluster_ref')" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
+            unmanaged_k8s_workers_vsphere_datastore=$(echo $unmanaged_k8s_masters_vsphere_datastore | jq '. += ["'$(jq -c -r '.vsphere_nested.datastore_list['${vsan_datastore_index}']' $jsonFile)'"]')
           else
             echo "   +++ Unmanaged K8s Cluster called $(echo $cluster | jq -c -r .cluster_name) / worker ${count} will be installed on the top of vSphere cluster $(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)"
             unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"]')
+            unmanaged_k8s_workers_vsphere_datastore=$(echo $unmanaged_k8s_masters_vsphere_datastore | jq '. += ["vsanDatastore"]')
           fi
           unmanaged_k8s_workers_cni=$(echo $unmanaged_k8s_workers_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
           unmanaged_k8s_workers_cni_version=$(echo $unmanaged_k8s_workers_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version)'"]')
@@ -190,6 +204,8 @@ echo "   +++ Adding unmanaged_k8s.masters_gw..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.unmanaged_k8s += {"masters_gw": '$(echo $unmanaged_k8s_masters_gw)'}')
 echo "   +++ Adding unmanaged_k8s.masters_vsphere_cluster..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.unmanaged_k8s += {"masters_vsphere_cluster": '$(echo $unmanaged_k8s_masters_vsphere_cluster)'}')
+echo "   +++ Adding unmanaged_k8s.masters_vsphere_datastore..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.unmanaged_k8s += {"masters_vsphere_datastore": '$(echo $unmanaged_k8s_masters_vsphere_datastore)'}')
 echo "   +++ Adding unmanaged_k8s.masters_version..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.unmanaged_k8s += {"masters_version": '$(echo $unmanaged_k8s_masters_version)'}')
 echo "   +++ Adding unmanaged_k8s.masters_cni..."
@@ -219,6 +235,8 @@ echo "   +++ Adding unmanaged_k8s.workers_cluster_name..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.unmanaged_k8s += {"workers_cluster_name": '$(echo $unmanaged_k8s_workers_cluster_name)'}')
 echo "   +++ Adding unmanaged_k8s.workers_vsphere_cluster..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.unmanaged_k8s += {"workers_vsphere_cluster": '$(echo $unmanaged_k8s_workers_vsphere_cluster)'}')
+echo "   +++ Adding unmanaged_k8s.workers_vsphere_datastore..."
+unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.unmanaged_k8s += {"workers_vsphere_datastore": '$(echo $unmanaged_k8s_workers_vsphere_datastore)'}')
 echo "   +++ Adding unmanaged_k8s.workers_version..."
 unmanaged_k8s_clusters_json=$(echo $unmanaged_k8s_clusters_json | jq '.unmanaged_k8s += {"workers_version": '$(echo $unmanaged_k8s_workers_version)'}')
 echo "   +++ Adding unmanaged_k8s.masters_version..."

@@ -2,36 +2,46 @@
 #
 source /nestedVsphere8/bash/nsx/nsx_api.sh
 #
-jsonFile="/root/nsx.json"
+IFS=$'\n'
 #
-nsx_nested_ip=$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)
-vcenter_username=administrator
-vcenter_domain=$(jq -r .vsphere_nested.sso.domain_name $jsonFile)
-vcenter_fqdn="$(jq -r .vsphere_nested.vcsa_name $jsonFile).$(jq -r .external_gw.bind.domain $jsonFile)"
-cookies_file="create_host_transport_nodes_cookies.txt"
-headers_file="create_host_transport_nodes_headers.txt"
-rm -f $cookies_file $headers_file
+nsx_nested_ip="${1}"
+nsx_password="${2}"
+vsphere_nested_cluster="${3}"
+transport_node_profile="${4}"
+cookies_file="/root/nsx_$(basename $0 | cut -d"." -f1)_cookie.txt"
+headers_file="/root/nsx_$(basename $0 | cut -d"." -f1)_header.txt"
+rm -f ${cookies_file} ${headers_file}
 #
-/bin/bash /nestedVsphere8/bash/nsx/create_nsx_api_session.sh admin $TF_VAR_nsx_password $nsx_nested_ip $cookies_file $headers_file
+/bin/bash /nestedVsphere8/bash/nsx/create_nsx_api_session.sh admin $nsx_password $nsx_nested_ip $cookies_file $headers_file
 nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/fabric/compute-collections"
 compute_collections=$(echo $response_body)
-IFS=$'\n'
+#
 for item in $(echo $compute_collections | jq -c -r .results[])
 do
-  if [[ $(echo $item | jq -r .display_name) == $(jq -r .vsphere_nested.cluster $jsonFile) ]] ; then
+  if [[ $(echo $item | jq -r .display_name) == ${vsphere_nested_cluster} ]] ; then
     compute_collection_external_id=$(echo $item | jq -r .external_id)
   fi
 done
+#
 nsx_api 2 2 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/infra/host-transport-node-profiles"
 transport_node_profiles=$(echo $response_body)
-IFS=$'\n'
 for item in $(echo $transport_node_profiles | jq -c -r .results[])
 do
-  if [[ $(echo $item | jq -r .display_name) == $(jq -r .nsx.config.transport_node_profiles[0].name $jsonFile) ]] ; then
+  if [[ $(echo $item | jq -r .display_name) == ${transport_node_profile} ]] ; then
     transport_node_profile_id=$(echo $item | jq -r .id)
   fi
 done
-nsx_api 2 2 "POST" $cookies_file $headers_file '{"resource_type": "TransportNodeCollection", "display_name": "TransportNodeCollection-1", "description": "Transport Node Collections 1", "compute_collection_id": "'$compute_collection_external_id'", "transport_node_profile_id": "'$transport_node_profile_id'"}' $nsx_nested_ip "api/v1/transport-node-collections"
+#
+json_data='
+{
+  "resource_type": "TransportNodeCollection",
+  "display_name": "TransportNodeCollection-1",
+  "description": "Transport Node Collections 1",
+  "compute_collection_id": "'$compute_collection_external_id'",
+  "transport_node_profile_id": "'$transport_node_profile_id'"
+}'
+#
+nsx_api 2 2 "POST" $cookies_file $headers_file "${json_data}" $nsx_nested_ip "api/v1/transport-node-collections"
 #
 # waiting for host transport node to be ready
 #
@@ -39,7 +49,7 @@ sleep 60
 nsx_api 10 60 "GET" $cookies_file $headers_file "" $nsx_nested_ip "api/v1/infra/sites/default/enforcement-points/default/host-transport-nodes"
 discovered_nodes=$(echo $response_body)
 retry_1=60 ; pause_1=30 ; attempt_1=0
-IFS=$'\n'
+#
 for item in $(echo $discovered_nodes | jq -c -r .results[])
 do
   echo "Waiting for host transport nodes to be ready, attempt: $retry_1"
@@ -62,4 +72,4 @@ do
     ((attempt_1++))
   done
 done
-rm -f $cookies_file $headers_file
+#

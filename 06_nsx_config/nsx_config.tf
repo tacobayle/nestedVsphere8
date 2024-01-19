@@ -90,8 +90,9 @@ resource "null_resource" "update_exclusion_list" {
 
 resource "null_resource" "create_host_transport_nodes" {
   depends_on = [null_resource.create_transport_node_profiles]
+  count = length(var.vsphere_nested.cluster_list)
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/nsx/create_host_transport_nodes.sh"
+    command = "/bin/bash /nestedVsphere8/bash/nsx/create_host_transport_nodes.sh '${var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip}' '${var.nsx_password}' '${var.vsphere_nested.cluster_list[count.index]}' '${var.nsx.config.transport_node_profiles[0].name}'"
   }
 }
 

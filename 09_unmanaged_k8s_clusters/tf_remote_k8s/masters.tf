@@ -17,7 +17,7 @@ data "template_file" "k8s_masters_userdata" {
 resource "vsphere_virtual_machine" "masters" {
   count = length(var.unmanaged_k8s.masters_ips)
   name             = "${var.unmanaged_k8s.masters_cluster_name[count.index]}-${var.k8s.master_basename}-1"
-  datastore_id     = data.vsphere_datastore.datastore_nested.id
+  datastore_id     = data.vsphere_datastore.datastore_nested_masters[count.index].id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested_masters[count.index].id
   folder           = vsphere_folder.k8s[count.index].path
 

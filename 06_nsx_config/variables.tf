@@ -11,3 +11,4 @@ variable "nsx" {}
 variable "nsx_password" {}
 #variable "nsx_license" {}
 variable "deployment" {}
+variable "vsphere_nested" {}

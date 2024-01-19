@@ -24,7 +24,7 @@ data "template_file" "k8s_workers_userdata" {
 resource "vsphere_virtual_machine" "workers" {
   count = length(var.unmanaged_k8s.workers_ips)
   name             = "${var.unmanaged_k8s.workers_cluster_name[count.index]}-${var.k8s.worker_basename}-${var.unmanaged_k8s.workers_count[count.index]}"
-  datastore_id     = data.vsphere_datastore.datastore_nested.id
+  datastore_id     = data.vsphere_datastore.datastore_nested_workers[count.index].id
   resource_pool_id = data.vsphere_resource_pool.resource_pool_nested_workers[count.index].id
   folder           = data.vsphere_folder.k8s_workers_folders[count.index].path
 
