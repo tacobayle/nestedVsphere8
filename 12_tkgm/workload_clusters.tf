@@ -11,6 +11,7 @@ data "template_file" "workload" {
     datacenter = var.vsphere_nested.datacenter
     vcenter_folder = var.tkg.clusters.workloads[count.index].name
     cluster = var.tkg.clusters.workloads[count.index].cluster_ref
+    datastore = var.tkg.clusters.workloads[count.index].datastore_ref
     vcenter_resource_pool = var.tkg.clusters.workloads[count.index].name
     vcenter_password_base64 = base64encode(var.vsphere_nested_password)
     vsphere_network = var.tkg.clusters.workloads[count.index].vsphere_network

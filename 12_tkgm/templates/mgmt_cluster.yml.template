@@ -11,7 +11,7 @@ VSPHERE_USERNAME: ${vsphere_username}
 VSPHERE_PASSWORD: <encoded:${vcenter_password_base64}>
 VSPHERE_DATACENTER: /${datacenter}
 VSPHERE_RESOURCE_POOL: /${datacenter}/host/${cluster}/Resources/${vcenter_resource_pool}
-VSPHERE_DATASTORE: /${datacenter}/datastore/vsanDatastore
+VSPHERE_DATASTORE: /${datacenter}/datastore/${datastore}
 VSPHERE_FOLDER: /${datacenter}/vm/${vcenter_folder}
 VSPHERE_NETWORK: /${datacenter}/network/${vsphere_network}
 VSPHERE_TLS_THUMBPRINT: ${vsphere_tls_thumbprint}

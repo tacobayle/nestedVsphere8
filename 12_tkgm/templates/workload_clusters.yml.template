@@ -22,7 +22,7 @@ VSPHERE_CONTROL_PLANE_MEM_MIB: ${control_plane_memory}
 VSPHERE_CONTROL_PLANE_NUM_CPUS: ${control_plane_cpu}
 VSPHERE_CONTROL_PLANE_PCI_DEVICES: ""
 VSPHERE_DATACENTER: /${datacenter}
-VSPHERE_DATASTORE: /${datacenter}/datastore/vsanDatastore
+VSPHERE_DATASTORE: /${datacenter}/datastore/${datastore}
 VSPHERE_FOLDER: /${datacenter}/vm/${vcenter_folder}
 VSPHERE_IGNORE_PCI_DEVICES_ALLOW_LIST: ""
 #VSPHERE_INSECURE: "true"

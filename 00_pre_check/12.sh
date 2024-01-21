@@ -51,9 +51,12 @@ do
   cluster=$(echo $cluster | jq '. += {"ako_service_engine_group_ref": "'$(echo $cluster | jq -c -r .name)'"}')
   if $(echo $cluster | jq -e '. | has("cluster_ref")') ; then
     echo "   +++ TKG Workload will be installed on the top of cluster $(echo $cluster | jq -c -r '.cluster_ref')"
+  vsan_datastore_index=$(jq -c -r --arg arg "$(echo $cluster | jq -c -r '.cluster_ref')" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
+  cluster=$(echo $cluster | jq '. += {"datastore_ref": "'$(jq -c -r '.vsphere_nested.datastore_list['${vsan_datastore_index}']' $jsonFile)'"}')
   else
     echo "   +++ add cluster_ref in workload cluster called $(echo $cluster | jq -c -r .name)"
     cluster=$(echo $cluster | jq '. += {"cluster_ref": "'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"}')
+    cluster=$(echo $cluster | jq '. += {"datastore_ref": "'$(jq -c -r '.vsphere_nested.datastore_list[0]' $jsonFile)'"}')
   fi
   workload_clusters_list=$(echo $workload_clusters_list | jq '. += ['$(echo $cluster | jq -c -r .)']')
 done
