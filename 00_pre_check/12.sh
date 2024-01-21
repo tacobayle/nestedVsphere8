@@ -20,9 +20,12 @@ tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"avi_cloud_name":
 #
 if $(jq -e '.tkg.clusters.management | has("cluster_ref")' $jsonFile) ; then
   echo "   +++ TKG will be installed on the top of cluster $(jq -c -r '.tkg.clusters.management.cluster_ref' $jsonFile)"
+  vsan_datastore_index=$(jq -c -r --arg arg "$(jq -c -r '.tkg.clusters.management.cluster_ref' $jsonFile)" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
+  tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"datastore_ref": "'$(jq -c -r '.vsphere_nested.datastore_list['${vsan_datastore_index}']' $jsonFile)'"}')
 else
   echo "   +++ Adding .tkg.clusters.management.cluster_ref..."
   tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"cluster_ref": "'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"}')
+  tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"datastore_ref": "'$(jq -c -r '.vsphere_nested.datastore_list[0]' $jsonFile)'"}')
 fi
 #
 echo "   +++ Adding public_key_path on tkg.clusters.management"

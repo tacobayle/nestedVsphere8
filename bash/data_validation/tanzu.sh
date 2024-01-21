@@ -15,6 +15,14 @@ test_variables_if_tanzu () {
             echo "   +++ https://developer.vmware.com/apis/vsphere-automation/latest/vcenter/data-structures/NamespaceManagement/SizingHint/"
             exit 255
     fi
+    if $(jq -e '.tanzu.supervisor_cluster | has("cluster_ref")' ${1}) ; then
+      if $(echo $variables_json | jq -e -c -r --arg arg "$(jq -c -r '.tanzu.supervisor_cluster.cluster_ref')" '.vsphere_nested.cluster_list[] | select( . == $arg )'> /dev/null) ; then
+        echo "   +++ .tanzu.supervisor_cluster found"
+      else
+        echo "   +++ ERROR .tanzu.supervisor_cluster not found in .vsphere_nested.cluster_list[]"
+        exit 255
+      fi
+    fi
     test_if_variable_is_valid_cidr "$(jq -c -r '.tanzu.supervisor_cluster.service_cidr' ${1})" "   "
     # use case nsx
     if [[ ${2} == "nsx" ]] ; then

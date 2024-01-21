@@ -31,7 +31,7 @@ if $(jq -e '.avi | has("cluster_ref")' $jsonFile) ; then
 else
   echo "   +++ Adding .avi.cluster_ref..."
   avi_json=$(echo $avi_json | jq '.avi += {"cluster_ref": "'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"}')
-  avi_json=$(echo $avi_json | jq '.avi += {"datastore_ref": "vsanDatastore"}')
+  avi_json=$(echo $avi_json | jq '.avi += {"datastore_ref": "'$(jq -c -r '.vsphere_nested.datastore_list[0]' $jsonFile)'"}')
 fi
 #
 echo "   +++ seg_folder_basename"

@@ -40,7 +40,8 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
     "$(jq -c -r .tanzu_local.content_library.automatic_sync_enabled $jsonFile)" \
     "$(jq -c -r .tanzu_local.content_library.on_demand $jsonFile)" \
     "$(jq -c -r .tanzu_local.content_library.name $jsonFile)" \
-    "${create_subscribed_content_library_json_output}"
+    "$(jq -c -r .tanzu.supervisor_cluster.datastore_ref $jsonFile)" \
+    "${create_subscribed_content_library_json_output}" \
   content_library_id=$(jq -c -r .content_library_id ${create_subscribed_content_library_json_output})
   #
   # Retrieve cluster id
@@ -50,7 +51,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
     "${vcsa_fqdn}" \
     "${vcsa_sso_domain}" \
     "${TF_VAR_vsphere_nested_password}" \
-    "$(jq -c -r .vsphere_nested.cluster $jsonFile)" \
+    "$(jq -c -r .tanzu.supervisor_cluster.cluster_ref $jsonFile)" \
     "${retrieve_cluster_id_json_output}"
   cluster_id=$(jq -c -r .cluster_id ${retrieve_cluster_id_json_output})
   #

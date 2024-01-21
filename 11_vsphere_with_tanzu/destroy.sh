@@ -28,7 +28,7 @@ done
 # Supervisor cluster Deletion
 #
 vcenter_api 6 10 "GET" $token '' $api_host "api/vcenter/cluster"
-cluster_id=$(echo $response_body | jq -r --arg cluster "$(jq -c -r .vsphere_nested.cluster $jsonFile)" '.[] | select(.name == $cluster).cluster')
+cluster_id=$(echo $response_body | jq -r --arg cluster "$(jq -c -r .tanzu.supervisor_cluster.cluster_ref $jsonFile)" '.[] | select(.name == $cluster).cluster')
 #echo $cluster_id
 echo "   +++ testing if variable cluster_id is not empty" ; if [ -z "$cluster_id" ] ; then exit 255 ; fi
 #

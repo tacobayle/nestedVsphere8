@@ -3,7 +3,7 @@ data "vsphere_datacenter" "dc_nested" {
 }
 
 data "vsphere_datastore" "datastore_nested" {
-  name = "vsanDatastore"
+  name = var.avi.datastore_ref
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 
