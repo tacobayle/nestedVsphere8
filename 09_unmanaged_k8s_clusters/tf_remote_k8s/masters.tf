@@ -238,7 +238,7 @@ resource "null_resource" "ako_config_locally_wo_nsx" {
   count = var.deployment == "vsphere_alb_wo_nsx" || var.deployment == "vsphere_tanzu_alb_wo_nsx" ? length(var.unmanaged_k8s.masters_cluster_name) : 0
 
   provisioner "local-exec" {
-    command = "cat > /home/ubuntu/unmanaged_k8s.clusters/ako-values-${var.unmanaged_k8s.masters_cluster_name[count.index]}.yml <<EOL\n${data.template_file.values_ako_wo_nsx[count.index].rendered}\nEOL"
+    command = "cat > /home/ubuntu/unmanaged_k8s_clusters/ako-values-${var.unmanaged_k8s.masters_cluster_name[count.index]}.yml <<EOL\n${data.template_file.values_ako_wo_nsx[count.index].rendered}\nEOL"
   }
 }
 
@@ -247,7 +247,7 @@ resource "null_resource" "ako_config_locally_nsx" {
   count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? length(var.unmanaged_k8s.masters_cluster_name) : 0
 
   provisioner "local-exec" {
-    command = "cat > /home/ubuntu/unmanaged_k8s.clusters/ako-values-${var.unmanaged_k8s.masters_cluster_name[count.index]}.yml <<EOL\n${data.template_file.values_ako_nsx[count.index].rendered}\nEOL"
+    command = "cat > /home/ubuntu/unmanaged_k8s_clusters/ako-values-${var.unmanaged_k8s.masters_cluster_name[count.index]}.yml <<EOL\n${data.template_file.values_ako_nsx[count.index].rendered}\nEOL"
   }
 }
 

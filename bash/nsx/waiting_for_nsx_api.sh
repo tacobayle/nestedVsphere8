@@ -27,3 +27,6 @@ while [[ "$(curl -u admin:$TF_VAR_nsx_password -k -s  https://$nsx_nested_ip/api
     break
   fi
 done
+#
+# https://docs.vmware.com/en/VMware-NSX/4.1/administration/GUID-4ABD4548-4442-405D-AF04-6991C2022137.html
+#
