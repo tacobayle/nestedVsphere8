@@ -2,6 +2,11 @@ data "vsphere_datacenter" "dc_nested" {
   name = var.vsphere_nested.datacenter
 }
 
+data "vsphere_datastore" "datastore_nested" {
+  name = var.vsphere_nested.datastore_list[0]
+  datacenter_id = data.vsphere_datacenter.dc_nested.id
+}
+
 data "vsphere_datastore" "datastore_nested_masters" {
   count = length(var.unmanaged_k8s.masters_vsphere_datastore)
   name = var.unmanaged_k8s.masters_vsphere_datastore[count.index]
