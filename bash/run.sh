@@ -2,7 +2,7 @@
 ## destroy
 d=vsphere
 kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh
-kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0
+kubectl delete -f cm-${d}.yml ; kubectl delete -f secrets-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0
 ## create (tested)
 d=vsphere ; kubectl apply -f cm-${d}.yml ; kubectl apply -f secrets-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
 
