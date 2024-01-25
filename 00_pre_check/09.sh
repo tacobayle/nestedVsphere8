@@ -109,7 +109,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
             unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(jq -c -r '.vsphere_nested.cluster_list[0]' $jsonFile)'"]')
             unmanaged_k8s_workers_vsphere_datastore=$(echo $unmanaged_k8s_workers_vsphere_datastore | jq '. += ["vsanDatastore"]')
           fi
-          unmanaged_k8s_workers_vsphere_cluster=$(echo $unmanaged_k8s_workers_vsphere_cluster | jq '. += ["'$(echo $cluster | jq -c -r .cluster_ref)'"]')
           unmanaged_k8s_workers_cni=$(echo $unmanaged_k8s_workers_cni | jq '. += ["'$(echo $cluster | jq -c -r .cni)'"]')
           unmanaged_k8s_workers_cni_version=$(echo $unmanaged_k8s_workers_cni_version | jq '. += ["'$(echo $cluster | jq -c -r .cni_version)'"]')
         done
