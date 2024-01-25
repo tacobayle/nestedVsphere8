@@ -74,6 +74,7 @@ if [ $? -ne 0 ] ; then exit 1 ; fi
 #
 output_file="/root/output.txt"
 rm -f ${output_file}
+echo ""
 echo "+++++++++++++++++ O U T P U T S +++++++++++++++++++++" | tee ${output_file} >/dev/null 2>&1
 #
 /bin/bash /nestedVsphere8/02_external_gateway/apply.sh
@@ -228,8 +229,9 @@ cat ${output_file}
 #
 # Transfer output to external-gw
 #
+echo ""
 scp -o StrictHostKeyChecking=no ${output_file} ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/output.txt >/dev/null 2>&1
-ssh -o StrictHostKeyChecking=no -t ubuntu@$(jq  -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) 'echo "cat /home/ubuntu/output.txt" | tee -a /home/ubuntu/.profile'
+ssh -o StrictHostKeyChecking=no -t ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile) 'echo "cat /home/ubuntu/output.txt" | tee -a /home/ubuntu/.profile >/dev/null 2>&1' >/dev/null 2>&1
 #
 #
 #
