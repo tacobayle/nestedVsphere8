@@ -74,7 +74,6 @@ if [ $? -ne 0 ] ; then exit 1 ; fi
 #
 output_file="/root/output.txt"
 rm -f ${output_file}
-echo ""
 echo "+++++++++++++++++ O U T P U T S +++++++++++++++++++++" | tee ${output_file} >/dev/null 2>&1
 #
 /bin/bash /nestedVsphere8/02_external_gateway/apply.sh
@@ -225,6 +224,7 @@ fi
 #  /bin/bash /nestedVsphere8/13_vcd_appliance/apply.sh
 ##   if [ $? -ne 0 ] ; then exit 1 ; fi
 #fi
+echo ""
 cat ${output_file}
 #
 # Transfer output to external-gw
