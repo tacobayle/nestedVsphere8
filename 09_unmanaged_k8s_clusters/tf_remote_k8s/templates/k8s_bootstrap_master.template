@@ -29,8 +29,11 @@ run_cmd 'sudo apt-key add /tmp/gpg'
 #run_cmd '! sudo add-apt-repository "deb https://apt.kubernetes.io/ kubernetes-xenial main" | grep Err:'
 run_cmd '! sudo add-apt-repository "deb https://baltocdn.com/helm/stable/debian/ all main" | grep Err:'
 run_cmd '! sudo add-apt-repository  "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | grep Err:'
-run_cmd 'curl -fsSL https://pkgs.k8s.io/core:/stable:/${K8s_version}/deb/Release.key | sudo gpg --dearmor -o /tmp/kubernetes-apt-keyring.gpg; test $(ls -l /tmp/kubernetes-apt-keyring.gpg | awk '"'"'{print $5}'"'"') -gt 0'
-run_cmd 'echo "deb [signed-by=/tmp/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/${K8s_version}/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list'
+K8s_version="${K8s_version}"
+K8s_version_short=$${K8s_version:0:5}
+K8s_version=$${K8s_version:1}
+run_cmd 'curl -fsSL https://pkgs.k8s.io/core:/stable:/'$K8s_version_short'/deb/Release.key | sudo gpg --dearmor -o /tmp/kubernetes-apt-keyring.gpg; test $(ls -l /tmp/kubernetes-apt-keyring.gpg | awk '"'"'{print $5}'"'"') -gt 0'
+run_cmd 'echo "deb [signed-by=/tmp/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/'$K8s_version_short'/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list'
 run_cmd 'sudo apt update'
 run_cmd 'apt-get install -y docker-ce=${Docker_version}; ls /usr/bin/docker'
 run_cmd 'apt-get install -y kubeadm=${K8s_version} kubectl=${K8s_version} kubelet=${K8s_version}; ls /usr/bin/kubeadm /usr/bin/kubectl /usr/bin/kubelet'
