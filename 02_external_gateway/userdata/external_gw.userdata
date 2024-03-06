@@ -63,8 +63,10 @@ write_files:
       #run_cmd 'sudo apt-key add /tmp/apt-key.gpg'
       #run_cmd '! sudo add-apt-repository "deb https://apt.kubernetes.io/ kubernetes-xenial main" | grep Err:'
       #run_cmd 'apt-get install -y kubectl=${K8s_version}; ls /usr/bin/kubectl'
-      run_cmd 'curl -fsSL https://pkgs.k8s.io/core:/stable:/${K8s_version}/deb/Release.key | sudo gpg --dearmor -o /tmp/kubernetes-apt-keyring.gpg; test $(ls -l /tmp/kubernetes-apt-keyring.gpg | awk '"'"'{print $5}'"'"') -gt 0'
-      run_cmd 'echo "deb [signed-by=/tmp/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/${K8s_version}/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list'
+      K8s_version="${K8s_version}"
+      K8s_version_short=echo "$${K8s_version:0:4}"
+      run_cmd 'curl -fsSL https://pkgs.k8s.io/core:/stable:/$${K8s_version_short}/deb/Release.key | sudo gpg --dearmor -o /tmp/kubernetes-apt-keyring.gpg; test $(ls -l /tmp/kubernetes-apt-keyring.gpg | awk '"'"'{print $5}'"'"') -gt 0'
+      run_cmd 'echo "deb [signed-by=/tmp/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$${K8s_version_short}/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list'
       run_cmd 'sudo apt update'
       run_cmd 'apt-get install -y kubectl=${K8s_version}; ls /usr/bin/kubectl'
       echo "alias k=kubectl" | sudo tee -a /home/ubuntu/.profile
