@@ -35,7 +35,7 @@ run_cmd 'curl -fsSL https://pkgs.k8s.io/core:/stable:/'$K8s_version_short'/deb/R
 run_cmd 'echo "deb [signed-by=/tmp/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/'$K8s_version_short'/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list'
 run_cmd 'sudo apt update'
 run_cmd 'apt-get install -y docker-ce=${Docker_version}; ls /usr/bin/docker'
-run_cmd 'apt-get install -y kubeadm=${K8s_version} kubectl=${K8s_version} kubelet=${K8s_version}; ls /usr/bin/kubeadm /usr/bin/kubectl /usr/bin/kubelet'
+run_cmd 'apt-get install -y kubeadm=$${K8s_version} kubectl=$${K8s_version} kubelet=$${K8s_version}; ls /usr/bin/kubeadm /usr/bin/kubectl /usr/bin/kubelet'
 run_cmd 'apt-get install -y helm; ls /usr/bin/helm'
 if_secondary_name=$(sudo dmesg | grep eth0 | tail -1 | awk -F' ' '{print $5}' | sed 's/://')
 if [[ ${dhcp} == true ]] ; then
