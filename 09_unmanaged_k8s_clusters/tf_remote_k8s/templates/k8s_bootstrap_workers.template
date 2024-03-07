@@ -19,17 +19,22 @@ run_cmd() {
       fi
     done
 }
-run_cmd 'sudo rm -f /tmp/apt-key.gpg; wget https://packages.cloud.google.com/apt/doc/apt-key.gpg -O /tmp/apt-key.gpg; test $(ls -l /tmp/apt-key.gpg | awk '"'"'{print $5}'"'"') -gt 0'
-run_cmd 'sudo apt-key add /tmp/apt-key.gpg'
+#run_cmd 'sudo rm -f /tmp/apt-key.gpg; wget https://packages.cloud.google.com/apt/doc/apt-key.gpg -O /tmp/apt-key.gpg; test $(ls -l /tmp/apt-key.gpg | awk '"'"'{print $5}'"'"') -gt 0'
+#run_cmd 'sudo apt-key add /tmp/apt-key.gpg'
 run_cmd 'sudo rm -f /tmp/signing.asc; wget https://baltocdn.com/helm/signing.asc -O /tmp/signing.asc; test $(ls -l /tmp/signing.asc | awk '"'"'{print $5}'"'"') -gt 0'
 run_cmd 'sudo apt-key add /tmp/signing.asc'
 run_cmd 'sudo rm -f /tmp/gpg; wget https://download.docker.com/linux/ubuntu/gpg -O /tmp/gpg; test $(ls -l /tmp/gpg | awk '"'"'{print $5}'"'"') -gt 0'
 run_cmd 'sudo apt-key add /tmp/gpg'
-run_cmd '! sudo add-apt-repository "deb https://apt.kubernetes.io/ kubernetes-xenial main" | grep Err:'
+#run_cmd '! sudo add-apt-repository "deb https://apt.kubernetes.io/ kubernetes-xenial main" | grep Err:'
+K8s_version="${K8s_version}"
+K8s_version_short=$${K8s_version:0:5}
+K8s_version=$${K8s_version:1}
+run_cmd 'curl -fsSL https://pkgs.k8s.io/core:/stable:/'$K8s_version_short'/deb/Release.key | sudo gpg --dearmor -o /tmp/kubernetes-apt-keyring.gpg; test $(ls -l /tmp/kubernetes-apt-keyring.gpg | awk '"'"'{print $5}'"'"') -gt 0'
 run_cmd '! sudo add-apt-repository "deb https://baltocdn.com/helm/stable/debian/ all main" | grep Err:'
 run_cmd '! sudo add-apt-repository  "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | grep Err:'
 run_cmd 'apt-get install -y docker-ce=${Docker_version}; ls /usr/bin/docker'
-run_cmd 'apt-get install -y kubeadm=${K8s_version} kubectl=${K8s_version} kubelet=${K8s_version}; ls /usr/bin/kubeadm /usr/bin/kubectl /usr/bin/kubelet'
+run_cmd 'apt-get install -y kubeadm=$${K8s_version} kubectl=$${K8s_version} kubelet=$${K8s_version}; ls /usr/bin/kubeadm /usr/bin/kubectl /usr/bin/kubelet'
+#run_cmd 'apt-get install -y kubeadm=${K8s_version} kubectl=${K8s_version} kubelet=${K8s_version}; ls /usr/bin/kubeadm /usr/bin/kubectl /usr/bin/kubelet'
 run_cmd 'apt-get install -y helm; ls /usr/bin/helm'
 #
 sudo  bash -c cat << EOF > /etc/containerd/config.toml
