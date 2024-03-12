@@ -143,5 +143,10 @@
       "TIER1_CONNECTED",
       "TIER1_LB_VIP"
     ]
-  }
+  },
+  "lb_size": "SMALL",
+  "vip_pool": "10.10.10.",
+  "vip_ports": ["80"],
+  "lb_persistence_profile_path": "/infra/lb-persistence-profiles/default-source-ip-lb-persistence-profile",
+  "application_profile_path": "/infra/lb-app-profiles/default-http-lb-app-profile"
 }

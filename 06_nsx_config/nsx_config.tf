@@ -117,34 +117,49 @@ resource "null_resource" "create_tier0s" {
   }
 }
 
-data "nsxt_policy_tier0_gateway" "tier0s_for_tier1s" {
+#data "nsxt_policy_tier0_gateway" "tier0s_for_tier1s" {
+#  depends_on = [null_resource.create_tier0s]
+#  count = length(var.nsx.config.tier1s)
+#  display_name = var.nsx.config.tier1s[count.index].tier0
+#}
+#
+#data "nsxt_policy_dhcp_server" "dhcps_for_tier1s" {
+#  depends_on = [null_resource.create_tier0s]
+#  count = length(var.nsx.config.tier1s)
+#  display_name = var.nsx.config.tier1s[count.index].dhcp_server
+#}
+#
+#data "nsxt_policy_edge_cluster" "edge_clusters_for_tier1s" {
+#  depends_on = [null_resource.create_tier0s]
+#  count = length(var.nsx.config.tier1s)
+#  display_name = var.nsx.config.tier1s[count.index].edge_cluster_name
+#}
+#
+#resource "nsxt_policy_tier1_gateway" "tier1s" {
+#  count = length(var.nsx.config.tier1s)
+#  display_name              = var.nsx.config.tier1s[count.index].display_name
+#  tier0_path                = data.nsxt_policy_tier0_gateway.tier0s_for_tier1s[count.index].path
+#  route_advertisement_types = var.nsx.config.tier1s[count.index].route_advertisement_types
+#  dhcp_config_path          = data.nsxt_policy_dhcp_server.dhcps_for_tier1s[count.index].path
+#  edge_cluster_path         = data.nsxt_policy_edge_cluster.edge_clusters_for_tier1s[count.index].path
+#}
+
+resource "null_resource" "create_tier1s" {
   depends_on = [null_resource.create_tier0s]
-  count = length(var.nsx.config.tier1s)
-  display_name = var.nsx.config.tier1s[count.index].tier0
+  provisioner "local-exec" {
+    command = "/bin/bash /nestedVsphere8/bash/nsx/nsx_tier1s.sh.sh"
+  }
 }
 
-data "nsxt_policy_dhcp_server" "dhcps_for_tier1s" {
-  depends_on = [null_resource.create_tier0s]
-  count = length(var.nsx.config.tier1s)
-  display_name = var.nsx.config.tier1s[count.index].dhcp_server
-}
-
-resource "nsxt_policy_tier1_gateway" "tier1s" {
-  count = length(var.nsx.config.tier1s)
-  display_name              = var.nsx.config.tier1s[count.index].display_name
-  tier0_path                = data.nsxt_policy_tier0_gateway.tier0s_for_tier1s[count.index].path
-  route_advertisement_types = var.nsx.config.tier1s[count.index].route_advertisement_types
-  dhcp_config_path          = data.nsxt_policy_dhcp_server.dhcps_for_tier1s[count.index].path
-}
 
 resource "time_sleep" "wait_tier1" {
   count = length(var.nsx.config.tier1s)
-  depends_on = [nsxt_policy_tier1_gateway.tier1s]
+  depends_on = [null_resource.create_tier1s]
   create_duration = "10s"
 }
 
 data "nsxt_policy_tier1_gateway" "tier1s_for_segments_overlay" {
-  depends_on = [nsxt_policy_tier1_gateway.tier1s]
+  depends_on = [null_resource.create_tier1s]
   count = length(var.nsx.config.segments_overlay)
   display_name = var.nsx.config.segments_overlay[count.index].tier1
 }
@@ -179,7 +194,6 @@ resource "null_resource" "nsx_project" {
     command = "/bin/bash /nestedVsphere8/06_nsx_config/nsx_project.sh"
   }
 }
-
 
 #resource "time_sleep" "wait_for_cert_change" {
 #  depends_on = [nsxt_policy_fixed_segment.segments]

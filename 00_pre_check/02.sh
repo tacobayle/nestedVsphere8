@@ -139,6 +139,24 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
         fi
       done
     done
+    echo "   +++ Creating external gateway routes to NSX LB VIPs..."
+    count_vip=1
+    for tier1 in $(jq -c -r .nsx.config.tier1s[] $jsonFile); do
+      if [[ $(echo $tier1 | jq -c -r .lb) == true ]] ; then
+        count=0
+        for tier0 in $(jq -c -r .nsx.config.tier0s[] $jsonFile)
+        do
+          if [[ $(echo $tier1 | jq -c -r .tier0) == $(echo $tier0 | jq -c -r .display_name) ]] ; then
+            new_routes=$(echo $new_routes | jq '. += [{"to": "'$(jq -c -r .nsx.config.vip_pool /nestedVsphere8/05_nsx_manager/variables.json)${count_vip}'", "via": "'$(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)'"}]')
+            echo "            - to: $(jq -c -r .nsx.config.vip_pool /nestedVsphere8/05_nsx_manager/variables.json)${count_vip}" | tee -a /root/external_gw_routes.yml > /dev/null
+            echo "              via: $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile)" | tee -a /root/external_gw_routes.yml > /dev/null
+            echo "   ++++++ Route to $(jq -c -r .nsx.config.vip_pool /nestedVsphere8/05_nsx_manager/variables.json)${count_vip} via $(jq -c -r .vsphere_underlay.networks.nsx.external.tier0_vips["$count"] $jsonFile) added: OK"
+          fi
+          ((count++))
+        done
+      fi
+      count_vip=$((count_vip+1))
+    done
   fi
   #
   # project vpc use case // add external routes to EXTERNAL ip blocks referred in project

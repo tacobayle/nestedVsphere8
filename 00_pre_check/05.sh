@@ -143,6 +143,26 @@ echo "   +++ Adding edge_node details..."
 data_network=$(jq -c -r '.edge_node.data_network' $localJsonFile)
 nsx_json=$(echo $nsx_json | jq '.nsx.config.edge_node += {"data_network": "'$(echo $data_network)'"}')
 #
+echo "   +++ Adding lb_size..."
+lb_size=$(jq -c -r '.lb_size' $localJsonFile)
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"lb_size": "'$(echo $lb_size)'"}')
+#
+echo "   +++ Adding vip_pool..."
+vip_pool=$(jq -c -r '.vip_pool' $localJsonFile)
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"vip_pool": "'$(echo $vip_pool)'"}')
+#
+echo "   +++ Adding lb_persistence_profile_path..."
+lb_persistence_profile_path=$(jq -c -r '.lb_persistence_profile_path' $localJsonFile)
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"lb_persistence_profile_path": "'$(echo $lb_persistence_profile_path)'"}')
+#
+echo "   +++ Adding application_profile_path..."
+application_profile_path=$(jq -c -r '.application_profile_path' $localJsonFile)
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"application_profile_path": "'$(echo $application_profile_path)'"}')
+#
+echo "   +++ Adding vip_ports..."
+vip_ports=$(jq -c -r '.vip_ports' $localJsonFile)
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"vip_ports": '$(echo $vip_ports)'}')
+#
 echo "   +++ Adding edge_node details..."
 host_switch_spec=$(jq -c -r '.edge_node.host_switch_spec' $localJsonFile)
 nsx_json=$(echo $nsx_json | jq '.nsx.config.edge_node += {"host_switch_spec": '$(echo $host_switch_spec | jq -c -r .)'}')
@@ -228,6 +248,12 @@ for tier1 in $(jq -c -r .nsx.config.tier1s[] $jsonFile)
 do
   tier1=$(echo $tier1 | jq '. += {"dhcp_server": "'$(jq -c -r .dhcp_servers[0].name $localJsonFile)'"}')
   tier1=$(echo $tier1 | jq '. += {"route_advertisement_types": '$(jq -r -c .tier1s.route_advertisement_types $localJsonFile)'}')
+#  if $(echo $tier1 | jq -e '.edge_cluster_name' > /dev/null) ; then
+#    echo "   ++++++ tier1 called called $(echo $tier1 | jq '.display_name') has .edge_cluster_name"
+#  else
+#    echo "   ++++++ adding .edge_cluster_name = null to tier1 called $(echo $tier1 | jq '.display_name') "
+#    tier1=$(echo $tier1 | jq '. += {"edge_cluster_name": null}')
+#  fi
   tier1s=$(echo $tier1s | jq '. += ['$(echo $tier1 | jq -c -r .)']')
 done
 nsx_json=$(echo $nsx_json | jq '. | del (.nsx.config.tier1s)')
