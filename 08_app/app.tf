@@ -43,6 +43,6 @@ resource "null_resource" "nsx_lb" {
   count = var.deployment == "vsphere_nsx_alb" || var.deployment == "vsphere_nsx_tanzu_alb" || var.deployment == "vsphere_nsx_alb_vcd" ? 1 : 0
   depends_on = [null_resource.tf_app]
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/06_nsx_config/nsx_lb.sh"
+    command = "/bin/bash /nestedVsphere8/08_app/nsx_lbs.sh"
   }
 }
