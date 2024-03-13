@@ -147,7 +147,7 @@ resource "null_resource" "create_tier0s" {
 resource "null_resource" "create_tier1s" {
   depends_on = [null_resource.create_tier0s]
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/bash/nsx/nsx_tier1s.sh.sh"
+    command = "/bin/bash /nestedVsphere8/06_nsx_config/nsx_tier1s.sh"
   }
 }
 
