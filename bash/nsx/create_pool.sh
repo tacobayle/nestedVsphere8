@@ -15,6 +15,9 @@ rm -f $cookies_file $headers_file
 json_data='
   {
     "display_name": "'${display_name}'",
+    "snat_translation": {
+      "type": "LBSnatDisabled"
+    },
     "member_group": {
       "group_path": "'${group_path}'",
       "ip_revision_filter": "IPV4"
