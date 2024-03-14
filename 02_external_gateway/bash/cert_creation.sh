@@ -16,6 +16,7 @@ rm -fr ${directory}
 mkdir -p ${directory}
 echo ${ca_private_key_passphrase} | tee ${directory}/ca_private_key_passphrase.txt >/dev/null 2>&1
 openssl genrsa -aes256 -passout pass:${ca_private_key_passphrase} -out ${directory}/${ca_name}.key ${key_size} >/dev/null 2>&1
+openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -passin pass:${ca_private_key_passphrase} -in ${directory}/${ca_name}.key -out ${directory}/${ca_name}.pkcs8.key
 openssl req -x509 -new -nodes -passin pass:${ca_private_key_passphrase} -key ${directory}/${ca_name}.key -sha256 -days ${ca_cert_days} -out ${directory}/${ca_name}.crt -subj "/CN=${CN}/C=${C}/ST=${ST}/L=${L}/O=${O}" >/dev/null 2>&1
 #
 # App certificates creation
