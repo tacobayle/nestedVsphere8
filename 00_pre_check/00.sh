@@ -339,6 +339,20 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
   do
     test_if_variable_is_defined $(echo $item | jq -c .display_name) "   " "testing if each .nsx.config.tier1s[] have a display_name defined"
     test_if_variable_is_defined $(echo $item | jq -c .tier0) "   " "testing if each .nsx.config.tier1s[] have a tier0 defined"
+    if [[ $(echo $tier1 | jq -c -r .lb) == true ]] ; then
+      test_if_variable_is_defined $(echo $item | jq -c .ha_mode) "   " "testing if .nsx.config.tier1s[] have a ha_mode defined"
+      test_if_variable_is_defined $(echo $item | jq -c .edge_cluster_name) "   " "testing if .nsx.config.tier1s[] have a edge_cluster_name defined"
+      if [[ $(echo $tier1 | jq -c -r .ha_mode) != "ACTIVE_STANDBY" ]] ; then
+        echo "   +++ Only .nsx.config.tier1s[].ha_mode equals to 'ACTIVE_STANDBY' has been tested when .nsx.config.tier1s[].lb is true"
+        exit 255
+      fi
+      if $(jq -e -c -r --arg arg "$(echo $item | jq -c .edge_cluster_name)" '.nsx.config.edge_clusters[] | select( .display_name == $arg )' $jsonFile > /dev/null) ; then
+        echo "   +++ .nsx.config.tier1s[].edge_cluster_name found .nsx.config.edge_clusters[].display_name"
+      else
+        echo "   +++ ERROR .nsx.config.tier1s[].edge_cluster_name not found in .nsx.config.edge_clusters[].display_name"
+        exit 255
+      fi
+    fi
   done
   test_if_ref_from_list_exists_in_another_list ".nsx.config.tier1s[].tier0" \
                                                ".nsx.config.tier0s[].display_name" \
