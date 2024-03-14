@@ -346,8 +346,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
         echo "   +++ Only .nsx.config.tier1s[].ha_mode equals to 'ACTIVE_STANDBY' has been tested when .nsx.config.tier1s[].lb is true"
         exit 255
       fi
-      if $(jq -e -c -r --arg arg "$(echo $item | jq -c .edge_cluster_name)" '.nsx.config.edge_clusters[] | select( .display_name == $arg )' $jsonFile > /dev/null) ; then
-        echo "   +++ .nsx.config.tier1s[].edge_cluster_name found .nsx.config.edge_clusters[].display_name"
+      if $(jq -e -c -r --arg arg "$(echo $item | jq -c -r .edge_cluster_name)" '.nsx.config.edge_clusters[] | select( .display_name == $arg )' $jsonFile > /dev/null) ; then
+        echo "   +++ .nsx.config.tier1s[].edge_cluster_name found in .nsx.config.edge_clusters[].display_name"
       else
         echo "   +++ ERROR .nsx.config.tier1s[].edge_cluster_name not found in .nsx.config.edge_clusters[].display_name"
         exit 255
