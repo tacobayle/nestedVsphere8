@@ -16,7 +16,7 @@ json_data='
   {
     "display_name": "'${display_name}'",
     "snat_translation": {
-      "type": "LBSnatDisabled"
+      "type": "LBSnatAutoMap"
     },
     "member_group": {
       "group_path": "'${group_path}'",
