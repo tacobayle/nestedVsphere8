@@ -170,7 +170,7 @@ data "nsxt_policy_transport_zone" "tzs_for_segments_overlay" {
   display_name = var.nsx.config.segments_overlay[count.index].transport_zone
 }
 
-resource "nsxt_policy_fixed_segment" "segments" {
+resource "nsxt_policy_segment" "segments" {
   count = length(var.nsx.config.segments_overlay)
   display_name        = var.nsx.config.segments_overlay[count.index].display_name
   connectivity_path   = data.nsxt_policy_tier1_gateway.tier1s_for_segments_overlay[count.index].path
@@ -189,14 +189,14 @@ resource "nsxt_policy_fixed_segment" "segments" {
 }
 
 resource "null_resource" "nsx_project" {
-  depends_on = [nsxt_policy_fixed_segment.segments]
+  depends_on = [nsxt_policy_segment.segments]
   provisioner "local-exec" {
     command = "/bin/bash /nestedVsphere8/06_nsx_config/nsx_project.sh"
   }
 }
 
 #resource "time_sleep" "wait_for_cert_change" {
-#  depends_on = [nsxt_policy_fixed_segment.segments]
+#  depends_on = [nsxt_policy_segment.segments]
 #  create_duration = "10s"
 #}
 #
