@@ -10,3 +10,5 @@ tf_init_apply "Build of an external GW server on the underlay infrastructure - T
 scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/bash/cert_creation.sh ubuntu@${external_gw_ip}:/home/ubuntu/openssl/cert_creation.sh >/dev/null 2>&1
 # bash create exec
 ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "/bin/bash /home/ubuntu/openssl/cert_creation.sh" >/dev/null 2>&1
+# copying cert from the external-gw
+scp -r -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:/home/ubuntu/openssl /root > /dev/null 2>&1

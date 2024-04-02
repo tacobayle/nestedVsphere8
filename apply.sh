@@ -70,18 +70,20 @@ echo ""
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 #
-# outputs
+#
 #
 output_file="/root/output.txt"
 rm -f ${output_file}
 echo "+++++++++++++++++ O U T P U T S +++++++++++++++++++++" | tee ${output_file} >/dev/null 2>&1
+#
+# 02_external_gateway
 #
 /bin/bash /nestedVsphere8/02_external_gateway/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 scp -o StrictHostKeyChecking=no ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/.ssh/id_rsa /root/.ssh/id_rsa_external >/dev/null 2>&1
 scp -o StrictHostKeyChecking=no ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/.ssh/id_rsa.pub /root/.ssh/id_rsa_external.pub >/dev/null 2>&1
 #
-# outputs external gw
+# outputs 02_external_gateway
 #
 echo "" | tee -a ${output_file} >/dev/null 2>&1
 echo "+++++++ external-gateway" | tee -a ${output_file} >/dev/null 2>&1
@@ -91,10 +93,12 @@ echo "ssh your external gateway from an external node:" | tee -a ${output_file} 
 echo "  > ssh -o StrictHostKeyChecking=no ubuntu@$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
 echo "ssh ubuntu password: ${TF_VAR_ubuntu_password}" | tee -a ${output_file} >/dev/null 2>&1
 #
+# 03_nested_vsphere
+#
 /bin/bash /nestedVsphere8/03_nested_vsphere/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 #
-# outputs vSphere
+# outputs 03_nested_vsphere
 #
 echo "" | tee -a ${output_file} >/dev/null 2>&1
 echo "++++++++++++++++ vSphere" | tee -a ${output_file} >/dev/null 2>&1
@@ -108,10 +112,14 @@ echo "vSphere password: ${TF_VAR_vsphere_nested_password}" | tee -a ${output_fil
 echo "waiting for 20 minutes to finish the vCenter config..."
 sleep 1200
 #
+# 04_networks
+#
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" || $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
   /bin/bash /nestedVsphere8/04_networks/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+#
+# 05_nsx_manager
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/05_nsx_manager/apply.sh
@@ -119,6 +127,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   echo "waiting for 5 minutes to finish the NSX bootstrap..."
   sleep 300
 fi
+#
+# 06_nsx_config
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/06_nsx_config/apply.sh
@@ -134,15 +144,21 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployme
   fi
 fi
 #
+# 07_nsx_alb
+#
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/07_nsx_alb/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
+# 08_app
+#
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/08_app/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
+#
+# 09_unmanaged_k8s_clusters
 #
 if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
   /bin/bash /nestedVsphere8/09_unmanaged_k8s_clusters/apply.sh
@@ -154,6 +170,8 @@ if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
   echo "+++++++++++++ Deploy AKO" | tee -a ${output_file} >/dev/null 2>&1
   echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
 fi
+#
+# 10_nsx_alb_config
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/10_nsx_alb_config/apply.sh
@@ -167,7 +185,10 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   echo "Avi admin password: ${TF_VAR_avi_password}" | tee -a ${output_file} >/dev/null 2>&1
 fi
 #
+# 11_vsphere_with_tanzu
+#
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
+  exit
   echo "-----------------------------------------------------"
   echo "Configuration of vSphere with Tanzu - This should take less than 90 minutes"
   echo "Starting timestamp: $(date)"
@@ -191,6 +212,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c
   echo "+++++++++++++ Deploy AKO" | tee -a ${output_file} >/dev/null 2>&1
   echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
 fi
+#
+# 12_tkgm
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   /bin/bash /nestedVsphere8/12_tkgm/apply.sh

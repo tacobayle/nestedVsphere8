@@ -1,0 +1,79 @@
+{
+  "result": {
+    "results": [
+      {
+        "enabled": true,
+        "ip_address": "10.10.10.2",
+        "ports": [
+          "443"
+        ],
+        "access_log_enabled": true,
+        "lb_persistence_profile_path": "/infra/lb-persistence-profiles/default-source-ip-lb-persistence-profile",
+        "lb_service_path": "/infra/lb-services/lb-1",
+        "pool_path": "/infra/lb-pools/pool-2",
+        "application_profile_path": "/infra/lb-app-profiles/default-http-lb-app-profile",
+        "client_ssl_profile_binding": {
+          "ssl_profile_path": "/infra/lb-client-ssl-profiles/default-high-compatibility-client-ssl-profile",
+          "default_certificate_path": "/infra/certificates/test",
+          "client_auth": "IGNORE",
+          "certificate_chain_depth": 3
+        },
+        "log_significant_event_only": false,
+        "resource_type": "LBVirtualServer",
+        "id": "lb-2",
+        "display_name": "lb-2",
+        "path": "/infra/lb-virtual-servers/lb-2",
+        "relative_path": "lb-2",
+        "parent_path": "/infra",
+        "remote_path": "",
+        "unique_id": "8493e59e-7be4-4757-8927-028efcd1e8ef",
+        "realization_id": "8493e59e-7be4-4757-8927-028efcd1e8ef",
+        "owner_id": "c8fb2e90-9e9f-47e6-8e77-7b5171ad20b4",
+        "marked_for_delete": false,
+        "overridden": false,
+        "_create_time": 1711887893664,
+        "_create_user": "admin",
+        "_last_modified_time": 1711893495502,
+        "_last_modified_user": "admin",
+        "_system_owned": false,
+        "_protection": "NOT_PROTECTED",
+        "_revision": 12
+      },
+      {
+        "enabled": true,
+        "ip_address": "10.10.10.1",
+        "ports": [
+          "80"
+        ],
+        "access_log_enabled": false,
+        "lb_persistence_profile_path": "/infra/lb-persistence-profiles/default-source-ip-lb-persistence-profile",
+        "lb_service_path": "/infra/lb-services/lb-1",
+        "pool_path": "/infra/lb-pools/pool-1",
+        "application_profile_path": "/infra/lb-app-profiles/default-http-lb-app-profile",
+        "log_significant_event_only": false,
+        "resource_type": "LBVirtualServer",
+        "id": "vs-1",
+        "display_name": "vs-1",
+        "path": "/infra/lb-virtual-servers/vs-1",
+        "relative_path": "vs-1",
+        "parent_path": "/infra",
+        "remote_path": "",
+        "unique_id": "48e96b23-e457-4a8e-9221-0640e458dad1",
+        "realization_id": "48e96b23-e457-4a8e-9221-0640e458dad1",
+        "owner_id": "c8fb2e90-9e9f-47e6-8e77-7b5171ad20b4",
+        "marked_for_delete": false,
+        "overridden": false,
+        "_create_time": 1711583924081,
+        "_create_user": "admin",
+        "_last_modified_time": 1711583924081,
+        "_last_modified_user": "admin",
+        "_system_owned": false,
+        "_protection": "NOT_PROTECTED",
+        "_revision": 0
+      }
+    ],
+    "result_count": 2,
+    "sort_by": "display_name",
+    "sort_ascending": true
+  }
+}

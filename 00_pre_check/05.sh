@@ -159,6 +159,14 @@ echo "   +++ Adding application_profile_path..."
 application_profile_path=$(jq -c -r '.application_profile_path' $localJsonFile)
 nsx_json=$(echo $nsx_json | jq '.nsx.config += {"application_profile_path": "'$(echo $application_profile_path)'"}')
 #
+echo "   +++ Adding ssl_profile_path..."
+ssl_profile_path=$(jq -c -r '.ssl_profile_path' $localJsonFile)
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"ssl_profile_path": "'$(echo $ssl_profile_path)'"}')
+#
+echo "   +++ Adding lb_pool_port..."
+lb_pool_port=$(jq -c -r '.lb_pool_port' $localJsonFile)
+nsx_json=$(echo $nsx_json | jq '.nsx.config += {"lb_pool_port": '$(echo $lb_pool_port)'}')
+#
 echo "   +++ Adding vip_ports..."
 vip_ports=$(jq -c -r '.vip_ports' $localJsonFile)
 nsx_json=$(echo $nsx_json | jq '.nsx.config += {"vip_ports": '$(echo $vip_ports)'}')

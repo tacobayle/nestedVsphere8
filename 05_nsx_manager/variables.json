@@ -146,7 +146,9 @@
   },
   "lb_size": "SMALL",
   "vip_pool": "10.10.10.",
-  "vip_ports": ["80"],
+  "vip_ports": ["443"],
   "lb_persistence_profile_path": "/infra/lb-persistence-profiles/default-source-ip-lb-persistence-profile",
-  "application_profile_path": "/infra/lb-app-profiles/default-http-lb-app-profile"
+  "application_profile_path": "/infra/lb-app-profiles/default-http-lb-app-profile",
+  "ssl_profile_path": "/infra/lb-client-ssl-profiles/default-high-compatibility-client-ssl-profile",
+  "lb_pool_port": 80
 }

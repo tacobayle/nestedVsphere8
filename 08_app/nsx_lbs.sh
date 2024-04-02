@@ -45,7 +45,8 @@ if $(jq -e '.nsx.config | has("tier1s")' $jsonFile) ; then
       pool_name="pool-${count}"
       /bin/bash /nestedVsphere8/bash/nsx/create_pool.sh "${nsx_manager}" "${nsx_password}" \
       "${pool_name}" \
-      "${group_path}"
+      "${group_path}" \
+      "$(jq -c -r .nsx.config.lb_pool_port ${jsonFile})"
       # retrieve lb_path
       file_json_output="/tmp/nsx_lb_lb_path.json"
       json_key="lb_path"
@@ -73,6 +74,8 @@ if $(jq -e '.nsx.config | has("tier1s")' $jsonFile) ; then
       "$(jq -c -r .nsx.config.vip_ports ${jsonFile})" \
       "$(jq -c -r .nsx.config.lb_persistence_profile_path ${jsonFile})" \
       "$(jq -c -r .nsx.config.application_profile_path ${jsonFile})" \
+      "$(jq -c -r .nsx.config.ssl_profile_path ${jsonFile})" \
+      "app_cert" \
       "${lb_path}"
       #
       count=$((count+1))

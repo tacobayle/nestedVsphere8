@@ -188,8 +188,15 @@ resource "nsxt_policy_segment" "segments" {
   }
 }
 
-resource "null_resource" "nsx_project" {
+resource "null_resource" "nsx_certs" {
   depends_on = [nsxt_policy_segment.segments]
+  provisioner "local-exec" {
+    command = "/bin/bash /nestedVsphere8/06_nsx_config/nsx_certs.sh"
+  }
+}
+
+resource "null_resource" "nsx_project" {
+  depends_on = [null_resource.nsx_certs]
   provisioner "local-exec" {
     command = "/bin/bash /nestedVsphere8/06_nsx_config/nsx_project.sh"
   }

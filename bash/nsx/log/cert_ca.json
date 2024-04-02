@@ -1,0 +1,42 @@
+[
+  {
+    "pem_encoded": "-----BEGIN CERTIFICATE-----\nMIIFlzCCA3+gAwIBAgIUGDX4a70f5X34ifIF9EmSK7gPZnEwDQYJKoZIhvcNAQEL\nBQAwWzETMBEGA1UEAwwKTXkgUm9vdCBDQTELMAkGA1UEBhMCRlIxDjAMBgNVBAgM\nBVBhcmlzMQ4wDAYDVQQHDAVQYXJpczEXMBUGA1UECgwOTXlPcmdhbmlzYXRpb24w\nHhcNMjQwMzI3MjExMjIwWhcNMjkwMzI3MjExMjIwWjBbMRMwEQYDVQQDDApNeSBS\nb290IENBMQswCQYDVQQGEwJGUjEOMAwGA1UECAwFUGFyaXMxDjAMBgNVBAcMBVBh\ncmlzMRcwFQYDVQQKDA5NeU9yZ2FuaXNhdGlvbjCCAiIwDQYJKoZIhvcNAQEBBQAD\nggIPADCCAgoCggIBAMmyXnFdGqQUHTV79bG3ELP+OfzWkyGhXopvzkwUsiCQekGR\nRpi7D23U8B2wVafOePadaDoB0GHY99b4CEr3aEO7Fo3yHNhQ5qfFU5yrVtm94kzV\n3aM1ba7+p6+MaV1nKjs3xZ00QfSrQds7XqUPJ02V24MIB0aZgZ8/kyRRfNStoYTF\nFhBhS9kUYJtKHVsF5CyRRNlxAo9m6swP5xmYd2KWICcVfWKTD64xbtVR8dktp/Uv\nESX1lDknkcHCJf6O5YdPia9PMIxRMlj8KJkLKi2tDdvL/qdiUKz3aQFpz7e6dT8q\n7i6nh1yT5m6yY2B1E98l/YajCbAqs/U+w9DVT65qTeVxNY8bO012zBzoHR6NQBNd\nKAGQpSAjIWaeS2pbExCzTrR8CN4q4wDcXWU8uHhvO/Ti7Xvf6pd+p+4KrJAhgUiF\nrp0JdQmLsEZQDNZj+nrvY5yfkIkgWFQEVETPnOssuvZzhRXglvmmbnhvsf613yAR\nR6rVq20qmZzuqwSeCdDg5/PqtPbTmfiomRGEVga1fGNdd5nSjm4DD6Hz4rdphcBo\nuddH49oepwgx4NOLoH6vBsvdIgCr5cMay5hc64gs9/SAwnwKV6PTTrafuvwawNPQ\nUUKzV0U9PyRIsgu4cI+NPGyUWa0MLyIUa/mUAej6b8ujRl4rUznMEERzT50lAgMB\nAAGjUzBRMB0GA1UdDgQWBBR8+sa/iHKSjHoai915jlZt1sA97jAfBgNVHSMEGDAW\ngBR8+sa/iHKSjHoai915jlZt1sA97jAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3\nDQEBCwUAA4ICAQBh84eAGyK23fe+seDefgJZqxWc9WrAuvi5n2cNVf/3cyQ91Xgm\nNpmIu9r7lY5nu09nXhIPtkvQmOZ6ULy/+nBYC2M8Iuhj2WY2s7vod6IgXjuJ1gt8\nTXinmzW2aWUHl5+8pSwJjUpsuvdECZytfEnRQaLOMiOs8Olq6yCcsppOrfVzJdl8\noNcCzdOqWNfkGeG+NEhZ/3EZBBJovDM+vpD+iut/wMSTRfAwfUQGJsqdmsR4DynN\nvtWZObj35INOWUnkYG0wFBN2TCaugM3S/DBnXKSH66Zc5mEKYfErLurb60l97v4E\nixx2DRgM6N1BNacbZug5hafC+StmVDl0C7xKTIlpe6ARPLDA0zTlvXn86kMFpeTV\nijhxCT5QmlvF3nYaTQazL9M1c1oEKJQMyNXMmejj3cP6IA9LymKWQlpLOCr6sjlX\nOM9MHFsaFSnR4Srdd2lnmiyTiTdmJgc2eWhfgOK0nQW+rBvfogxf1XvhA6Ltxl+n\np4rOms+19v/NCb72vyBEy0JEoMr54I4gYwDQb8ncgIZxjrESSOrszsuAOXfkFsmU\nvKpHkTsEUVXb38CU9ERghVUWQjY4fV8FoCFL3rQPWv0ATrC1oMMpMXYSJTU8Hfzr\njanpjl+L9jSx+7UCLDtOL4f3Iz59gNjwF9febmAI7ADQhhN21vBdI+Xh5Q==\n-----END CERTIFICATE-----\n",
+    "has_private_key": true,
+    "purpose": "signing-ca",
+    "used_by": [],
+    "leaf_certificate_sha_256_thumbprint": "3A:61:AA:C0:81:28:57:B4:A6:51:11:74:FA:9B:DB:5D:04:4F:EC:7F:41:81:CB:DD:50:3C:D2:42:83:80:F3:B8",
+    "resource_type": "certificate_ca_with_private_key",
+    "id": "e1b76ed3-50c1-4284-9b97-6a9dd40a6075",
+    "display_name": "cert_ca",
+    "_create_time": 1711633844751,
+    "_create_user": "admin",
+    "_last_modified_time": 1711633844751,
+    "_last_modified_user": "admin",
+    "_system_owned": false,
+    "_protection": "NOT_PROTECTED",
+    "_revision": 0
+  },
+  {
+    "pem_encoded": "-----BEGIN CERTIFICATE-----\nMIIFlzCCA3+gAwIBAgIUGDX4a70f5X34ifIF9EmSK7gPZnEwDQYJKoZIhvcNAQEL\nBQAwWzETMBEGA1UEAwwKTXkgUm9vdCBDQTELMAkGA1UEBhMCRlIxDjAMBgNVBAgM\nBVBhcmlzMQ4wDAYDVQQHDAVQYXJpczEXMBUGA1UECgwOTXlPcmdhbmlzYXRpb24w\nHhcNMjQwMzI3MjExMjIwWhcNMjkwMzI3MjExMjIwWjBbMRMwEQYDVQQDDApNeSBS\nb290IENBMQswCQYDVQQGEwJGUjEOMAwGA1UECAwFUGFyaXMxDjAMBgNVBAcMBVBh\ncmlzMRcwFQYDVQQKDA5NeU9yZ2FuaXNhdGlvbjCCAiIwDQYJKoZIhvcNAQEBBQAD\nggIPADCCAgoCggIBAMmyXnFdGqQUHTV79bG3ELP+OfzWkyGhXopvzkwUsiCQekGR\nRpi7D23U8B2wVafOePadaDoB0GHY99b4CEr3aEO7Fo3yHNhQ5qfFU5yrVtm94kzV\n3aM1ba7+p6+MaV1nKjs3xZ00QfSrQds7XqUPJ02V24MIB0aZgZ8/kyRRfNStoYTF\nFhBhS9kUYJtKHVsF5CyRRNlxAo9m6swP5xmYd2KWICcVfWKTD64xbtVR8dktp/Uv\nESX1lDknkcHCJf6O5YdPia9PMIxRMlj8KJkLKi2tDdvL/qdiUKz3aQFpz7e6dT8q\n7i6nh1yT5m6yY2B1E98l/YajCbAqs/U+w9DVT65qTeVxNY8bO012zBzoHR6NQBNd\nKAGQpSAjIWaeS2pbExCzTrR8CN4q4wDcXWU8uHhvO/Ti7Xvf6pd+p+4KrJAhgUiF\nrp0JdQmLsEZQDNZj+nrvY5yfkIkgWFQEVETPnOssuvZzhRXglvmmbnhvsf613yAR\nR6rVq20qmZzuqwSeCdDg5/PqtPbTmfiomRGEVga1fGNdd5nSjm4DD6Hz4rdphcBo\nuddH49oepwgx4NOLoH6vBsvdIgCr5cMay5hc64gs9/SAwnwKV6PTTrafuvwawNPQ\nUUKzV0U9PyRIsgu4cI+NPGyUWa0MLyIUa/mUAej6b8ujRl4rUznMEERzT50lAgMB\nAAGjUzBRMB0GA1UdDgQWBBR8+sa/iHKSjHoai915jlZt1sA97jAfBgNVHSMEGDAW\ngBR8+sa/iHKSjHoai915jlZt1sA97jAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3\nDQEBCwUAA4ICAQBh84eAGyK23fe+seDefgJZqxWc9WrAuvi5n2cNVf/3cyQ91Xgm\nNpmIu9r7lY5nu09nXhIPtkvQmOZ6ULy/+nBYC2M8Iuhj2WY2s7vod6IgXjuJ1gt8\nTXinmzW2aWUHl5+8pSwJjUpsuvdECZytfEnRQaLOMiOs8Olq6yCcsppOrfVzJdl8\noNcCzdOqWNfkGeG+NEhZ/3EZBBJovDM+vpD+iut/wMSTRfAwfUQGJsqdmsR4DynN\nvtWZObj35INOWUnkYG0wFBN2TCaugM3S/DBnXKSH66Zc5mEKYfErLurb60l97v4E\nixx2DRgM6N1BNacbZug5hafC+StmVDl0C7xKTIlpe6ARPLDA0zTlvXn86kMFpeTV\nijhxCT5QmlvF3nYaTQazL9M1c1oEKJQMyNXMmejj3cP6IA9LymKWQlpLOCr6sjlX\nOM9MHFsaFSnR4Srdd2lnmiyTiTdmJgc2eWhfgOK0nQW+rBvfogxf1XvhA6Ltxl+n\np4rOms+19v/NCb72vyBEy0JEoMr54I4gYwDQb8ncgIZxjrESSOrszsuAOXfkFsmU\nvKpHkTsEUVXb38CU9ERghVUWQjY4fV8FoCFL3rQPWv0ATrC1oMMpMXYSJTU8Hfzr\njanpjl+L9jSx+7UCLDtOL4f3Iz59gNjwF9febmAI7ADQhhN21vBdI+Xh5Q==\n-----END CERTIFICATE-----",
+    "has_private_key": true,
+    "purpose": "signing-ca",
+    "used_by": [],
+    "leaf_certificate_sha_256_thumbprint": "3A:61:AA:C0:81:28:57:B4:A6:51:11:74:FA:9B:DB:5D:04:4F:EC:7F:41:81:CB:DD:50:3C:D2:42:83:80:F3:B8",
+    "resource_type": "certificate_ca_with_private_key",
+    "id": "94d8e0f2-4add-47c2-b453-d2952ab0f304",
+    "display_name": "test-ui",
+    "tags": [
+      {
+        "scope": "policyPath",
+        "tag": "/infra/certificates/test-ui"
+       }
+    ],
+    "_create_time": 1711635028138,
+    "_create_user": "nsx_policy",
+    "_last_modified_time": 1711635028138,
+    "_last_modified_user": "nsx_policy",
+    "_system_owned": false,
+    "_protection": "REQUIRE_OVERRIDE",
+    "_revision": 0
+  }
+]
