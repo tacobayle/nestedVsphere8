@@ -30,6 +30,11 @@ resource "null_resource" "tf_app" {
     destination = "/home/ubuntu/.environment_variables.json"
   }
 
+  provisioner "file" {
+    content = data.template_file.environment_variables.rendered
+    destination = "/home/ubuntu/.environment_variables_nsx.json"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "cd tf_remote_app",
