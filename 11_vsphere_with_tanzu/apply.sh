@@ -41,7 +41,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
     "$(jq -c -r .tanzu_local.content_library.on_demand $jsonFile)" \
     "$(jq -c -r .tanzu_local.content_library.name $jsonFile)" \
     "$(jq -c -r .tanzu.supervisor_cluster.datastore_ref $jsonFile)" \
-    "${create_subscribed_content_library_json_output}" \
+    "${create_subscribed_content_library_json_output}"
   content_library_id=$(jq -c -r .content_library_id ${create_subscribed_content_library_json_output})
   #
   # Retrieve cluster id
