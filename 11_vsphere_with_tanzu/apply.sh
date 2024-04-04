@@ -179,9 +179,9 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
   #
   #
   if $(jq -e '.tanzu | has("namespaces")' $jsonFile) ; then
-  #
-  # Namespace creation
-  #
+    #
+    # Namespace creation
+    #
     for ns in $(jq -c -r .tanzu.namespaces[] $jsonFile); do
       # if nsx network values are overwritten
       if $(echo $ns | jq -e '.ingress_cidr' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
@@ -196,7 +196,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
                   "$(echo $ns | jq -c -r .namespace_tier0)" \
                   "$(echo $ns | jq -c -r .prefix_per_namespace)"
       else
-      # if network values are not overwritten
+      # if nsx network values are not overwritten, this also covers vsphere_nsx_tanzu_alb
         /bin/bash /nestedVsphere8/bash/vcenter/create_namespaces.sh "${vcsa_fqdn}" "${vcsa_sso_domain}" "${TF_VAR_vsphere_nested_password}" \
                   "$(jq -r .tanzu_local.vm_classes $jsonFile)" \
                   "${storage_policy_id}" \

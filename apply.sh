@@ -16,6 +16,7 @@ fi
 /bin/bash /nestedVsphere8/00_pre_check/00.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 jsonFile="/root/variables.json"
+deployment=$(jq -c -r .deployment $jsonFile)
 #
 /bin/bash /nestedVsphere8/00_pre_check/01.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
@@ -26,22 +27,22 @@ if [ $? -ne 0 ] ; then exit 1 ; fi
 /bin/bash /nestedVsphere8/00_pre_check/03.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" || $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+if [[ ${deployment} == "vsphere_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_alb_telco" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" || ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_alb_wo_nsx" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/04.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ ${deployment} == "vsphere_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_alb_telco" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/05.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_alb_telco" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/07.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/08.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
@@ -51,24 +52,31 @@ if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
+if [[ ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/11.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
+if [[ ${deployment} == "vsphere_nsx_alb_telco" ]]; then
   /bin/bash /nestedVsphere8/00_pre_check/12.sh
   if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
+if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 00_pre_check done"}' ${slack_webhook_url}; fi
+#
 echo ""
-echo "********* Deployment use case: $(jq -c -r .deployment $jsonFile) *********"
+echo "********* Deployment use case: ${deployment} *********"
 echo ""
 #
 # Environment Creation
 #
+#
+# 01_underlay_vsphere_directory
+#
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/apply.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi
+#
+if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 01_underlay_vsphere_directory created"}' ${slack_webhook_url}; fi
 #
 #
 #
@@ -93,6 +101,8 @@ echo "ssh your external gateway from an external node:" | tee -a ${output_file} 
 echo "  > ssh -o StrictHostKeyChecking=no ubuntu@$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
 echo "ssh ubuntu password: ${TF_VAR_ubuntu_password}" | tee -a ${output_file} >/dev/null 2>&1
 #
+if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 02_external_gateway created"}' ${slack_webhook_url}; fi
+#
 # 03_nested_vsphere
 #
 /bin/bash /nestedVsphere8/03_nested_vsphere/apply.sh
@@ -112,50 +122,62 @@ echo "vSphere password: ${TF_VAR_vsphere_nested_password}" | tee -a ${output_fil
 echo "waiting for 20 minutes to finish the vCenter config..."
 sleep 1200
 #
+if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 03_nested_vsphere created"}' ${slack_webhook_url}; fi
+#
 # 04_networks
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" || $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+if [[ ${deployment} == "vsphere_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_alb_telco" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" || ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_alb_wo_nsx" ]]; then
   /bin/bash /nestedVsphere8/04_networks/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
+if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 04_networks configured"}' ${slack_webhook_url}; fi
+#
 # 05_nsx_manager
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ ${deployment} == "vsphere_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_alb_telco" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/05_nsx_manager/apply.sh
   if [ $? -ne 0 ] ; then exit 1 ; fi
   echo "waiting for 5 minutes to finish the NSX bootstrap..."
   sleep 300
 fi
 #
+if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 05_nsx_manager deployed"}' ${slack_webhook_url}; fi
+#
 # 06_nsx_config
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ ${deployment} == "vsphere_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_alb_telco" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/06_nsx_config/apply.sh
   if [ $? -ne 0 ] ; then exit 1 ; fi
   #
   # outputs NSX
   #
-  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+  if [[ ${deployment} == "vsphere_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_alb_telco" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" ]]; then
     echo "" | tee -a ${output_file} >/dev/null 2>&1
     echo "++++++++++++++++++++ NSX" | tee -a ${output_file} >/dev/null 2>&1
     echo "  > NSX manager url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
     echo "NSX admin password: ${TF_VAR_nsx_password}" | tee -a ${output_file} >/dev/null 2>&1
   fi
+  #
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 06_nsx_config done"}' ${slack_webhook_url}; fi
 fi
 #
 # 07_nsx_alb
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_alb_telco" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/07_nsx_alb/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
+  #
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 07_nsx_alb deployed"}' ${slack_webhook_url}; fi
 fi
 #
 # 08_app
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/08_app/apply.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
+  #
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 08_app deployed"}' ${slack_webhook_url}; fi
 fi
 #
 # 09_unmanaged_k8s_clusters
@@ -169,11 +191,13 @@ if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
   echo "" | tee -a ${output_file} >/dev/null 2>&1
   echo "+++++++++++++ Deploy AKO" | tee -a ${output_file} >/dev/null 2>&1
   echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
+  #
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 09_unmanaged_k8s_clusters deployed"}' ${slack_webhook_url}; fi
 fi
 #
 # 10_nsx_alb_config
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
+if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_alb_telco" || ${deployment} == "vsphere_nsx_tanzu_alb" || ${deployment} == "vsphere_nsx_alb_vcd" ]]; then
   /bin/bash /nestedVsphere8/10_nsx_alb_config/apply.sh
   if [ $? -ne 0 ] ; then exit 1 ; fi
   #
@@ -183,11 +207,13 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
   echo "++++++++++++++++ NSX-ALB" | tee -a ${output_file} >/dev/null 2>&1
   echo "  > NSX ALB controller url: https://$(jq -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
   echo "Avi admin password: ${TF_VAR_avi_password}" | tee -a ${output_file} >/dev/null 2>&1
+  #
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 10_nsx_alb_config done"}' ${slack_webhook_url}; fi
 fi
 #
 # 11_vsphere_with_tanzu
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
+if [[ ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
   exit
   echo "-----------------------------------------------------"
   echo "Configuration of vSphere with Tanzu - This should take less than 90 minutes"
@@ -211,11 +237,13 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" || $(jq -c
   echo "  > /home/ubuntu/bin/kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated" | tee -a ${output_file} >/dev/null 2>&1
   echo "+++++++++++++ Deploy AKO" | tee -a ${output_file} >/dev/null 2>&1
   echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
+  #
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 11_vsphere_with_tanzu deployed"}' ${slack_webhook_url}; fi
 fi
 #
 # 12_tkgm
 #
-if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
+if [[ ${deployment} == "vsphere_nsx_alb_telco" ]]; then
   /bin/bash /nestedVsphere8/12_tkgm/apply.sh
   if [ $? -ne 0 ] ; then exit 1 ; fi
   #
@@ -241,6 +269,8 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_telco" ]]; then
   echo "  > get logical-routers" | tee -a ${output_file} >/dev/null 2>&1
   echo "  > vrf xxx" | tee -a ${output_file} >/dev/null 2>&1
   echo "  > get route" | tee -a ${output_file} >/dev/null 2>&1
+  #
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 12_tkgm deployed"}' ${slack_webhook_url}; fi
 fi
 #
 #if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
