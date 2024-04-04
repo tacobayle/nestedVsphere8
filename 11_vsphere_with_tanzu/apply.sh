@@ -292,8 +292,9 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       scp -o StrictHostKeyChecking=no /root/tanzu_auth_tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path_auth}-${cluster_count}.sh
       # bash create exec
       ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "/bin/bash ${remote_path}-${cluster_count}.sh"
+      exit
       #
-      # ako values templating
+      # ako values templating, needs to be checked without nsx
       #
       if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
         tenant="'$(echo $tkc | jq -c -r '.name')'"

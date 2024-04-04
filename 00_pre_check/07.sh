@@ -58,12 +58,48 @@ echo "   +++ Adding avi_port_group..."
 avi_port_group=$(jq -c -r '.networks.vsphere.management.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
 avi_json=$(echo $avi_json | jq '. += {"avi_port_group": "'$(echo $avi_port_group)'"}')
 #
+# .avi.config.tenants
+#
 if [[ $(jq -c -r .avi.config.tenants $jsonFile) == "null" ]]; then
   tenants=$(jq -c -r '.tenants' $localJsonFile)
 else
   tenants=$(echo "[]" | jq '. += '$(jq -c -r .avi.config.tenants $jsonFile)'')
   tenants=$(echo $tenants | jq '. += '$(jq -c -r '.tenants' $localJsonFile)'')
 fi
+#
+if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx" ]]; then
+  if $(jq -e '.tanzu | has("tkc_clusters")' $jsonFile) ; then
+    for tkc in $(jq -c -r '.tanzu.tkc_clusters[]' $jsonFile)
+    do
+      if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
+        if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) == "tenant-mode" ]] ; then
+          echo "   +++ adding tenant called $(echo $tkc | jq -c -r '.name') for Tanzu TKC clusters"
+          tenants=$(echo $tenants | jq -c -r '. += [{"name": "'$(echo $tkc | jq -c -r '.name')'",
+                                                     "local": true,
+                                                     "config_settings" : {
+                                                       "tenant_vrf": false,
+                                                       "se_in_provider_context": false,
+                                                       "tenant_access_to_provider_se": false
+                                                       }
+                                                    }]')
+        fi
+        if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) == "provider-mode" ]] ; then
+          echo "   +++ adding tenant called $(echo $tkc | jq -c -r '.name') for Tanzu TKC clusters"
+          tenants=$(echo $tenants | jq -c -r '. += [{"name": "'$(echo $tkc | jq -c -r '.name')'",
+                                                     "local": true,
+                                                     "config_settings" : {
+                                                       "tenant_vrf": false,
+                                                       "se_in_provider_context": true,
+                                                       "tenant_access_to_provider_se": true
+                                                       }
+                                                    }]')
+        fi
+      fi
+    done
+  fi
+fi
+#
+# .avi.config.users
 #
 if [[ $(jq -c -r .avi.config.users $jsonFile) == "null" ]]; then
   users=$(jq -c -r '.users' $localJsonFile)
@@ -96,40 +132,6 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   #
   mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf.disabled /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf
   mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf..disabled
-  #
-  # .avi.config.tenants
-  #
-  if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
-    if $(jq -e '.tanzu | has("tkc_clusters")' $jsonFile) ; then
-      for tkc in $(jq -c -r '.tanzu.tkc_clusters[]' $jsonFile)
-      do
-        if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
-          if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) == "tenant-mode" ]] ; then
-            echo "   +++ adding tenant called $(echo $tkc | jq -c -r '.name') for Tanzu TKC clusters"
-            tenants=$(echo $tenants | jq -c -r '. += [{"name": "'$(echo $tkc | jq -c -r '.name')'",
-                                                       "local": true,
-                                                       "config_settings" : {
-                                                         "tenant_vrf": false,
-                                                         "se_in_provider_context": false,
-                                                         "tenant_access_to_provider_se": false
-                                                         }
-                                                      }]')
-          fi
-          if [[ $(echo $tkc | jq -c -r '.alb_tenant_type' | tr '[:upper:]' [:lower:]) == "provider-mode" ]] ; then
-            echo "   +++ adding tenant called $(echo $tkc | jq -c -r '.name') for Tanzu TKC clusters"
-            tenants=$(echo $tenants | jq -c -r '. += [{"name": "'$(echo $tkc | jq -c -r '.name')'",
-                                                       "local": true,
-                                                       "config_settings" : {
-                                                         "tenant_vrf": false,
-                                                         "se_in_provider_context": true,
-                                                         "tenant_access_to_provider_se": true
-                                                         }
-                                                      }]')
-          fi
-        fi
-      done
-    fi
-  fi
   #
   echo "   +++ Adding avi.config.cloud.name..."
   avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "'$(jq -c -r '.nsx_default_cloud_name' $localJsonFile)'"}')
