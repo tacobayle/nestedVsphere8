@@ -140,9 +140,9 @@ if [[ ${deployment} == "vsphere_nsx" || ${deployment} == "vsphere_nsx_alb" || ${
   if [ $? -ne 0 ] ; then exit 1 ; fi
   echo "waiting for 5 minutes to finish the NSX bootstrap..."
   sleep 300
+  #
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 05_nsx_manager deployed"}' ${slack_webhook_url}; fi
 fi
-#
-if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 05_nsx_manager deployed"}' ${slack_webhook_url}; fi
 #
 # 06_nsx_config
 #
@@ -214,7 +214,6 @@ fi
 # 11_vsphere_with_tanzu
 #
 if [[ ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
-  exit
   echo "-----------------------------------------------------"
   echo "Configuration of vSphere with Tanzu - This should take less than 90 minutes"
   echo "Starting timestamp: $(date)"
@@ -222,7 +221,7 @@ if [[ ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_n
   if [ $? -ne 0 ] ; then exit 1 ; fi
   echo "Ending timestamp: $(date)"
   #
-  # output Tanzu wo NSX
+  # output Tanzu
   #
   echo "" | tee -a ${output_file} >/dev/null 2>&1
   echo "+++++ vSphere with Tanzu" | tee -a ${output_file} >/dev/null 2>&1

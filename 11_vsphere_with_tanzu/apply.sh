@@ -236,19 +236,20 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
     for tkc in $(jq -c -r .tanzu.tkc_clusters[] $jsonFile); do
       # variables
       namespace=$(echo $tkc | jq -c -r .namespace_ref)
+      tkc_name=$(echo $tkc | jq -c -r .name)
       # yaml antrea config templating
-      sed -e "s/\${name}/$(echo $tkc | jq -c -r .name)/" \
+      sed -e "s/\${name}/${tkc_name}/" \
           -e "s/\${namespace_ref}/${namespace}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/antreaconfig.yml.template | tee /root/antreaconfig-${cluster_count}.yml > /dev/null
       # yaml antrea config transfer
       scp -o StrictHostKeyChecking=no /root/antreaconfig-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_antrea_create}-${cluster_count}.yml
       # yaml ClusterBootstrap templating
-      sed -e "s/\${name}/$(echo $tkc | jq -c -r .name)/" \
+      sed -e "s/\${name}/${tkc_name}/" \
           -e "s/\${k8s_version}/$(echo $tkc | jq -c -r .k8s_version)/" \
-          -e "s/\${antrea_config_name}/$(echo $tkc | jq -c -r .name)/" /nestedVsphere8/11_vsphere_with_tanzu/templates/clusterbootstrap.yml.template | tee /root/clusterbootstrap-${cluster_count}.yml > /dev/null
+          -e "s/\${antrea_config_name}/${tkc_name}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/clusterbootstrap.yml.template | tee /root/clusterbootstrap-${cluster_count}.yml > /dev/null
       # yaml ClusterBootstrap transfer
       scp -o StrictHostKeyChecking=no /root/clusterbootstrap-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_clusterbootstrap_create}-${cluster_count}.yml
       # yaml cluster templating
-      sed -e "s/\${name}/$(echo $tkc | jq -c -r .name)/" \
+      sed -e "s/\${name}/${tkc_name}/" \
           -e "s/\${namespace_ref}/${namespace}/" \
           -e "s@\${services_cidrs}@"$(echo $tkc | jq -c -r .services_cidrs)"@" \
           -e "s@\${pods_cidrs}@$(echo $tkc | jq -c -r .pods_cidrs)@" \
@@ -268,7 +269,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s@\${remote_path}@${remote_path}@" \
           -e "s@\${remote_path_antrea_create}@${remote_path_antrea_create}@" \
           -e "s@\${remote_path_clusterbootstrap_create}@${remote_path_clusterbootstrap_create}@" \
-          -e "s/\${cluster_name}/$(echo $tkc | jq -c -r .name)/" \
+          -e "s/\${cluster_name}/${tkc_name}/" \
           -e "s/\${cluster_count}/${cluster_count}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tkc.sh.template | tee /root/create-tkc-${cluster_count}.sh > /dev/null
       # bash create transfer
       scp -o StrictHostKeyChecking=no /root/create-tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path}-${cluster_count}.sh
@@ -277,9 +278,9 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s/\${sso_domain_name}/${vcsa_sso_domain}/" \
           -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" \
           -e "s/\${namespace_ref}/${namespace}/" \
-          -e "s/\${cluster_bootstrap_name}/$(echo $tkc | jq -c -r .name)/" \
-          -e "s/\${antrea_config_name}/$(echo $tkc | jq -c -r .name)/" \
-          -e "s/\${name}/$(echo $tkc | jq -c -r .name)/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tkc_destroy.sh.template | tee /root/destroy-tkc-${cluster_count}.sh > /dev/null
+          -e "s/\${cluster_bootstrap_name}/${tkc_name}/" \
+          -e "s/\${antrea_config_name}/${tkc_name}/" \
+          -e "s/\${name}/${tkc_name}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tkc_destroy.sh.template | tee /root/destroy-tkc-${cluster_count}.sh > /dev/null
       # bash destroy transfer
       scp -o StrictHostKeyChecking=no /root/destroy-tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path_destroy}-${cluster_count}.sh
       # bash auth tkc templating
@@ -287,17 +288,16 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s/\${sso_domain_name}/${vcsa_sso_domain}/" \
           -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" \
           -e "s/\${namespace_ref}/${namespace}/" \
-          -e "s/\${name}/$(echo $tkc | jq -c -r .name)/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tanzu_auth_tkc.sh.template | tee /root/tanzu_auth_tkc-${cluster_count}.sh > /dev/null
+          -e "s/\${name}/${tkc_name}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tanzu_auth_tkc.sh.template | tee /root/tanzu_auth_tkc-${cluster_count}.sh > /dev/null
       # bash auth tkc transfer
       scp -o StrictHostKeyChecking=no /root/tanzu_auth_tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path_auth}-${cluster_count}.sh
       # bash create exec
       ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "/bin/bash ${remote_path}-${cluster_count}.sh"
-      exit
       #
       # ako values templating, needs to be checked without nsx
       #
       if $(echo $tkc | jq -e '.alb_tenant_name' > /dev/null) ; then # 00_pre_check/00.sh checks that the other keys are present and valid.
-        tenant="'$(echo $tkc | jq -c -r '.name')'"
+        tenant="'$(echo $tkc | jq -c -r '.alb_tenant_name')'"
       else
         tenant="admin"
       fi
@@ -306,32 +306,39 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       serviceType="NodePortLocal" # needs to be configured before cluster creation
       cniPlugin="antrea"
       disableStaticRouteSync="true" # needs to be true if NodePortLocal is enabled
-      if $(jq -e --arg namespace ${namespace} '.tanzu.namespaces[] | select(.name == $namespace) | .ingress_cidr' $jsonFile > /dev/null) ; then
-        cidr=$(jq --arg namespace ${namespace} '.tanzu.namespaces[] | select(.name == $namespace) | .ingress_cidr' $jsonFile)
-      else
-        cidr=$(jq '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
+      if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb"  ]]; then
+        if $(jq -e --arg arg ${namespace} '.tanzu.namespaces[] | select(.name == $arg) | .ingress_cidr' $jsonFile > /dev/null) ; then
+          cidr=$(jq --arg arg ${namespace} '.tanzu.namespaces[] | select(.name == $arg) | .ingress_cidr' $jsonFile)
+        else
+          cidr=$(jq '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
+        fi
+        # retrieve the tier1 and his path
+        nsxtT1LR_name="t1-${cluster_id}:$(jq .About.InstanceUuid /root/vcenter_about.json)-${namespace}-rtr"
+        t1_path_json_output="/root/t1_path.json"
+        /bin/bash /nestedVsphere8/bash/nsx/retrieve_t1_id.sh \
+          "$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" \
+          "${TF_VAR_nsx_password}" \
+          "${nsxtT1LR_name}" \
+          "${t1_path_json_output}"
+        nsxtT1LR="$(jq -c -r .t1_path ${t1_path_json_output})"
+        # retrieve the name of network in Avi based on the cidr
+        avi_network_name_json_output="/root/avi_network_name.json"
+        /bin/bash /nestedVsphere8/bash/avi/retrieve_network_name_per_cidr.sh \
+                  "${avi_controller_ip}" \
+                  "${avi_version}" \
+                  "${TF_VAR_avi_password}" \
+                  "${avi_cloud_name}" \
+                  "$(echo ${cidr} | cut -d"/" -f1)" \
+                  "${avi_network_name_json_output}"
+        networkName=$(jq -c -r .network_name ${avi_network_name_json_output})
       fi
-      # retrieve the tier1 and his path
-      nsxtT1LR_name="t1-${cluster_id}:$(jq .About.InstanceUuid /root/vcenter_about.json)-${namespace}-rtr"
-      t1_path_json_output="/root/t1_path.json"
-      /bin/bash /nestedVsphere8/bash/nsx/retrieve_t1_id.sh \
-        "$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" \
-        "${TF_VAR_nsx_password}" \
-        "${nsxtT1LR_name}" \
-        "${t1_path_json_output}"
-      nsxtT1LR="$(jq -c -r .t1_path ${t1_path_json_output})"
-      # retrieve the name of network in Avi based on the cidr
-      avi_network_name_json_output="/root/avi_network_name.json"
-      /bin/bash /nestedVsphere8/bash/avi/retrieve_network_name_per_cidr.sh \
-                "${avi_controller_ip}" \
-                "${avi_version}" \
-                "${TF_VAR_avi_password}" \
-                "${avi_cloud_name}" \
-                "$(echo ${cidr} | cut -d"/" -f1)" \
-                "${avi_network_name_json_output}"
-      networkName=$(jq -c -r .network_name ${avi_network_name_json_output})
+      if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_tanzu_alb_wo_nsx"  ]]; then
+        networkName=$(jq -c -r .networks.alb.vip.port_group_name ${jsonFile})
+        nsxtT1LR="''"
+        cidr=$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr ${jsonFile})
+      fi
       sed -e "s/\${disableStaticRouteSync}/${disableStaticRouteSync}/" \
-          -e "s/\${clusterName}/$(echo $tkc | jq -c -r .name)/" \
+          -e "s/\${clusterName}/${tkc_name}/" \
           -e "s/\${cniPlugin}/${cniPlugin}/" \
           -e "s/\${nsxtT1LR}/${nsxtT1LR}/" \
           -e "s/\${networkName}/${networkName}/" \
