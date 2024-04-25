@@ -55,39 +55,39 @@ Additionally, you need to have an external web server configured where the ISO/O
 Here are below the links of the yaml manifest (data model) file for the different deployments/scenarios:
 
 ### vsphere_wo_nsx
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere_wo_nsx.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere.y
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/secrets-vsphere_wo_nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/cm-vsphere.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/pod-vsphere.y
 
 ### vsphere_alb_wo_nsx
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-alb.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-alb.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/secrets-vsphere-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/cm-vsphere-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/pod-vsphere-alb.yml
 
 ### vsphere_tanzu_alb_wo_nsx
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-tanzu-alb-wo-nsx.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-tanzu-alb-wo-nsx.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-tanzu-alb-wo-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/secrets-vsphere-tanzu-alb-wo-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/cm-vsphere-tanzu-alb-wo-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/pod-vsphere-tanzu-alb-wo-nsx.yml
 
 ### vsphere_nsx
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-nsx.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/secrets-vsphere-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/cm-vsphere-nsx.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/pod-vsphere-nsx.yml
 
 ### vsphere_nsx_alb
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-nsx-alb.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx-alb.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/secrets-vsphere-nsx-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/cm-vsphere-nsx-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/pod-vsphere-nsx-alb.yml
 
 ### vsphere_nsx_tanzu_alb
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-nsx-tanzu-alb.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx-tanzu-alb.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx-tanzu-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/secrets-vsphere-nsx-tanzu-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/cm-vsphere-nsx-tanzu-alb.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/pod-vsphere-nsx-tanzu-alb.yml
 
 ### vsphere_nsx_alb_telco
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/secrets-vsphere-nsx-alb-telco.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/cm-vsphere-nsx-alb-telco.yml
-https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8/pod-vsphere-nsx-alb-telco.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/secrets-vsphere-nsx-alb-telco.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/cm-vsphere-nsx-alb-telco.yml
+https://raw.githubusercontent.com/tacobayle/k8sYaml/master/nestedVsphere8_templates/pod-vsphere-nsx-alb-telco.yml
 
 ### vsphere_nsx_alb_vcd (under-dev)
 

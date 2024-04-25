@@ -21,9 +21,9 @@ d=vsphere-alb ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh ; d=vsphe
 # vsphere-tanzu-alb-wo-nsx
 ## destroy
 d=vsphere-tanzu-alb-wo-nsx ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh
-d=vsphere-tanzu-alb-wo-nsx ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0
+d=vsphere-tanzu-alb-wo-nsx ; kubectl delete -f cm-${d}.yml ; kubectl delete -f secrets-${d}.yml; kubectl delete -f pod-${d}.yml --grace-period=0
 ## create
-d=vsphere-tanzu-alb-wo-nsx ; /bin/bash update_password.sh secrets-${d}.yml ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
+d=vsphere-tanzu-alb-wo-nsx ; /bin/bash update_password.sh secrets-${d}.yml ; kubectl apply -f cm-${d}.yml ; kubectl apply -f secrets-${d}.yml; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
 ## destroy - create
 d=vsphere-tanzu-alb-wo-nsx ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0 ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
 
