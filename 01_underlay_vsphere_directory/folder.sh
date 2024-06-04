@@ -4,6 +4,12 @@ if [[ ${operation} == "apply" ]] ; then log_file="/nestedVsphere8/log/01_folder_
 if [[ ${operation} == "destroy" ]] ; then log_file="/nestedVsphere8/log/01_folder_destroy.stdout" ; fi
 if [[ ${operation} != "apply" && ${operation} != "destroy" ]] ; then echo "ERROR: Unsupported operation" ; exit 255 ; fi
 echo '------------------------------------------------------------' | tee ${log_file}
+if [[ ${operation} == "apply" ]] ; then
+  echo "Creation of a folder on the underlay infrastructure - This should take less than a minute" | tee -a ${log_file}
+fi
+if [[ ${operation} == "destroy" ]] ; then
+  echo "Deletion of a folder on the underlay infrastructure - This should take less than a minute" | tee -a ${log_file}
+fi
 echo "Starting timestamp: $(date)" | tee -a ${log_file}
 jsonFile="/root/variables.json"
 source /nestedVsphere8/bash/govc/load_govc_underlay.sh
