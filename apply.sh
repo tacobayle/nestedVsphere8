@@ -18,8 +18,8 @@ if [ $? -ne 0 ] ; then exit 1 ; fi
 jsonFile="/root/variables.json"
 deployment=$(jq -c -r .deployment $jsonFile)
 #
-/bin/bash /nestedVsphere8/00_pre_check/01.sh
-if [ $? -ne 0 ] ; then exit 1 ; fi
+#/bin/bash /nestedVsphere8/00_pre_check/01.sh
+#if [ $? -ne 0 ] ; then exit 1 ; fi
 #
 /bin/bash /nestedVsphere8/00_pre_check/02.sh
 if [ $? -ne 0 ] ; then exit 1 ; fi

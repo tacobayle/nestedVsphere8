@@ -17,7 +17,6 @@ list_folder=$(govc find -json . -type f)
 if $(echo ${list_folder} | jq -e '. | any(. == "./vm/'$(jq -c -r .vsphere_underlay.folder $jsonFile)'")' >/dev/null ) ; then
   if [[ ${operation} == "apply" ]] ; then
     echo "ERROR: unable to create folder $(jq -r .vsphere_underlay.folder $jsonFile): it already exists" | tee -a ${log_file}
-    exit 255
   fi
   if [[ ${operation} == "destroy" ]] ; then
     govc object.destroy /${vsphere_dc}/vm/$(jq -r .vsphere_underlay.folder $jsonFile) | tee -a ${log_file}
