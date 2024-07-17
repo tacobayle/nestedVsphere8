@@ -36,7 +36,7 @@ token=$(/bin/bash /nestedVsphere8/bash/create_vcenter_api_session.sh "$vsphere_n
 # Building json data to create the supervisor cluster
 #
 network_provider="NSXT_CONTAINER_PLUGIN"
-json_data='
+fixedPolicy
 {
   "default_kubernetes_service_content_library":"'${content_library_id}'",
   "ephemeral_storage_policy":"'${storage_policy_id}'",

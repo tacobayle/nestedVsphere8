@@ -85,3 +85,12 @@ resource "null_resource" "yaml_replace_avi_domain" {
   }
 
 }
+
+resource "null_resource" "update_govc" {
+  depends_on = [null_resource.yaml_replace_avi_domain]
+
+  provisioner "local-exec" {
+    command = "/bin/bash bash/govc.sh"
+  }
+
+}

@@ -57,6 +57,11 @@ write_files:
       echo "    version: 2" | sudo tee -a ${netplanFile}
       sudo netplan apply
       run_cmd '! sudo apt update | grep Err'
+      #
+      # install GOVC
+      #
+      curl -L -o - "https://github.com/vmware/govmomi/releases/latest/download/govc_$(uname -s)_$(uname -m).tar.gz" | tar -C /usr/local/bin -xvzf - govc
+      #
       # kubectl install
       #
       #run_cmd 'sudo rm -f /tmp/apt-key.gpg; wget https://packages.cloud.google.com/apt/doc/apt-key.gpg -O /tmp/apt-key.gpg; test $(ls -l /tmp/apt-key.gpg | awk '"'"'{print $5}'"'"') -gt 0'
@@ -104,6 +109,10 @@ write_files:
       mkdir -p /home/ubuntu/routes
       sudo chown ubuntu /home/ubuntu/routes
       sudo chgrp ubuntu /home/ubuntu/routes
+      #
+      mkdir -p /home/ubuntu/govc
+      sudo chown ubuntu /home/ubuntu/govc
+      sudo chgrp ubuntu /home/ubuntu/govc
       #
       mkdir -p /home/ubuntu/${yaml_directory}
       sudo chown ubuntu /home/ubuntu/${yaml_directory}

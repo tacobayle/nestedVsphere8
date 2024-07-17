@@ -340,7 +340,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     test_if_variable_is_defined $(echo $item | jq -c .display_name) "   " "testing if each .nsx.config.tier1s[] have a display_name defined"
     test_if_variable_is_defined $(echo $item | jq -c .tier0) "   " "testing if each .nsx.config.tier1s[] have a tier0 defined"
     if [[ $(echo $item | jq -c -r .lb) == true ]] ; then
-      test_if_variable_is_defined $(echo $item | jq -c .ha_mode) "   " "testing if .nsx.config.tier1s[] have a ha_mode defined"
+  test_if_variable_is_defined $(echo $item | jq -c .ha_mode) "   " "testing if .nsx.config.tier1s[] have a ha_mode defined"
       test_if_variable_is_defined $(echo $item | jq -c .edge_cluster_name) "   " "testing if .nsx.config.tier1s[] have a edge_cluster_name defined"
       if [[ $(echo $item | jq -c -r .ha_mode) != "ACTIVE_STANDBY" ]] ; then
         echo "   +++ Only .nsx.config.tier1s[].ha_mode equals to 'ACTIVE_STANDBY' has been tested when .nsx.config.tier1s[].lb is true"

@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+source /home/ubuntu/govc/govc_init.sh
+#
+vsphere_host=${vsphere_host}.${domain}
+vsphere_username=${vsphere_username}
+vcenter_domain=${vcenter_domain}
+vsphere_password=${vsphere_password}
+vsphere_dc=${vsphere_dc}
+vsphere_cluster=${vsphere_cluster}
+vsphere_datastore=${vsphere_datastore}
+#
+load_govc
