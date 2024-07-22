@@ -66,5 +66,31 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     scp -o StrictHostKeyChecking=no  /nestedVsphere8/02_external_gateway/lbaas/http_destroy.json  ubuntu@external-gw:/home/ubuntu/lbaas
     scp -o StrictHostKeyChecking=no  /nestedVsphere8/02_external_gateway/lbaas/http_apply_private.json  ubuntu@external-gw:/home/ubuntu/lbaas
     scp -o StrictHostKeyChecking=no  /nestedVsphere8/02_external_gateway/lbaas/http_apply_public.json  ubuntu@external-gw:/home/ubuntu/lbaas
+    #
+    exit
+    echo '
+    #!/bin/bash
+    #
+    python3 /home/ubuntu/lbaas/lbaas.py
+    ' | sudo tee /root/lbaas_service.sh
+    #
+    scp -o StrictHostKeyChecking=no /root/lbaas_service.sh ubuntu@${external_gw_ip}:/usr/bin/lbaas_service.sh
+    echo '
+    [Unit]
+    Description=avi-lbaas
+
+    [Service]
+    Type=simple
+    ExecStart=/bin/bash /usr/bin/lbaas_service.sh
+
+    [Install]
+    WantedBy=multi-user.target
+    ' | sudo tee /etc/systemd/system/avi-lbaas.service
+     scp -o StrictHostKeyChecking=no /root/lbaas_service.sh ubuntu@${external_gw_ip}:/etc/systemd/system/avi-lbaas.service
+    #
+#    sudo chmod 644 /etc/systemd/system/avi-lbaas.service
+#    #
+#    sudo systemctl start avi-lbaas
+#    sudo systemctl enable avi-lbaas
   fi
 fi

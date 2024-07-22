@@ -19,31 +19,5 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     source /root/load_govc_nested.sh
     govc library.create lbaas
     govc library.import lbaas /root/focal-server-cloudimg-amd64.ova
-    # create API backend server and send it to external gw
-
-
-    echo '
-    #!/bin/bash
-    #
-    python3 /home/ubuntu/lbaas/lbaas.py
-    ' | sudo tee /root/lbaas_service.sh
-    #
-    scp -o StrictHostKeyChecking=no /root/lbaas_service.sh ubuntu@${external_gw_ip}:/usr/bin/lbaas_service.sh
-    echo '
-    [Unit]
-    Description=avi-lbaas
-
-    [Service]
-    Type=simple
-    ExecStart=/bin/bash /usr/bin/lbaas.sh
-
-    [Install]
-    WantedBy=multi-user.target
-    ' | sudo tee /etc/systemd/system/avi-lbaas.service
   fi
-  #
-  sudo chmod 644 /etc/systemd/system/avi-lbaas.service
-  #
-  sudo systemctl start avi-lbaas
-  sudo systemctl enable avi-lbaas
 fi
