@@ -30,7 +30,7 @@ def createlbaas():
     json_file='/tmp/create.json'
     with open(json_file, 'w') as outfile:
         json.dump(a_dict, outfile)
-    folder="/home/ubuntu/lbaas/lbaas.sh"
+    folder="/home/ubuntu/lbaas"
     subprocess.call(['/bin/bash', 'lbaas.sh', json_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
     return results, 201
 
@@ -43,7 +43,7 @@ def deletelbaas():
     json_file='/tmp/destroy.json'
     with open(json_file, 'w') as outfile:
         json.dump(a_dict, outfile)
-    folder="/home/ubuntu/lbaas/lbaas.sh"
+    folder="/home/ubuntu/lbaas"
     subprocess.call(['/bin/bash', 'lbaas.sh', json_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
     return results, 201
 
