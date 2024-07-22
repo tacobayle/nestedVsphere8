@@ -42,8 +42,6 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     #
     scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/templates/backend_userdata.yaml.template ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/govc/backend_userdata.yaml.template
     #
-    scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/govc/govc_init.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/govc/govc_init.sh
-    #
     sed -e "s@\${folder}@/home/ubuntu/lbaas/govc@" \
         -e "s/\${vsphere_host}/$(jq -r .vsphere_nested.vcsa_name $jsonFile)/" \
         -e "s/\${domain}/$(jq -r .external_gw.bind.domain $jsonFile)/" \
@@ -56,13 +54,13 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     #
     scp -o StrictHostKeyChecking=no /root/load_govc_nested.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/govc/load_govc_nested.sh
     #
-    scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/govc/backend.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/govc/backend.sh
-    #
     scp -o StrictHostKeyChecking=no /nestedVsphere8/bash/nsx/create_nsx_api_session.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/nsx/create_nsx_api_session.sh
     scp -o StrictHostKeyChecking=no /nestedVsphere8/bash/nsx/nsx_api.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/nsx/nsx_api.sh
-    scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/nsx/nsx_group.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/nsx/nsx_group.sh
     #
     scp -o StrictHostKeyChecking=no /nestedVsphere8/bash/avi/alb_api.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/avi/alb_api.sh
-    scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/avi/vs.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/avi/vs.sh
+    #
+    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/govc ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/nsx ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/avi ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
   fi
 fi

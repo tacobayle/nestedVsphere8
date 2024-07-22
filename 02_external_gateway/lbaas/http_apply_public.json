@@ -1,0 +1,7 @@
+{
+  "operation": "apply",
+  "profile": "public",
+  "count": 2,
+  "vs_name": "demo-vs",
+  "cert": "self-signed"
+}
