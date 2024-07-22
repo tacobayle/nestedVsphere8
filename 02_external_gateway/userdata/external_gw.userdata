@@ -58,32 +58,6 @@ write_files:
       sudo netplan apply
       run_cmd '! sudo apt update | grep Err'
       #
-      # vault install and config
-      #
-      wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
-      apt update && apt install vault
-      mv /etc/vault.d/vault.hcl /etc/vault.d/vault.hcl.ori
-      vault_config='
-      storage "file" {
-        path    = "/opt/vault/data"
-      }
-
-      listener "tcp" {
-        address     = "0.0.0.0:8200"
-        tls_disable = "true"
-        tls_cert_file = "/opt/vault/tls/tls.crt"
-        tls_key_file = "/opt/vault/tls/tls.key"
-      }
-
-      ui = true
-      api_addr = "https://${ip}:8200"'
-      echo "$${vault_config}" | tee /etc/vault.d/vault.hcl
-      #
-      # install GOVC
-      #
-      curl -L -o - "https://github.com/vmware/govmomi/releases/latest/download/govc_$(uname -s)_$(uname -m).tar.gz" | tar -C /usr/local/bin -xvzf - govc
-      #
       # kubectl install
       #
       #run_cmd 'sudo rm -f /tmp/apt-key.gpg; wget https://packages.cloud.google.com/apt/doc/apt-key.gpg -O /tmp/apt-key.gpg; test $(ls -l /tmp/apt-key.gpg | awk '"'"'{print $5}'"'"') -gt 0'
@@ -192,6 +166,38 @@ write_files:
       run_cmd 'pip3 install netaddr; pip3 list | grep netaddr'
       run_cmd 'pip3 install yq==3.2.2; pip3 list | grep yq'
       apt install -y language-pack-en python3-pip python3-jmespath sshpass bind9 bind9utils bind9-doc bind9-host
+      #
+      # lbaas install
+      #
+      pip3 install flask
+      pip3 install flask_restful
+      pip3 install flask_cors
+      #
+      # vault install and config
+      #
+      wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+      apt update && apt install vault
+      mv /etc/vault.d/vault.hcl /etc/vault.d/vault.hcl.ori
+      vault_config='
+      storage "file" {
+        path    = "/opt/vault/data"
+      }
+
+      listener "tcp" {
+        address     = "0.0.0.0:8200"
+        tls_disable = "true"
+        tls_cert_file = "/opt/vault/tls/tls.crt"
+        tls_key_file = "/opt/vault/tls/tls.key"
+      }
+
+      ui = true
+      api_addr = "https://${ip}:8200"'
+      echo "$${vault_config}" | tee /etc/vault.d/vault.hcl
+      #
+      # install GOVC
+      #
+      curl -L -o - "https://github.com/vmware/govmomi/releases/latest/download/govc_$(uname -s)_$(uname -m).tar.gz" | tar -C /usr/local/bin -xvzf - govc
       #
       # ssh key generation
       #

@@ -1,14 +1,16 @@
 from flask import Flask
 import subprocess
 import json
+from flask_restful import Api, Resource, reqparse, abort
 
 # Creating a Flask app
 app = Flask(__name__)
 
 @app.route('/api/create-lbaas', methods=['POST'])
 def getFolders():
-    folder="/nestedVsphere8/02_external_gateway"
-    subprocess.call(['/bin/bash', 'getFolders.sh'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+
+    folder="/home/ubuntu/lbaas/lbaas.sh"
+    subprocess.call(['/bin/bash', 'lbaas.sh', ''], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
     with open('/nestedVsphere8/api/getFolders.json', 'r') as results_json:
         results = json.load(results_json)
     return results, 201
