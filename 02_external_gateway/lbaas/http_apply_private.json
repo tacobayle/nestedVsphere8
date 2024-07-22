@@ -1,6 +1,6 @@
 {
   "operation": "apply",
-  "profile": "private",
+  "app_profile": "private",
   "count": 2,
   "vs_name": "demo-vs",
   "cert": "self-signed"
