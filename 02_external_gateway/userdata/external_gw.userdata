@@ -58,6 +58,28 @@ write_files:
       sudo netplan apply
       run_cmd '! sudo apt update | grep Err'
       #
+      # vault install and config
+      #
+      wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+      apt update && apt install vault
+      mv /etc/vault.d/vault.hcl /etc/vault.d/vault.hcl.ori
+      vault_config='
+      storage "file" {
+        path    = "/opt/vault/data"
+      }
+
+      listener "tcp" {
+        address     = "0.0.0.0:8200"
+        tls_disable = "true"
+        tls_cert_file = "/opt/vault/tls/tls.crt"
+        tls_key_file = "/opt/vault/tls/tls.key"
+      }
+
+      ui = true
+      api_addr = "https://${ip}:8200"'
+      echo "${vault_config}" | tee /etc/vault.d/vault.hcl
+      #
       # install GOVC
       #
       curl -L -o - "https://github.com/vmware/govmomi/releases/latest/download/govc_$(uname -s)_$(uname -m).tar.gz" | tar -C /usr/local/bin -xvzf - govc

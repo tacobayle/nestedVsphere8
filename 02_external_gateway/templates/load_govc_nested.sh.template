@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-source /home/ubuntu/lbaas/govc/govc_init.sh
+source ${folder}/govc_init.sh
 #
 vsphere_host=${vsphere_host}.${domain}
 vsphere_username=${vsphere_username}

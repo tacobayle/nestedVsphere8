@@ -95,7 +95,7 @@ if [[ ${operation} == "apply" ]] ; then
         "Name": "'${vs_name}''${backend}'"
       }'
       echo ${json_data} | jq . | tee /home/ubuntu/lbaas/govc/${vs_name}${backend}.json
-      govc library.deploy -options /home/ubuntu/lbaas/govc/${vs_name}${backend}.json /avi_app/ubuntu.ova
+      govc library.deploy -options /home/ubuntu/lbaas/govc/${vs_name}${backend}.json /lbaas/focal-server-cloudimg-amd64
       govc vm.change -vm "${vs_name}${backend}" -c 4 -m 4096 -e="disk.enableUUID=1"
       govc vm.disk.change -vm "${vs_name}${backend}" -disk.label "Hard disk 1" -size 10G
       govc vm.power -on=true "${vs_name}${backend}"

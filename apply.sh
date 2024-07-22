@@ -272,6 +272,12 @@ if [[ ${deployment} == "vsphere_nsx_alb_telco" ]]; then
   if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 12_tkgm deployed"}' ${slack_webhook_url} >/dev/null 2>&1; fi
 fi
 #
+# 15_lbaas
+#
+if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
+  /bin/bash /nestedVsphere8/15_lbaas/apply.sh
+fi
+#
 #if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then
 #  /bin/bash /nestedVsphere8/13_vcd_appliance/apply.sh
 ##   if [ $? -ne 0 ] ; then exit 1 ; fi

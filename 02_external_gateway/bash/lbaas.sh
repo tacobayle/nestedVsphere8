@@ -44,7 +44,8 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     #
     scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/govc/govc_init.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/govc/govc_init.sh
     #
-    sed -e "s/\${vsphere_host}/$(jq -r .vsphere_nested.vcsa_name $jsonFile)/" \
+    sed -e "s@\${folder}@/home/ubuntu/lbaas/govc@" \
+        -e "s/\${vsphere_host}/$(jq -r .vsphere_nested.vcsa_name $jsonFile)/" \
         -e "s/\${domain}/$(jq -r .external_gw.bind.domain $jsonFile)/" \
         -e "s/\${vsphere_username}/administrator/" \
         -e "s/\${vcenter_domain}/$(jq -r .vsphere_nested.sso.domain_name $jsonFile)/" \
