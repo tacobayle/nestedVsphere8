@@ -116,6 +116,11 @@ avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"dhcp_enabled": "'$(echo $
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
+  #
+  # adding private and public SEG for lbaas demo
+  seg_list=$(echo $seg_list | jq '. += [{"name": "public", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'- public", "ha_mode": "HA_MODE_SHARED_PAIR", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+  seg_list=$(echo $seg_list | jq '. += [{"name": "private", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'- private", "ha_mode": "HA_MODE_SHARED_PAIR", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+  #
   if grep -q "nsx_password" /nestedVsphere8/10_nsx_alb_config/variables.tf ; then
     echo "   +++ variable nsx_password is already in /nestedVsphere8/10_nsx_alb_config/variables.tf"
   else

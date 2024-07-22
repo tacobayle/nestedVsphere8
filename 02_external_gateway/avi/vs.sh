@@ -46,30 +46,22 @@ if [[ ${operation} == "apply" ]] ; then
     if [[ ${app_profile} != "public" && ${app_profile} != "private" ]] ; then echo "ERROR: Unsupported app_profile" ; exit 255 ; fi
     if [[ ${app_profile} == "public" ]] ; then
       avi_vip_cidr=$(jq -r .public.avi_vip_cidr $jsonFile)
-      json_data='
-      {
-        "host": "'$(jq -c -r .nsx_nested_ip $jsonFile)'",
-        "username": "'$(jq -c -r .nsx_username $jsonFile)'",
-        "password": "'$(jq -c -r .nsx_password $jsonFile)'"
-      }'
-      alb_api 3 5 "POST" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "${json_data}" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/nsxt/tier1s?page_size=-1"
-      tier1_id=$(echo $response_body | jq -c -r --arg arg $(jq -r .private.avi_tier1 $jsonFile) '.resource.nsxt_tier1routers[] | select(.name == $arg).id' )
+      tier1_name=$(jq -r .public.avi_tier1 $jsonFile)
     fi
     if [[ ${app_profile} == "private" ]] ; then
       avi_vip_cidr=$(jq -r .private.avi_vip_cidr $jsonFile)
-      json_data='
-      {
-        "host": "'$(jq -c -r .nsx_nested_ip $jsonFile)'",
-        "username": "'$(jq -c -r .nsx_username $jsonFile)'",
-        "password": "'$(jq -c -r .nsx_password $jsonFile)'"
-      }'
-      alb_api 3 5 "POST" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "${json_data}" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/nsxt/tier1s?page_size=-1"
-      tier1_id=$(echo $response_body | jq -c -r --arg arg $(jq -r .private.avi_tier1 $jsonFile) '.resource.nsxt_tier1routers[] | select(.name == $arg).id' )
-      echo $tier1_id
-      alb_api 3 5 "POST" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "${json_data}" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/nsxt/groups?page_size=-1"
-      group_id=$(echo $response_body | jq -c -r --arg arg ${vs_name} '.resource.nsxt_groups[] | select(.name == $arg).id' )
-      echo $group_id
+      tier1_name=$(jq -r .private.avi_tier1 $jsonFile)
     fi
+    json_data='
+    {
+      "host": "'$(jq -c -r .nsx_nested_ip $jsonFile)'",
+      "username": "'$(jq -c -r .nsx_username $jsonFile)'",
+      "password": "'$(jq -c -r .nsx_password $jsonFile)'"
+    }'
+    alb_api 3 5 "POST" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "${json_data}" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/nsxt/tier1s?page_size=-1"
+    tier1_id=$(echo $response_body | jq -c -r --arg arg ${tier1_name} '.resource.nsxt_tier1routers[] | select(.name == $arg).id' )
+    alb_api 3 5 "POST" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "${json_data}" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/nsxt/groups?page_size=-1"
+    group_id=$(echo $response_body | jq -c -r --arg arg ${vs_name} '.resource.nsxt_groups[] | select(.name == $arg).id' )
     json_data='
     {
       "model_name": "VirtualService",
@@ -77,10 +69,29 @@ if [[ ${operation} == "apply" ]] ; then
         "name": "'${vs_name}'",
         "enabled": true,
         "cloud_ref": "/api/cloud/?name='$(jq -c -r .avi_cloud $jsonFile)'",
+        "ssl_profile_ref": "/api/sslprofile/?name=System-Standard",
+        "analytics_policy": {
+            "udf_log_throttle": 10,
+            "metrics_realtime_update": {
+                "duration": 0,
+                "enabled": true
+            },
+            "significant_log_throttle": 0,
+            "client_insights": "NO_INSIGHTS",
+            "full_client_logs": {
+                "duration": 0,
+                "throttle": 10,
+                "enabled": true
+            }
+        },
         "services": [
           {
             "enable_ssl": false,
             "port": 80
+          },
+          {
+            "port": 443,
+            "enable_ssl": true
           }
         ],
         "vsvip_ref_data": {
@@ -123,6 +134,20 @@ if [[ ${operation} == "apply" ]] ; then
         }
       }
     }'
+    if [[ $(jq -c -r .cert $jsonFile) == "self-signed" ]] ; then
+      json_data=$(echo ${json_data} | jq -c -r '.data += {"ssl_key_and_certificate_refs": ["/api/sslkeyandcertificate/?name=System-Default-Cert"]}')
+    fi
+    if [[ $(jq -c -r .cert $jsonFile) == "new-cert" ]] ; then
+      json_data=$(echo ${json_data} | jq -c -r '.data += {"ssl_key_and_certificate_refs": ["/api/sslkeyandcertificate/?name=System-Default-Cert"]}')
+      # use case with cert automation
+    fi
+    if [[ ${app_profile} == "public" ]] ; then
+      json_data=$(echo ${json_data} | jq -c -r '.data += {"waf_policy_ref": "/api/wafpolicy/?name=System-WAF-Policy"}')
+      json_data=$(echo ${json_data} | jq -c -r '.data += {"se_group_ref": "/api/serviceenginegroup/?name=public"}')
+    fi
+    if [[ ${app_profile} == "private" ]] ; then
+      json_data=$(echo ${json_data} | jq -c -r '.data += {"se_group_ref": "/api/serviceenginegroup/?name=private"}')
+    fi
     alb_api 3 5 "POST" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "${json_data}" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/macro"
   fi
 fi
