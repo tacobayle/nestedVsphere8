@@ -3,6 +3,11 @@ import subprocess
 import json
 from flask_restful import Api, Resource, reqparse, abort
 
+
+# curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"demo-vs", "operation":"apply", "app_profile":"private","count":2, "cert": self-signed}' -H "Content-Type: application/json"
+# curl -X DELETE http://127.0.0.1:5000/api/deletelbaas -d '{"vs_name":"demo-vs"}' -H "Content-Type: application/json"
+
+
 # Creating a Flask app
 app = Flask(__name__)
 
@@ -33,8 +38,8 @@ def createlbaas():
 def deletelbaas():
     args_parser_createlbaas = parser_create_vs_multiple_dcs.parse_args()
     a_dict = {}
-    a_dict['operation'] = args_parser_createlbaas['operation']
     a_dict['vs_name'] = args_parser_createlbaas['vs_name']
+    a_dict['operation'] = "destroy"
     json_file='/tmp/destroy.json'
     with open(json_file, 'w') as outfile:
         json.dump(a_dict, outfile)
