@@ -41,5 +41,13 @@
     "exclude_discovered_subnets": true,
     "type": "V4"
   },
-  "ako_service_type": "ClusterIP"
+  "ako_service_type": "ClusterIP",
+  "vault": {
+    "control_script": {
+      "name": "vault_control_script"
+    },
+    "certificate_mgmt_profile": {
+      "name": "vault_cert_profile"
+    }
+  }
 }

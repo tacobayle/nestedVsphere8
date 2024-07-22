@@ -90,7 +90,7 @@ resource "null_resource" "update_govc" {
   depends_on = [null_resource.yaml_replace_avi_domain]
 
   provisioner "local-exec" {
-    command = "/bin/bash bash/lbaas.sh"
+    command = "/bin/bash bash/configure_lbaas.sh"
   }
 
 }
