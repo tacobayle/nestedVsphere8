@@ -78,7 +78,7 @@ write_files:
 
       ui = true
       api_addr = "https://${ip}:8200"'
-      echo "${vault_config}" | tee /etc/vault.d/vault.hcl
+      echo "$${vault_config}" | tee /etc/vault.d/vault.hcl
       #
       # install GOVC
       #
