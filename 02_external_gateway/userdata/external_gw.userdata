@@ -186,7 +186,7 @@ write_files:
 
       listener "tcp" {
         address     = "0.0.0.0:8200"
-        tls_disable = "true"
+        tls_disable = "false"
         tls_cert_file = "/opt/vault/tls/tls.crt"
         tls_key_file = "/opt/vault/tls/tls.key"
       }
@@ -194,6 +194,8 @@ write_files:
       ui = true
       api_addr = "https://${ip}:8200"'
       echo "$${vault_config}" | tee /etc/vault.d/vault.hcl
+      systemctl start vault
+      systemctl enable vault
       #
       # install GOVC
       #

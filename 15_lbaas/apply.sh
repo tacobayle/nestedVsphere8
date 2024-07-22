@@ -1,11 +1,14 @@
 #!/bin/bash
 jsonFile="/root/avi.json"
+log_file="/nestedVsphere8/log/15_lbaas.stdout"
 if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c -r .nsx $jsonFile) != "null" ]]; then
   if [[ $(jq '[.nsx.config.segments_overlay[] | select(has("lbaas_public")).display_name] | length' ${jsonFile}) -eq 1 && \
         $(jq '[.nsx.config.segments_overlay[] | select(has("lbaas_private")).display_name] | length' ${jsonFile}) -eq 1 && \
         $(jq '[.avi.config.cloud.networks_data[] | select(has("lbaas_public")).display_name] | length' ${jsonFile}) -eq 1 && \
         $(jq '[.avi.config.cloud.networks_data[] | select(has("lbaas_private")).display_name] | length' ${jsonFile}) -eq 1 ]]; then
-        sed -e "s@\${folder}@/root@" \
+    echo "Creation a content library for LBaaS demo - This should take less than 10 minute" | tee -a ${log_file}
+    echo "Starting timestamp: $(date)" | tee -a ${log_file}
+    sed -e "s@\${folder}@/root@" \
             -e "s/\${vsphere_host}/$(jq -r .vsphere_nested.vcsa_name $jsonFile)/" \
             -e "s/\${domain}/$(jq -r .external_gw.bind.domain $jsonFile)/" \
             -e "s/\${vsphere_username}/administrator/" \
@@ -17,7 +20,10 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     # create content library for backend
     cp /nestedVsphere8/02_external_gateway/govc/govc_init.sh /root/govc_init.sh
     source /root/load_govc_nested.sh
+    echo "" | tee ${log_file}
     govc library.create lbaas
     govc library.import lbaas /root/focal-server-cloudimg-amd64.ova
+    echo "Ending timestamp: $(date)" | tee -a ${log_file}
+    echo '------------------------------------------------------------' | tee -a ${log_file}
   fi
 fi

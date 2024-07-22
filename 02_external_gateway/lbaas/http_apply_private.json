@@ -2,6 +2,6 @@
   "operation": "apply",
   "app_profile": "private",
   "count": 2,
-  "vs_name": "demo-vs",
+  "vs_name": "bash-vs",
   "cert": "self-signed"
 }
