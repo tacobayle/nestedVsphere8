@@ -69,8 +69,8 @@ if [[ ${operation} == "apply" ]] ; then
         "name": "'${vs_name}'",
         "enabled": true,
         "cloud_ref": "/api/cloud/?name='$(jq -c -r .avi_cloud $jsonFile)'",
-        "application_profile_ref": "/api/applicationprofile/?name=System-Secure-HTTP",
-        "ssl_profile_ref": "/api/sslprofile/?name=System-Standard",
+        "application_profile_ref": "/api/applicationprofile/?name='$(jq -c -r .avi_application_profile_ref $jsonFile)'",
+        "ssl_profile_ref": "/api/sslprofile/?name='$(jq -c -r .avi_ssl_profile_ref $jsonFile)'",
         "analytics_policy": {
             "udf_log_throttle": 10,
             "metrics_realtime_update": {

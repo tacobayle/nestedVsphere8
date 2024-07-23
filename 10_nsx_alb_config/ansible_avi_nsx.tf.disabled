@@ -13,6 +13,8 @@ data "template_file" "values" {
     nsx_server = var.vsphere_underlay.networks.vsphere.management.nsx_nested_ip
     sslkeyandcertificate = jsonencode(var.avi.config.sslkeyandcertificate)
     sslkeyandcertificate_ref = var.avi.config.portal_configuration.sslkeyandcertificate_ref
+    alertscriptconfig = jsonencode(var.avi.config.alertscriptconfig)
+    certificatemanagementprofile = jsonencode(var.avi.config.certificatemanagementprofile)
     tenants = jsonencode(var.avi.config.tenants)
     users = jsonencode(var.avi.config.users)
     domain = var.avi.config.domain

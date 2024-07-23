@@ -121,35 +121,30 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   seg_list=$(echo $seg_list | jq '. += [{"name": "public", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'- public", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
   seg_list=$(echo $seg_list | jq '. += [{"name": "private", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'- private", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
   #
-alertscriptconfig=$(cat <<'END_HEREDOC'
-{"action_script": "#!/usr/bin/python\n\nimport os\nimport sys\nimport requests\ntry:\n    from requests.exceptions import JSONDecodeError\nexcept ImportError:\n    from simplejson.errors import JSONDecodeError\nfrom tempfile import NamedTemporaryFile\n\nPARAMS_ERROR=1\nREMOTE_API_ERROR=2\nREQUESTS_ERROR=3\nTEMP_FILE_ERROR=4\n\ndef certificate_request(csr, common_name, args_dict):\n    if 'vault_addr' not in args_dict:\n        sys.stderr.write('Vault API Root Address (vault_addr) not specified')\n        sys.exit(PARAMS_ERROR)\n\n    if 'vault_token' not in args_dict:\n        sys.stderr.write('Vault Token (vault_token) not specified')\n        sys.exit(PARAMS_ERROR)\n\n    if 'vault_path' not in args_dict:\n        sys.stderr.write('Vault Sign API Path (vault_path) not specified')\n        sys.exit(PARAMS_ERROR)\n\n    vault_addr = args_dict['vault_addr']\n    vault_token = args_dict['vault_token']\n    vault_path = args_dict['vault_path']\n    vault_namespace = args_dict.get('vault_namespace', None)\n    verify_endpoint = args_dict.get('verify_endpoint', None)\n    api_timeout = args_dict.get('api_timeout', 20)\n\n    headers = {'X-Vault-Token': vault_token}\n    if vault_namespace:\n        headers['X-Vault-Namespace'] = vault_namespace\n\n    url = f'{vault_addr}{vault_path}'\n    api_data = {\n        'common_name': common_name,\n        'csr': csr\n    }\n\n    ca_file = False\n\n    try:\n        if verify_endpoint:\n            try:\n                with NamedTemporaryFile(delete=False) as tf:\n                    ca_file = tf.name\n                    sys.stdout.write(f'CA certificate written to {ca_file}')\n                    tf.write(bytes(verify_endpoint, 'utf-8'))\n\n            except Exception as e:\n                sys.stderr.write(str(e))\n                sys.exit(TEMP_FILE_ERROR)\n\n        requests.packages.urllib3.disable_warnings()\n        r = requests.post(url, headers=headers, json=api_data,\n                        verify=ca_file, timeout=api_timeout)\n\n        if r.status_code >= 400:\n            try:\n                r_errors = ' | '.join(r.json()['errors'])\n            except (JSONDecodeError, KeyError):\n                r_errors = r.text\n\n            sys.stderr.write(f'Error from Vault API: {r_errors}')\n            sys.exit(REMOTE_API_ERROR)\n\n        try:\n            r_data = r.json()\n            certificate = r_data['data']['certificate']\n        except (JSONDecodeError, KeyError):\n            r_data = f'{r.text[:50]} +...' if len(r.text) > 50 else r.text\n            sys.stderr.write(f'Vault API returned incorrect response: {r_data}')\n            sys.exit(REMOTE_API_ERROR)\n\n    except Exception as e:\n        sys.stderr.write(f'Error during request: {str(e)}')\n        sys.exit(REQUESTS_ERROR)\n\n    finally:\n        if ca_file and os.path.exists(ca_file):\n            os.remove(ca_file)\n\n    return certificate", "name": "'$(jq -c -r .vault.control_script.name $localJsonFile)'"}
-END_HEREDOC)
-
-  certificatemanagementprofile='
-  {
-    "name": "'$(jq -c -r .vault.certificate_mgmt_profile.name $localJsonFile)'",
-    "run_script_ref": "api/alertscriptconfig/?name='$(jq -c -r .vault.control_script.name $localJsonFile)'",
-    "script_params": [
-      {
-        "is_dynamic": false,
-        "is_sensitive": false,
-        "name": "vault_addr",
-        "value": "https://'$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)':8200"
-      },
-      {
-        "is_dynamic": false,
-        "is_sensitive": false,
-        "name": "vault_path",
-        "value": "/v1/'$(jq -r .vault.pki_intermediate.name /nestedVsphere8/02_external_gateway/variables.json)'/sign/'$(jq -r .vault.pki_intermediate.role.name /nestedVsphere8/02_external_gateway/variables.json)'"
-      },
-      {
-        "is_dynamic": false,
-        "is_sensitive": true,
-        "name": "vault_token",
-        "value": "'$(jq -r .vault_token /root/vault_token.json)'"
-      }
-    ]
-  }'
+  avi_json=$(echo $avi_json | jq '.avi.config += {"alertscriptconfig": [{"action_script": "'$(awk '{printf "%s\\n", $0}' $(jq -c -r .vault.control_script.path $localJsonFile))'",
+                                                                         "name": "'$(jq -c -r .vault.control_script.name $localJsonFile)'"}]}')
+  avi_json=$(echo $avi_json | jq '.avi.config += {"certificatemanagementprofile": [{"name": "'$(jq -c -r .vault.certificate_mgmt_profile.name $localJsonFile)'",
+                                                                                    "run_script_ref": "api/alertscriptconfig/?name='$(jq -c -r .vault.control_script.name $localJsonFile)'",
+                                                                                     "script_params": [
+                                                                                       {
+                                                                                         "is_dynamic": false,
+                                                                                         "is_sensitive": false,
+                                                                                         "name": "vault_addr",
+                                                                                         "value": "https://'$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)':8200"
+                                                                                       },
+                                                                                       {
+                                                                                         "is_dynamic": false,
+                                                                                         "is_sensitive": false,
+                                                                                         "name": "vault_path",
+                                                                                         "value": "/v1/'$(jq -r .vault.pki_intermediate.name /nestedVsphere8/02_external_gateway/variables.json)'/sign/'$(jq -r .vault.pki_intermediate.role.name /nestedVsphere8/02_external_gateway/variables.json)'"
+                                                                                       },
+                                                                                       {
+                                                                                         "is_dynamic": false,
+                                                                                         "is_sensitive": true,
+                                                                                         "name": "vault_token",
+                                                                                         "value": "'$(jq -r .vault_token /root/vault_token.json)'"
+                                                                                       }
+                                                                                     ]}]}')
   if grep -q "nsx_password" /nestedVsphere8/10_nsx_alb_config/variables.tf ; then
     echo "   +++ variable nsx_password is already in /nestedVsphere8/10_nsx_alb_config/variables.tf"
   else

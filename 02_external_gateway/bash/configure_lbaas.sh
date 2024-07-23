@@ -24,7 +24,9 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     "avi_tenant": "automation",
     "avi_cloud": "'$(jq -c -r '.avi.config.cloud.name' $jsonFile)'",
     "avi_domain": "'$(jq -c -r '.avi.config.domain' $jsonFile)'",
-    "avi_nested_ip": "'$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)'"
+    "avi_nested_ip": "'$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)'",
+    "avi_application_profile_ref": "System-Secure-HTTP",
+    "avi_ssl_profile_ref": "System-Standard"
     }'
     if [[ $(jq '[.avi.config.cloud.networks_data[] | select(has("lbaas_public")).name] | length' ${jsonFile}) -eq 1 ]]; then
       json_data=$(echo ${json_data} | jq -c -r '.public += {"avi_tier1": "'$(jq -c -r --arg arg $(jq -c -r '[.avi.config.cloud.networks_data[] | select(has("lbaas_public")).name] | .[0]' ${jsonFile}) '.nsx.config.segments_overlay[] | select(.display_name == $arg).tier1' ${jsonFile})'","avi_vip_cidr": "'$(jq -c -r '[.avi.config.cloud.networks_data[] | select(has("lbaas_public")).avi_ipam_vip.cidr] | .[0]' ${jsonFile})'"}')

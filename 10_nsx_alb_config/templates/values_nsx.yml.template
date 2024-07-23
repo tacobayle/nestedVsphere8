@@ -21,6 +21,10 @@ sslkeyandcertificate: |
   ${sslkeyandcertificate}
 portal_configuration:
   sslkeyandcertificate_ref: ${sslkeyandcertificate_ref}
+certificatemanagementprofile: |
+  ${certificatemanagementprofile}
+alertscriptconfig: |
+  ${alertscriptconfig}
 tenants: |
   ${tenants}
 users: |

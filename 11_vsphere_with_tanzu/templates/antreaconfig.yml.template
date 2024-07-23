@@ -1,17 +1,22 @@
 apiVersion: cni.tanzu.vmware.com/v1alpha1
 kind: AntreaConfig
 metadata:
-  name: ${name}
+  name: ${name}-antrea-package
   namespace: ${namespace_ref}
 spec:
   antrea:
     config:
       featureGates:
         AntreaProxy: true
-        EndpointSlice: false
+        EndpointSlice: true
         AntreaPolicy: true
         FlowExporter: true
         Egress: true
         NodePortLocal: true
         AntreaTraceflow: true
         NetworkPolicyStats: true
+      flowExporter:
+        activeFlowTimeout: 60s
+        collectorAddress: flow-aggregator/flow-aggregator:4739:tls
+  antreaNSX:
+    enable: true

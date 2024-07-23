@@ -44,7 +44,8 @@
   "ako_service_type": "ClusterIP",
   "vault": {
     "control_script": {
-      "name": "vault_control_script"
+      "name": "vault_control_script",
+      "path": "/nestedVsphere8/10_nsx_alb_config/python/control-script-vault.py"
     },
     "certificate_mgmt_profile": {
       "name": "vault_cert_profile"

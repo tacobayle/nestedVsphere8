@@ -308,12 +308,12 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       disableStaticRouteSync="true" # needs to be true if NodePortLocal is enabled
       if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb"  ]]; then
         if $(jq -e --arg arg ${namespace} '.tanzu.namespaces[] | select(.name == $arg) | .ingress_cidr' $jsonFile > /dev/null) ; then
-          cidr=$(jq --arg arg ${namespace} '.tanzu.namespaces[] | select(.name == $arg) | .ingress_cidr' $jsonFile)
+          cidr=$(jq -c -r --arg arg ${namespace} '.tanzu.namespaces[] | select(.name == $arg) | .ingress_cidr' $jsonFile)
         else
-          cidr=$(jq '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
+          cidr=$(jq -c -r '.tanzu.supervisor_cluster.ingress_cidr' $jsonFile)
         fi
         # retrieve the tier1 and his path
-        nsxtT1LR_name="t1-${cluster_id}:$(jq .About.InstanceUuid /root/vcenter_about.json)-${namespace}-rtr"
+        nsxtT1LR_name="t1-${cluster_id}:$(jq -c -r .About.InstanceUuid /root/vcenter_about.json)-${namespace}-rtr"
         t1_path_json_output="/root/t1_path.json"
         /bin/bash /nestedVsphere8/bash/nsx/retrieve_t1_id.sh \
           "$(jq -r .vsphere_underlay.networks.vsphere.management.nsx_nested_ip $jsonFile)" \
@@ -340,7 +340,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       sed -e "s/\${disableStaticRouteSync}/${disableStaticRouteSync}/" \
           -e "s/\${clusterName}/${tkc_name}/" \
           -e "s/\${cniPlugin}/${cniPlugin}/" \
-          -e "s/\${nsxtT1LR}/${nsxtT1LR}/" \
+          -e "s@\${nsxtT1LR}@${nsxtT1LR}@" \
           -e "s/\${networkName}/${networkName}/" \
           -e "s@\${cidr}@${cidr}@" \
           -e "s/\${serviceType}/${serviceType}/" \
