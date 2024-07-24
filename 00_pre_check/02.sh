@@ -72,6 +72,10 @@ external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(ech
 nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
 #
+echo "   +++ Adding vault variables"
+vault=$(jq -c -r '.vault' $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '. += {"vault": '${vault}'}')
+#
 if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) != "true" ]]; then
   echo "   +++ Adding .default_kubectl_version... from local variables.json"
   default_kubectl_version=$(jq -c -r '.default_kubectl_version' $localJsonFile)

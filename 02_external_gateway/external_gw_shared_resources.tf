@@ -54,6 +54,24 @@ data "template_file" "external_gw_userdata" {
     vcd_ip = var.vcd_ip
     nfs_path = var.external_gw.nfs_path
     K8s_version = var.default_kubectl_version
+    vault_secret_file_path = var.vault.secret_file_path
+    vault_pki_name = var.vault.pki.name
+    vault_pki_max_lease_ttl = var.vault.pki.max_lease_ttl
+    vault_pki_cert_common_name = var.vault.pki.cert.common_name
+    vault_pki_cert_issuer_name = var.vault.pki.cert.issuer_name
+    vault_pki_cert_ttl = var.vault.pki.cert.ttl
+    vault_pki_cert_path = var.vault.pki.cert.path
+    vault_pki_issuers_file = var.vault.pki.issuers_file
+    vault_pki_role_name = var.vault.pki.role.name
+    vault_pki_intermediate_name = var.vault.pki_intermediate.name
+    vault_pki_intermediate_max_lease_ttl = var.vault.pki_intermediate.max_lease_ttl
+    vault_pki_intermediate_cert_common_name = var.vault.pki_intermediate.cert.common_name
+    vault_pki_intermediate_cert_issuer_name = var.vault.pki_intermediate.cert.issuer_name
+    vault_pki_intermediate_cert_path = var.vault.pki_intermediate.cert.path
+    vault_pki_intermediate_cert_path_signed = var.vault.pki_intermediate.cert.path_signed
+    vault_pki_intermediate_role_name = var.vault.pki_intermediate.role.name
+    vault_pki_intermediate_role_allow_subdomains = var.vault.pki_intermediate.role.allow_subdomains
+    vault_pki_intermediate_role_max_ttl = var.vault.pki_intermediate.role.max_ttl
   }
 }
 

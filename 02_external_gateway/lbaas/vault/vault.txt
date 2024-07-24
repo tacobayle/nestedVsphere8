@@ -1,4 +1,23 @@
-      vault operator init -key-shares=1 -key-threshold=1 -tls-skip-verify --verbose
+      vault_config='
+      storage "file" {
+        path    = "/opt/vault/data"
+      }
+
+      listener "tcp" {
+        address     = "0.0.0.0:8200"
+        tls_disable = "false"
+        tls_cert_file = "/opt/vault/tls/tls.crt"
+        tls_key_file = "/opt/vault/tls/tls.key"
+      }
+
+      ui = true
+      api_addr = "https://100.100.21.78:8200"'
+
+
+
+      vault operator init -key-shares=1 -key-threshold=1 -tls-skip-verify -format json | tee /home/ubuntu/vault/secret.json
+
+
 
 
 
@@ -19,42 +38,33 @@
         "root_token": "**************"
       }
 
-      root token needs to be output in /root/vault_token.json
 
-      vault operator unseal -tls-skip-verify -non-interactive -unlock-key **************
-
-      vault login -tls-skip-verify
-
-      vault secrets enable -tls-skip-verify pki
-
-      vault secrets tune -tls-skip-verify -max-lease-ttl=87600h pki
 
       vault secrets enable -tls-skip-verify -path=pki_int pki
 
-      vault secrets enable -tls-skip-verify -path=pki_int pki
 
-      vault secrets tune -tls-skip-verify -max-lease-ttl=43800h pki_int
 
-      vault write -tls-skip-verify -field=certificate pki/root/generate/internal      common_name="example.com"      issuer_name="root-2023"      ttl=87600h > root_2023_ca.crt
+
+
+
 
       ca cert need to be upload in Avi ctrl
 
       vault list -tls-skip-verify pki/issuers/
 
 
-      vault write -tls-skip-verify pki/roles/role-pki-ca allow_any_name=true
 
-      vault write -tls-skip-verify pki/config/urls      issuing_certificates="https://10.206.112.78:8200/v1/pki/ca"      crl_distribution_points="https://10.206.112.78:8200/v1/pki/crl"
 
-      vault write -tls-skip-verify -format=json pki_int/intermediate/generate/internal      common_name="example.com Intermediate Authority"      issuer_name="example-dot-com-intermediate"      | jq -r '.data.csr' > pki_intermediate.csr
 
-      vault write -tls-skip-verify -format=json pki/root/sign-intermediate      issuer_ref="root-2023"      csr=@pki_intermediate.csr      format=pem_bundle ttl="43800h"      | jq -r '.data.certificate' > intermediate.cert.pem
+
+
+
 
       ca intermediate cert need to be upload in Avi ctrl
 
-      vault write -tls-skip-verify pki_int/intermediate/set-signed certificate=@intermediate.cert.pem
 
-      vault write -tls-skip-verify pki_int/roles/server-cert-role     issuer_ref="$(vault read -tls-skip-verify -field=default pki_int/config/issuers)"      allowed_domains="alb.com"      allow_subdomains=true      max_ttl="720h"
+
+
 
       Avi config
 
@@ -66,7 +76,22 @@
 
 
 
+imported -- done
+vault write -tls-skip-verify -field=certificate pki/root/generate/internal      common_name="example.com"      issuer_name="root-2023"      ttl=87600h > root_2023_ca.crt
+root token needs to be output in /root/vault_token.json
 
+vault operator unseal -tls-skip-verify -non-interactive -unlock-key **************
+vault login -tls-skip-verify
+vault secrets enable -tls-skip-verify pki
+vault secrets tune -tls-skip-verify -max-lease-ttl=87600h pki
+vault write -tls-skip-verify pki/roles/role-pki-ca allow_any_name=true
+vault write -tls-skip-verify pki/config/urls      issuing_certificates="https://10.206.112.78:8200/v1/pki/ca"      crl_distribution_points="https://10.206.112.78:8200/v1/pki/crl"
+vault secrets enable -tls-skip-verify -path=pki_int pki
+vault secrets tune -tls-skip-verify -max-lease-ttl=43800h pki_int
+vault write -tls-skip-verify -format=json pki_int/intermediate/generate/internal      common_name="example.com Intermediate Authority"      issuer_name="example-dot-com-intermediate"      | jq -r '.data.csr' > pki_intermediate.csr
+      vault write -tls-skip-verify -format=json pki/root/sign-intermediate      issuer_ref="root-2023"      csr=@pki_intermediate.csr      format=pem_bundle ttl="43800h"      | jq -r '.data.certificate' > intermediate.cert.pem
+vault write -tls-skip-verify pki_int/intermediate/set-signed certificate=@intermediate.cert.pem
+vault write -tls-skip-verify pki_int/roles/server-cert-role     issuer_ref="$(vault read -tls-skip-verify -field=default pki_int/config/issuers)"      allowed_domains="alb.com"      allow_subdomains=true      max_ttl="720h"
 
 vault control script:
 
