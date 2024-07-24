@@ -86,11 +86,20 @@ resource "null_resource" "yaml_replace_avi_domain" {
 
 }
 
-resource "null_resource" "update_govc" {
+resource "null_resource" "configure_lbaas" {
   depends_on = [null_resource.yaml_replace_avi_domain]
 
   provisioner "local-exec" {
     command = "/bin/bash bash/configure_lbaas.sh"
+  }
+
+}
+
+resource "null_resource" "configure_traffic_gen" {
+  depends_on = [null_resource.configure_lbaas]
+
+  provisioner "local-exec" {
+    command = "/bin/bash bash/configure_traffic_gen.sh"
   }
 
 }

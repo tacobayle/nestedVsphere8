@@ -106,6 +106,10 @@ write_files:
       sudo chown ubuntu /home/ubuntu/routes
       sudo chgrp ubuntu /home/ubuntu/routes
       #
+      mkdir -p /home/ubuntu/traffic_gen
+      sudo chown ubuntu /home/ubuntu/traffic_gen
+      sudo chgrp ubuntu /home/ubuntu/traffic_gen
+      #
       mkdir -p /home/ubuntu/lbaas
       sudo chown ubuntu /home/ubuntu/lbaas
       sudo chgrp ubuntu /home/ubuntu/lbaas

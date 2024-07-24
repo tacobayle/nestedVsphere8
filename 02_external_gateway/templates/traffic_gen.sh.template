@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+IFS=$'\n'
+username="${avi_username}"
+password="${avi_password}"
+avi_nested_ip="${avi_nested_ip}"
+#
+rm -f avi_cookie.txt
+curl_output=$(curl -s -k -X POST -H "Content-Type: application/json" -d "{\"username\": \"$username\", \"password\": \"$password\"}" -c avi_cookie.txt https://${avi_nested_ip}/login)
+curl_tenants=$(curl -s -k -X GET -H "Content-Type: application/json" -b avi_cookie.txt https://${avi_nested_ip}/api/tenant)
+echo $curl_tenants | jq -c -r '.results[].name' | while read tenant
+do
+  curl_virtualservice=$(curl -s -k -X GET -H "Content-Type: application/json" -H "X-Avi-Tenant: $tenant" -b avi_cookie.txt https://${avi_nested_ip}/api/virtualservice)
+  if [[ $(echo $curl_virtualservice | jq -c -r '.results | length') -gt 0 ]] ; then
+    for vs in $(echo $curl_virtualservice | jq -c -r .results[])
+    do
+      if [[ $(echo $vs | jq -c -r .type) == "VS_TYPE_VH_PARENT" || $(echo $vs | jq -c -r .type) == "VS_TYPE_NORMAL" ]] ; then
+        for service in $(echo $vs | jq -c -r .services[])
+        do
+          if [[ $(echo $service | jq -c -r .port) -eq 443 ]] ; then
+            curl_vsvip=$(curl -s -k -X GET -H "Content-Type: application/json" -H "X-Avi-Tenant: $tenant" -b avi_cookie.txt $(echo $vs | jq -c -r .vsvip_ref))
+            ip_vip=$(echo $curl_vsvip | jq -c -r .vip[0].ip_address.addr)
+            random_number=$(echo $(( $RANDOM % 45 + 1 )))
+            for i in $(seq 1 "$random_number")
+            do
+              curl -k -o /dev/null https://$ip_vip
+              sleep 0.5
+              echo ---
+            done
+            for i in $(seq 1 2)
+            do
+              curl -k -o /dev/null https://$ip_vip/wrong-path
+              sleep 0.5
+              echo ---
+            done
+          fi
+        done
+      fi
+    done
+  fi
+done
