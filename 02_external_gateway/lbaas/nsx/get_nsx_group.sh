@@ -38,25 +38,29 @@ rm -f $cookies_file $headers_file
 #
 /bin/bash /home/ubuntu/lbaas/nsx/create_nsx_api_session.sh $(jq -c -r .nsx_username $jsonFile) $(jq -c -r .nsx_password $jsonFile) $(jq -c -r .nsx_nested_ip $jsonFile) $cookies_file $headers_file
 #
-sleep 5
 while true
 do
   if [ -z "$(ps -ef | grep ${vs_name} | grep backend.sh | grep -v grep)" ]; then
-    sleep 5
-    echo "VM is not creating"
-    vm_count=0
-    ip_count=1
-    while [[ ${vm_count} != ${ip_count} ]] ; do
-      nsx_api 2 2 "GET" $cookies_file $headers_file "${json_data}" $(jq -c -r .nsx_nested_ip $jsonFile) "policy/api/v1/infra/domains/default/groups/${vs_name}/members/virtual-machines"
-      vm_count=$(echo $response_body | jq -c -r '.results | length')
-      nsx_api 2 2 "GET" $cookies_file $headers_file "${json_data}" $(jq -c -r .nsx_nested_ip $jsonFile) "policy/api/v1/infra/domains/default/groups/${vs_name}/members/ip-addresses"
-      ip_count=$(echo $response_body | jq -c -r '.results | length')
-      vm_ips=$(echo $response_body | jq -c -r '.results')
-      sleep 10
-    done
-    results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "vm_count": "'${vm_count}'", "vm_ips": '${vm_ips}'}')
-    echo $results_json | tee ${output_json_file} | jq .
-    break
+    if [[ $(echo $response_body | jq -c -r --arg arg "${vs_name}" '[.results[] | select(.display_name == $arg).display_name] | length') -eq 1 ]]; then
+      echo "NSX group ${vs_name} already exist"
+      sleep 5
+      echo "VM is not creating"
+      vm_count=0
+      ip_count=1
+      while [[ ${vm_count} != ${ip_count} ]] ; do
+        nsx_api 2 2 "GET" $cookies_file $headers_file "${json_data}" $(jq -c -r .nsx_nested_ip $jsonFile) "policy/api/v1/infra/domains/default/groups/${vs_name}/members/virtual-machines"
+        vm_count=$(echo $response_body | jq -c -r '.results | length')
+        nsx_api 2 2 "GET" $cookies_file $headers_file "${json_data}" $(jq -c -r .nsx_nested_ip $jsonFile) "policy/api/v1/infra/domains/default/groups/${vs_name}/members/ip-addresses"
+        ip_count=$(echo $response_body | jq -c -r '.results | length')
+        vm_ips=$(echo $response_body | jq -c -r '.results')
+        sleep 10
+      done
+      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "vm_count": "'${vm_count}'", "vm_ips": '${vm_ips}'}')
+      echo $results_json | tee ${output_json_file} | jq .
+      break
+    else
+      echo "NSX group ${vs_name} does not exist"
+    fi
   else
     echo "VM is creating"
   fi
