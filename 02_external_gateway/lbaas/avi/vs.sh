@@ -3,7 +3,7 @@
 source /home/ubuntu/lbaas/avi/alb_api.sh
 #
 date_index=$(date '+%Y%m%d%H%M%S')
-jsonFile="/home/ubuntu/lbaas/avi/$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
+jsonFile="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
 jsonFile1="${1}"
 if [ -s "${jsonFile1}" ]; then
   jq . $jsonFile1 > /dev/null
@@ -136,9 +136,12 @@ if [[ ${operation} == "apply" ]] ; then
       }
     }'
     if [[ $(jq -c -r .cert $jsonFile) == "self-signed" ]] ; then
-      json_data=$(echo ${json_data} | jq -c -r '.data += {"ssl_key_and_certificate_refs": ["/api/sslkeyandcertificate/?name=System-Default-Cert"]}')
+#      {"certificate":{"expiry_status":"SSL_CERTIFICATE_GOOD","days_until_expire":365,"self_signed":true,"issuer":{},"subject":{"common_name":"'${vs_name}'.'$(jq -c -r .avi_domain $jsonFile)'"}},"key_params":{"algorithm":"SSL_KEY_ALGORITHM_EC","ec_params":{"curve":"SSL_KEY_EC_CURVE_SECP256R1"}},"status":"SSL_CERTIFICATE_FINISHED","format":"SSL_PEM","certificate_base64":true,"key_base64":true,"enable_ocsp_stapling":false,"ocsp_config":{"ocsp_req_interval":86400,"url_action":"OCSP_RESPONDER_URL_FAILOVER","failed_ocsp_jobs_retry_interval":3600,"max_tries":10},"import_key_to_hsm":false,"is_federated":false,"type":"SSL_CERTIFICATE_TYPE_VIRTUALSERVICE","ocsp_response_info":{},"name":"'${vs_name}'-cert"}
+      json_data=$(echo ${json_data} | jq -c -r '.data += {"ssl_key_and_certificate_refs": ["/api/sslkeyandcertificate/?name='${vs_name}'-cert"]}')
+      json_data=$(echo ${json_data} | jq -c -r '.data += {"ssl_key_and_certificate_refs_data": [{"certificate":{"expiry_status":"SSL_CERTIFICATE_GOOD","days_until_expire":365,"self_signed":true,"issuer":{},"subject":{"common_name":"'${vs_name}'.'$(jq -c -r .avi_domain $jsonFile)'"}},"key_params":{"algorithm":"SSL_KEY_ALGORITHM_EC","ec_params":{"curve":"SSL_KEY_EC_CURVE_SECP256R1"}},"status":"SSL_CERTIFICATE_FINISHED","format":"SSL_PEM","certificate_base64":true,"key_base64":true,"enable_ocsp_stapling":false,"ocsp_config":{"ocsp_req_interval":86400,"url_action":"OCSP_RESPONDER_URL_FAILOVER","failed_ocsp_jobs_retry_interval":3600,"max_tries":10},"import_key_to_hsm":false,"is_federated":false,"type":"SSL_CERTIFICATE_TYPE_VIRTUALSERVICE","ocsp_response_info":{},"name":"'${vs_name}'-cert"}]}')
+#      json_data=$(echo ${json_data} | jq -c -r '.data += {"ssl_key_and_certificate_refs": ["/api/sslkeyandcertificate/?name=System-Default-Cert"]}')
     fi
-    if [[ $(jq -c -r .cert $jsonFile) == "new-cert" ]] ; then
+    if [[ $(jq -c -r .cert $jsonFile) == "signed" ]] ; then
       # use case with cert automation
       json_data=$(echo ${json_data} | jq -c -r '.data += {"ssl_key_and_certificate_refs": ["/api/sslkeyandcertificate/?name='${vs_name}'-cert"]}')
       json_data=$(echo ${json_data} | jq -c -r '.data += {"ssl_key_and_certificate_refs_data": [{"certificate":{"expiry_status":"SSL_CERTIFICATE_GOOD","self_signed":false,"issuer":{},"subject":{"common_name":"'${vs_name}'.'$(jq -c -r .avi_domain $jsonFile)'"}},"key_params":{"algorithm":"SSL_KEY_ALGORITHM_RSA","rsa_params":{"key_size":"SSL_KEY_2048_BITS","exponent":65537}},"status":"SSL_CERTIFICATE_FINISHED","format":"SSL_PEM","certificate_base64":true,"key_base64":true,"enable_ocsp_stapling":false,"ocsp_config":{"ocsp_req_interval":86400,"url_action":"OCSP_RESPONDER_URL_FAILOVER","failed_ocsp_jobs_retry_interval":3600,"max_tries":10},"import_key_to_hsm":false,"is_federated":false,"type":"SSL_CERTIFICATE_TYPE_VIRTUALSERVICE","ocsp_response_info":{},"name":"'${vs_name}'-cert","certificate_management_profile_ref":"/api/certificatemanagementprofile/?name='$(jq -c -r .vault.certificate_mgmt_profile.name /nestedVsphere8/07_nsx_alb/variables.json)'"}]}')
@@ -169,3 +172,6 @@ if [[ ${operation} == "destroy" ]] ; then
     echo "no VS ${vs_name}* to be deleted"
   fi
 fi
+#
+rm -f ${jsonFile}
+rm -f ${jsonFile1}
