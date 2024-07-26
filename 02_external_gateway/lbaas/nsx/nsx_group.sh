@@ -3,7 +3,7 @@
 source /home/ubuntu/lbaas/nsx/nsx_api.sh
 #
 date_index=$(date '+%Y%m%d%H%M%S')
-jsonFile="/home/ubuntu/lbaas/nsx/$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
+jsonFile="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
 jsonFile1="${1}"
 if [ -s "${jsonFile1}" ]; then
   jq . $jsonFile1 > /dev/null
@@ -67,3 +67,6 @@ if [[ ${operation} == "destroy" ]] ; then
     echo "NSX group ${vs_name} does not exist"
   fi
 fi
+#
+rm -f ${jsonFile}
+rm -f ${jsonFile1}

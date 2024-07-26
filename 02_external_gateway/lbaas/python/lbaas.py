@@ -4,6 +4,13 @@ import json
 from flask_restful import Api, Resource, reqparse, abort
 from flask_cors import CORS
 
+# curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"python-vs", "operation":"apply", "app_profile":"private","count":2, "cert": "self-signed"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"python-vs", "operation":"apply", "app_profile":"public","count":1, "cert": "new-cert"}' -H "Content-Type: application/json"
+# curl -X DELETE http://127.0.0.1:5000/api/deletelbaas -d '{"vs_name":"python-vs"}' -H "Content-Type: application/json"
+# curl -X GET http://127.0.0.1:5000/api/get_sesizing -d '{"vs_name":"private-vs"}' -H "Content-Type: application/json"
+# curl -X GET http://127.0.0.1:5000/api/getnsxgroup -d '{"vs_name":"test-create-vm"}' -H "Content-Type: application/json"
+
+
 # Creating a Flask app
 app = Flask(__name__)
 cors = CORS(app)
@@ -90,8 +97,24 @@ def getse():
     with open(json_file, 'w') as outfile:
         json.dump(a_dict, outfile)
     folder="/home/ubuntu/lbaas/avi"
-    print('/bin/bash', 'get_se.sh', json_file, json_output_file)
     subprocess.run(['/bin/bash', 'get_se.sh', json_file, json_output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+    with open(json_output_file, 'r') as results_json:
+        results = json.load(results_json)
+    return results, 201
+
+@app.route('/api/getsesizing', methods=['GET'])
+def getsesizing():
+    args_parser_get= reqparse.RequestParser()
+    args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
+    args_parser_get = args_parser_get.parse_args()
+    a_dict = {}
+    a_dict['vs_name'] = args_parser_get['vs_name']
+    json_file='/tmp/getsesizing_' + a_dict['vs_name'] + '.json'
+    json_output_file='/tmp/getsesizing_output_' + a_dict['vs_name'] + '.json'
+    with open(json_file, 'w') as outfile:
+        json.dump(a_dict, outfile)
+    folder="/home/ubuntu/lbaas/avi"
+    subprocess.run(['/bin/bash', 'get_sesizing.sh', json_file, json_output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
     with open(json_output_file, 'r') as results_json:
         results = json.load(results_json)
     return results, 201
@@ -108,8 +131,24 @@ def getcert():
     with open(json_file, 'w') as outfile:
         json.dump(a_dict, outfile)
     folder="/home/ubuntu/lbaas/avi"
-    print('/bin/bash', 'get_cert.sh', json_file, json_output_file)
     subprocess.run(['/bin/bash', 'get_cert.sh', json_file, json_output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+    with open(json_output_file, 'r') as results_json:
+        results = json.load(results_json)
+    return results, 201
+
+@app.route('/api/getnsxgroup', methods=['GET'])
+def getnsxgroup():
+    args_parser_get= reqparse.RequestParser()
+    args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
+    args_parser_get = args_parser_get.parse_args()
+    a_dict = {}
+    a_dict['vs_name'] = args_parser_get['vs_name']
+    json_file='/tmp/getnsxgroup_' + a_dict['vs_name'] + '.json'
+    json_output_file='/tmp/getnsxgroup_output_' + a_dict['vs_name'] + '.json'
+    with open(json_file, 'w') as outfile:
+        json.dump(a_dict, outfile)
+    folder="/home/ubuntu/lbaas/nsx"
+    subprocess.run(['/bin/bash', 'get_nsx_group.sh', json_file, json_output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
     with open(json_output_file, 'r') as results_json:
         results = json.load(results_json)
     return results, 201
