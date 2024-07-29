@@ -121,5 +121,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/bc-vmw-illustration-cloud-3.jpg /var/www/html/
                                                                  sudo chown root /var/www/html/bc-vmw-illustration-cloud-3.jpg
                                                                  sudo chgrp root /var/www/html/bc-vmw-illustration-cloud-3.jpg"
+    #
+    scp -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:$(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json) /root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json))
   fi
 fi

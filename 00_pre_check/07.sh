@@ -157,7 +157,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
                                                                                          "is_dynamic": false,
                                                                                          "is_sensitive": true,
                                                                                          "name": "vault_token",
-                                                                                         "value": "'$(jq -c -r .root_token $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json))'"
+                                                                                         "value": "placeholder"
                                                                                        }
                                                                                      ]}]}')
   if grep -q "nsx_password" /nestedVsphere8/10_nsx_alb_config/variables.tf ; then

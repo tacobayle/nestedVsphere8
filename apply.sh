@@ -102,6 +102,11 @@ echo "  > ssh -o StrictHostKeyChecking=no ubuntu@$(jq -r .vsphere_underlay.netwo
 echo "ssh ubuntu password: ${TF_VAR_ubuntu_password}" | tee -a ${output_file} >/dev/null 2>&1
 #
 if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 02_external_gateway created"}' ${slack_webhook_url} >/dev/null 2>&1; fi
+if [ -s "/root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json))" ]; then
+  echo "patching avi.json with vault token"
+  avi_json=$(jq -c -r . /root/avi.json | jq .)
+  avi_json=$(echo ${avi-json} | jq '.avi.config.certificatemanagementprofile[0].script_params[2] += {"value": "'$(jq -c -r /root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json)))'"}')
+fi
 #
 # 03_nested_vsphere
 #
