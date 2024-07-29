@@ -3,7 +3,7 @@ operation="${1}"
 if [[ ${operation} == "apply" ]] ; then log_file="/nestedVsphere8/log/01_folder_apply.stdout" ; fi
 if [[ ${operation} == "destroy" ]] ; then log_file="/nestedVsphere8/log/01_folder_destroy.stdout" ; fi
 if [[ ${operation} != "apply" && ${operation} != "destroy" ]] ; then echo "ERROR: Unsupported operation" ; exit 255 ; fi
-echo '------------------------------------------------------------' | tee ${log_file}
+echo '-----------------------------------------------------' | tee ${log_file}
 if [[ ${operation} == "apply" ]] ; then
   echo "Creation of a folder on the underlay infrastructure - This should take less than a minute" | tee -a ${log_file}
 fi
@@ -31,4 +31,3 @@ else
   fi
 fi
 echo "Ending timestamp: $(date)" | tee -a ${log_file}
-echo '------------------------------------------------------------' | tee -a ${log_file}
