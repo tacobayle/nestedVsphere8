@@ -57,11 +57,11 @@
   "vault": {
     "secret_file_path": "/home/ubuntu/vault/secret.json",
     "pki": {
-      "name": "vault_pki",
+      "name": "pki",
       "max_lease_ttl": "87600h",
       "cert":{
         "common_name": "vault.com",
-        "issuer_name": "demoavi",
+        "issuer_name": "vault_demoavi",
         "ttl": "87600h",
         "path": "/home/ubuntu/vault/ca.crt"
       },
