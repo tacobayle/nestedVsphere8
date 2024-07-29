@@ -72,7 +72,7 @@ external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(ech
 nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
 #
-echo "   +++ Adding vault variables"
+echo "   +++ Adding vault variables... from local variables.json"
 vault=$(jq -c -r '.vault' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"vault": '${vault}'}')
 #

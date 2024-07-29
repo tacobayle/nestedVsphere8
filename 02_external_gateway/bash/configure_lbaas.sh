@@ -42,6 +42,12 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     #
     scp -o StrictHostKeyChecking=no /root/lbaas.json ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/lbaas.json
     #
+    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/govc ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/nsx ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/avi ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/python ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/html ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
+    #
     scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/templates/backend_userdata.yaml.template ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/govc/backend_userdata.yaml.template
     #
     sed -e "s@\${folder}@/home/ubuntu/lbaas/govc@" \
@@ -60,12 +66,6 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     scp -o StrictHostKeyChecking=no /nestedVsphere8/bash/nsx/nsx_api.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/nsx/nsx_api.sh
     #
     scp -o StrictHostKeyChecking=no /nestedVsphere8/bash/avi/alb_api.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/avi/alb_api.sh
-    #
-    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/govc ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
-    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/nsx ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
-    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/avi ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
-    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/python ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
-    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/html ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
     #
     scp -o StrictHostKeyChecking=no  /nestedVsphere8/02_external_gateway/lbaas/http_destroy.json  ubuntu@external-gw:/home/ubuntu/lbaas
     scp -o StrictHostKeyChecking=no  /nestedVsphere8/02_external_gateway/lbaas/http_apply_private.json  ubuntu@external-gw:/home/ubuntu/lbaas
@@ -119,7 +119,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
                                                                  sudo chgrp root /var/www/html/script.js"
     #
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/bc-vmw-illustration-cloud-3.jpg /var/www/html/
-                                                                 sudo chown root /var/www/html/bc-vmw-illustration-cloud-3.jpg.js
+                                                                 sudo chown root /var/www/html/bc-vmw-illustration-cloud-3.jpg
                                                                  sudo chgrp root /var/www/html/bc-vmw-illustration-cloud-3.jpg"
   fi
 fi

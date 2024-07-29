@@ -133,9 +133,9 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
     echo "   +++ \${VAR_avi_slack_webhook} is not defined"
   else
     echo "   +++ \${VAR_avi_slack_webhook} is defined"
-    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/07_nsx_alb/templates/avi_slack_cs.py.template | tee $(jq -c -r .avi_slacks.path $localJsonFile) > /dev/null
+    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/10_nsx_alb_config/templates/avi_slack_cs.py.template | tee $(jq -c -r .avi_slacks.path $localJsonFile) > /dev/null
     avi_json=$(echo $avi_json | jq '.avi.config += {"alertscriptconfig": [{"action_script": "'$(awk '{printf "%s\\n", $0}' $(jq -c -r .avi_slacks.path $localJsonFile))'",
-                                                                           "name": "'$(jq -c -r .avi_slacks.name $localJsonFile)'"}]}')
+                                                                           "name": "'$(jq -c -r .avi_slack.name $localJsonFile)'"}]}')
   fi
   #
   avi_json=$(echo $avi_json | jq '.avi.config += {"certificatemanagementprofile": [{"name": "'$(jq -c -r .vault.certificate_mgmt_profile.name $localJsonFile)'",

@@ -67,6 +67,8 @@ d=vsphere-nsx-vpc-alb ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh ;
 ## destroy
 d=vsphere-nsx-tanzu-alb ; kubectl exec -it pod-${d} -- nestedVsphere8/destroy.sh
 d=vsphere-nsx-tanzu-alb ; kubectl delete -f secrets-${d}.yml ; kubectl delete -f cm-${d}.yml ; kubectl delete -f pod-${d}.yml --grace-period=0
+## create static password
+d=vsphere-nsx-tanzu-alb ; kubectl apply -f secrets-${d}.yml ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
 ## create dynamic password
 d=vsphere-nsx-tanzu-alb ; /bin/bash update_password_nsx.sh secrets-${d}.yml ; kubectl apply -f secrets-${d}.yml ; kubectl apply -f cm-${d}.yml ; kubectl apply -f pod-${d}.yml ; sleep 5 ; kubectl exec -it pod-${d} -- nestedVsphere8/apply.sh
 #from yaml file
