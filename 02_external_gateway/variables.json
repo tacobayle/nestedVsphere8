@@ -71,7 +71,7 @@
       }
     },
     "pki_intermediate": {
-      "name": "vault_pki_intermediate",
+      "name": "pki_int",
       "max_lease_ttl": "43800h",
       "cert":{
         "common_name": "intermediate-vault.com",
