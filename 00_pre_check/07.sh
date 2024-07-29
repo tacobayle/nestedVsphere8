@@ -120,9 +120,24 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   # adding private and public SEG for lbaas demo
   seg_list=$(echo $seg_list | jq '. += [{"name": "public", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'- public", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
   seg_list=$(echo $seg_list | jq '. += [{"name": "private", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'- private", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+  # adding ca cert for lbaas demo
+  avi_json=$(echo $avi_json | jq '.avi.config += {"import_sslkeyandcertificate_ca": [{"name": "'$(jq -c -r '.vault.pki_intermediate.name' "/nestedVsphere8/02_external_gateway/variables.json")'",
+                                                                                      "cert": {"path": "'$(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json")'"}}]}')
+  avi_json=$(echo $avi_json | jq '.avi.config.import_sslkeyandcertificate_ca[] += {"name": "'$(jq -c -r '.vault.pki_intermediate.name' "/nestedVsphere8/02_external_gateway/variables.json")'",
+                                                                                   "cert": {"path": "'$(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json")'"}}')
   #
   avi_json=$(echo $avi_json | jq '.avi.config += {"alertscriptconfig": [{"action_script": "'$(awk '{printf "%s\\n", $0}' $(jq -c -r .vault.control_script.path $localJsonFile))'",
                                                                          "name": "'$(jq -c -r .vault.control_script.name $localJsonFile)'"}]}')
+  #
+  if [[ -z ${VAR_avi_slack_webhook} ]] ; then
+    echo "   +++ \${VAR_avi_slack_webhook} is not defined"
+  else
+    echo "   +++ \${VAR_avi_slack_webhook} is defined"
+    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/07_nsx_alb/templates/avi_slack_cs.py.template | tee $(jq -c -r .avi_slacks.path $localJsonFile) > /dev/null
+    avi_json=$(echo $avi_json | jq '.avi.config += {"alertscriptconfig": [{"action_script": "'$(awk '{printf "%s\\n", $0}' $(jq -c -r .avi_slacks.path $localJsonFile))'",
+                                                                           "name": "'$(jq -c -r .avi_slacks.name $localJsonFile)'"}]}')
+  fi
+  #
   avi_json=$(echo $avi_json | jq '.avi.config += {"certificatemanagementprofile": [{"name": "'$(jq -c -r .vault.certificate_mgmt_profile.name $localJsonFile)'",
                                                                                     "run_script_ref": "api/alertscriptconfig/?name='$(jq -c -r .vault.control_script.name $localJsonFile)'",
                                                                                      "script_params": [
@@ -136,13 +151,13 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
                                                                                          "is_dynamic": false,
                                                                                          "is_sensitive": false,
                                                                                          "name": "vault_path",
-                                                                                         "value": "/v1/'$(jq -r .vault.pki_intermediate.name /nestedVsphere8/02_external_gateway/variables.json)'/sign/'$(jq -r .vault.pki_intermediate.role.name /nestedVsphere8/02_external_gateway/variables.json)'"
+                                                                                         "value": "/v1/'$(jq -c -r .vault.pki_intermediate.name /nestedVsphere8/02_external_gateway/variables.json)'/sign/'$(jq -r .vault.pki_intermediate.role.name /nestedVsphere8/02_external_gateway/variables.json)'"
                                                                                        },
                                                                                        {
                                                                                          "is_dynamic": false,
                                                                                          "is_sensitive": true,
                                                                                          "name": "vault_token",
-                                                                                         "value": "'$(jq -r .vault_token /root/vault_token.json)'"
+                                                                                         "value": "'$(jq -c -r .root_token $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json))'"
                                                                                        }
                                                                                      ]}]}')
   if grep -q "nsx_password" /nestedVsphere8/10_nsx_alb_config/variables.tf ; then

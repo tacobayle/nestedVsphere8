@@ -57,7 +57,7 @@
   "vault": {
     "secret_file_path": "/home/ubuntu/vault/secret.json",
     "pki": {
-      "name": "pki",
+      "name": "vault_pki",
       "max_lease_ttl": "87600h",
       "cert":{
         "common_name": "vault.com",
@@ -71,7 +71,7 @@
       }
     },
     "pki_intermediate": {
-      "name": "pki_intermediate",
+      "name": "vault_pki_intermediate",
       "max_lease_ttl": "43800h",
       "cert":{
         "common_name": "intermediate-vault.com",

@@ -17,6 +17,8 @@ controller:
 nsx_username: admin
 nsx_password: ${nsx_password}
 nsx_server: ${nsx_server}
+import_sslkeyandcertificate_ca: |
+  ${import_sslkeyandcertificate_ca}
 sslkeyandcertificate: |
   ${sslkeyandcertificate}
 portal_configuration:

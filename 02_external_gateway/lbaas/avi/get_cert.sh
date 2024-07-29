@@ -46,13 +46,14 @@ do
     alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/sslkeyandcertificate/$(basename ${cert_ref})"
     cert_name=$(echo ${response_body} | jq -c -r '.name')
     cert_type=$(echo ${response_body} | jq -c -r '.certificate.self_signed')
+    issuer_name=$(echo ${response_body} | jq -c -r '.certificate.issuer.common_name')
     if [[ $(echo ${cert_type} | jq '.') == "true" ]] ; then
       cert_signed="self-signed"
     fi
     if [[ $(echo ${cert_type} | jq '.') == "false" ]] ; then
       cert_signed="signed"
     fi
-    results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "cert_name": "'${cert_name}'", "cert_type": "'${cert_signed}'"}')
+    results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "cert_name": "'${cert_name}'", "cert_type": "'${cert_signed}'", "issuer_name": "'${issuer_name}'"}')
     break
   fi
 done

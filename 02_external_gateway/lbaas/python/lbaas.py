@@ -9,6 +9,7 @@ from flask_cors import CORS
 # curl -X DELETE http://127.0.0.1:5000/api/deletelbaas -d '{"vs_name":"python-vs"}' -H "Content-Type: application/json"
 # curl -X GET http://127.0.0.1:5000/api/get_sesizing -d '{"vs_name":"private-vs"}' -H "Content-Type: application/json"
 # curl -X GET http://127.0.0.1:5000/api/getnsxgroup -d '{"vs_name":"test-create-vm"}' -H "Content-Type: application/json"
+# curl -X GET http://127.0.0.1:5000/api/getcert -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
 
 
 # Creating a Flask app
@@ -34,7 +35,10 @@ def createlbaas():
         json.dump(a_dict, outfile)
     folder="/home/ubuntu/lbaas"
     subprocess.Popen(['/bin/bash', 'lbaas.sh', json_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
-    return "operation-on-going", 201
+    output = {}
+    output['vs_name'] = args_parser_get['vs_name']
+    results = json.dumps(output)
+    return results, 201
 
 @app.route('/api/deletelbaas', methods=['DELETE'])
 def deletelbaas():
@@ -49,7 +53,10 @@ def deletelbaas():
         json.dump(a_dict, outfile)
     folder="/home/ubuntu/lbaas"
     subprocess.Popen(['/bin/bash', 'lbaas.sh', json_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
-    return "operation-on-going", 201
+    output = {}
+    output['vs_name'] = args_parser_get['vs_name']
+    results = json.dumps(output)
+    return results, 201
 
 @app.route('/api/getvip', methods=['GET'])
 def getvip():

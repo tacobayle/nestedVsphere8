@@ -50,5 +50,9 @@
     "certificate_mgmt_profile": {
       "name": "vault_cert_profile"
     }
+  },
+  "avi_slack": {
+    "name": "avi-slack",
+    "path": "/root/control-script-avi-slack.py"
   }
 }

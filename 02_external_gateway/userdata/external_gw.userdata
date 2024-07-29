@@ -118,18 +118,6 @@ write_files:
       sudo chown ubuntu /home/ubuntu/lbaas
       sudo chgrp ubuntu /home/ubuntu/lbaas
       #
-      mkdir -p /home/ubuntu/lbaas/govc
-      sudo chown ubuntu /home/ubuntu/lbaas/govc
-      sudo chgrp ubuntu /home/ubuntu/lbaas/govc
-      #
-      mkdir -p /home/ubuntu/lbaas/nsx
-      sudo chown ubuntu /home/ubuntu/lbaas/nsx
-      sudo chgrp ubuntu /home/ubuntu/lbaas/nsx
-      #
-      mkdir -p /home/ubuntu/lbaas/avi
-      sudo chown ubuntu /home/ubuntu/lbaas/avi
-      sudo chgrp ubuntu /home/ubuntu/lbaas/avi
-      #
       mkdir -p /home/ubuntu/${yaml_directory}
       sudo chown ubuntu /home/ubuntu/${yaml_directory}
       sudo chgrp ubuntu /home/ubuntu/${yaml_directory}
