@@ -51,8 +51,12 @@
       "name": "vault_cert_profile"
     }
   },
-  "avi_slack": {
-    "name": "avi-slack",
-    "path": "/root/control-script-avi-slack.py"
+  "avi_slack_create": {
+    "name": "avi-slack-create",
+    "path": "/root/control-script-avi-slack-create.py"
+  },
+  "avi_slack_delete": {
+    "name": "avi-slack-delete",
+    "path": "/root/control-script-avi-slack-delete.py"
   }
 }
