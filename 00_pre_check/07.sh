@@ -139,7 +139,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   fi
   #
   avi_json=$(echo $avi_json | jq '.avi.config += {"certificatemanagementprofile": [{"name": "'$(jq -c -r .vault.certificate_mgmt_profile.name $localJsonFile)'",
-                                                                                    "run_script_ref": "api/alertscriptconfig/?name='$(jq -c -r .vault.control_script.name $localJsonFile)'",
+                                                                                    "run_script_ref": "/api/alertscriptconfig/?name='$(jq -c -r .vault.control_script.name $localJsonFile)'",
                                                                                      "script_params": [
                                                                                        {
                                                                                          "is_dynamic": false,
