@@ -691,6 +691,11 @@ echo "   +++ Updating avi.config.cloud.service_engine_groups..."
 avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.service_engine_groups)')
 avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"service_engine_groups": '$(echo $seg_list)'}')
 #
+if [ -s "/root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json))" ]; then
+  #  echo "patching avi.json with vault token"
+  avi_json=$(echo ${avi_json} | jq '.avi.config.certificatemanagementprofile[0].script_params[2] += {"value": "'$(jq -c -r .root_token /root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json)))'"}')
+fi
+#
 echo $avi_json | jq . | tee /root/avi.json > /dev/null
 #
 download_file_from_url_to_location "$(jq -c -r .avi.ova_url $jsonFile)" "$(jq -c -r .avi_ova_path $localJsonFile)" "Avi ova"
