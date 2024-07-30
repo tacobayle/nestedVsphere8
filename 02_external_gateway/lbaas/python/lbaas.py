@@ -10,6 +10,10 @@ from flask_cors import CORS
 # curl -X GET http://127.0.0.1:5000/api/get_sesizing -d '{"vs_name":"private-vs"}' -H "Content-Type: application/json"
 # curl -X GET http://127.0.0.1:5000/api/getnsxgroup -d '{"vs_name":"test-create-vm"}' -H "Content-Type: application/json"
 # curl -X GET http://127.0.0.1:5000/api/getcert -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X GET http://127.0.0.1:5000/api/getse -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X GET http://127.0.0.1:5000/api/getvipsegment -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X GET http://127.0.0.1:5000/api/getseip -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+
 
 
 # Creating a Flask app
@@ -156,6 +160,40 @@ def getnsxgroup():
         json.dump(a_dict, outfile)
     folder="/home/ubuntu/lbaas/nsx"
     subprocess.run(['/bin/bash', 'get_nsx_group.sh', json_file, json_output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+    with open(json_output_file, 'r') as results_json:
+        results = json.load(results_json)
+    return results, 201
+
+@app.route('/api/getvipsegment', methods=['GET'])
+def getvipsegment():
+    args_parser_get= reqparse.RequestParser()
+    args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
+    args_parser_get = args_parser_get.parse_args()
+    a_dict = {}
+    a_dict['vs_name'] = args_parser_get['vs_name']
+    json_file='/tmp/getvipsegment_' + a_dict['vs_name'] + '.json'
+    json_output_file='/tmp/getvipsegment_output_' + a_dict['vs_name'] + '.json'
+    with open(json_file, 'w') as outfile:
+        json.dump(a_dict, outfile)
+    folder="/home/ubuntu/lbaas/avi"
+    subprocess.run(['/bin/bash', 'get_vip_segment.sh', json_file, json_output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+    with open(json_output_file, 'r') as results_json:
+        results = json.load(results_json)
+    return results, 201
+
+@app.route('/api/getseip', methods=['GET'])
+def getseip():
+    args_parser_get= reqparse.RequestParser()
+    args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
+    args_parser_get = args_parser_get.parse_args()
+    a_dict = {}
+    a_dict['vs_name'] = args_parser_get['vs_name']
+    json_file='/tmp/getseip_' + a_dict['vs_name'] + '.json'
+    json_output_file='/tmp/getseip_output_' + a_dict['vs_name'] + '.json'
+    with open(json_file, 'w') as outfile:
+        json.dump(a_dict, outfile)
+    folder="/home/ubuntu/lbaas/avi"
+    subprocess.run(['/bin/bash', 'get_se_ip.sh', json_file, json_output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
     with open(json_output_file, 'r') as results_json:
         results = json.load(results_json)
     return results, 201

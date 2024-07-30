@@ -56,3 +56,4 @@ echo $results_json | tee ${output_json_file} | jq .
 #
 rm -f ${jsonFile}
 rm -f ${jsonFile1}
+rm -f ${avi_cookie_file}

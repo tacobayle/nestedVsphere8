@@ -122,9 +122,9 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   seg_list=$(echo $seg_list | jq '. += [{"name": "private", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'- private", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
   # adding ca cert for lbaas demo
   avi_json=$(echo $avi_json | jq '.avi.config += {"import_sslkeyandcertificate_ca": [{"name": "'$(jq -c -r '.vault.pki_intermediate.name' "/nestedVsphere8/02_external_gateway/variables.json")'",
-                                                                                      "cert": {"path": "'$(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json")'"}}]}')
+                                                                                      "cert": {"path": "/root/'$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))'"}}]}')
   avi_json=$(echo $avi_json | jq '.avi.config.import_sslkeyandcertificate_ca += [{"name": "'$(jq -c -r '.vault.pki_intermediate.name' "/nestedVsphere8/02_external_gateway/variables.json")'",
-                                                                                  "cert": {"path": "'$(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json")'"}}]')
+                                                                                  "cert": {"path": "/root/'$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))'"}}]')
   #
   avi_json=$(echo $avi_json | jq '.avi.config += {"alertscriptconfig": [{"action_script": "'$(awk '{printf "%s\\n", $0}' $(jq -c -r .vault.control_script.path $localJsonFile))'",
                                                                          "name": "'$(jq -c -r .vault.control_script.name $localJsonFile)'"}]}')

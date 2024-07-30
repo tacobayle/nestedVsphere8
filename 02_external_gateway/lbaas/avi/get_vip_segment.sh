@@ -7,7 +7,7 @@ output_json_file="${2}"
 results_json="{}"
 IFS=$'\n'
 date_index=$(date '+%Y%m%d%H%M%S')
-jsonFile="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
+jsonFile="$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
 if [ -s "${jsonFile1}" ]; then
   jq . $jsonFile1 > /dev/null
 else
@@ -42,19 +42,19 @@ while true
 do
   alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/virtualservice?page_size=-1"
   if [[ $(echo $response_body | jq -c -r '.results | length') -gt 0 && $(echo $response_body | jq -c -r --arg arg "${vs_name}" '[.results[] | select(.name == $arg).name] | length') -eq 1 ]]; then
-    cert_ref=$(echo $response_body | jq -c -r --arg arg "${vs_name}" '.results[] | select(.name == $arg).ssl_key_and_certificate_refs[0]')
-    alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/sslkeyandcertificate/$(basename ${cert_ref})"
-    cert_name=$(echo ${response_body} | jq -c -r '.name')
-    cert_type=$(echo ${response_body} | jq -c -r '.certificate.self_signed')
-    issuer_name=$(echo ${response_body} | jq -c -r '.certificate.issuer.common_name')
-    if [[ $(echo ${cert_type} | jq '.') == "true" ]] ; then
-      cert_signed="self-signed"
+    vsvip_ref=$(echo $response_body | jq -c -r --arg arg "${vs_name}" '.results[] | select(.name == $arg).vsvip_ref')
+    alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/vsvip/$(basename ${vsvip_ref})"
+    network_ref=$(echo ${response_body} | jq -c -r .vip[0].ipam_network_subnet.network_ref)
+    if [ -z "${network_ref}" ]; then
+      echo "retrying..."
+    else
+      alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "admin" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/network/$(basename ${network_ref})"
+      segment_name=$(echo ${response_body} | jq -c -r .name)
+      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "segment_name": "'${segment_name}'"}')
+      break
     fi
-    if [[ $(echo ${cert_type} | jq '.') == "false" ]] ; then
-      cert_signed="signed"
-    fi
-    results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "cert_name": "'${cert_name}'", "cert_type": "'${cert_signed}'", "issuer_name": "'${issuer_name}'"}')
-    break
+  else
+    echo "retrying..."
   fi
 done
 #

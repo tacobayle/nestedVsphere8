@@ -61,3 +61,4 @@ done
 #
 rm -f ${jsonFile}
 rm -f ${jsonFile1}
+rm -f ${avi_cookie_file}

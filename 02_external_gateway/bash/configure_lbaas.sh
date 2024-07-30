@@ -123,5 +123,9 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
                                                                  sudo chgrp root /var/www/html/bc-vmw-illustration-cloud-3.jpg"
     #
     scp -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:$(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json) /root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json))
+    #
+    scp -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:$(jq -c -r .vault.pki_intermediate.cert.path_signed /nestedVsphere8/02_external_gateway/variables.json) /root/$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))
+    #
+    scp -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:$(jq -c -r .vault.pki.cert.path /nestedVsphere8/02_external_gateway/variables.json) /root/$(basename $(jq -c -r '.vault.pki.cert.path' "/nestedVsphere8/02_external_gateway/variables.json"))
   fi
 fi

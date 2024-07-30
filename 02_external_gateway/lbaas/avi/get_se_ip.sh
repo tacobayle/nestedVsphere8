@@ -7,7 +7,7 @@ output_json_file="${2}"
 results_json="{}"
 IFS=$'\n'
 date_index=$(date '+%Y%m%d%H%M%S')
-jsonFile="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
+jsonFile="$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
 if [ -s "${jsonFile1}" ]; then
   jq . $jsonFile1 > /dev/null
 else
@@ -38,25 +38,35 @@ curl_login=$(curl -s -k -X POST -H "Content-Type: application/json" \
                                 -c ${avi_cookie_file} https://$(jq -c -r .avi_nested_ip $jsonFile)/login)
 csrftoken=$(cat ${avi_cookie_file} | grep csrftoken | awk '{print $7}')
 #
+results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "se_list": []}')
+#
 while true
 do
   alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/virtualservice?page_size=-1"
   if [[ $(echo $response_body | jq -c -r '.results | length') -gt 0 && $(echo $response_body | jq -c -r --arg arg "${vs_name}" '[.results[] | select(.name == $arg).name] | length') -eq 1 ]]; then
+    se_list_ref=$(echo ${response_body}  | jq -c -r --arg arg "${vs_name}" '[.results[] | select(.name == $arg).vip_runtime[0].se_list[].se_ref]')
     vsvip_ref=$(echo $response_body | jq -c -r --arg arg "${vs_name}" '.results[] | select(.name == $arg).vsvip_ref')
     alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/vsvip/$(basename ${vsvip_ref})"
-    fqdn=$(echo ${response_body} | jq -c -r '.dns_info[0].fqdn')
-    if [ -z "${fqdn}" ]; then
+    network_ref=$(echo ${response_body} | jq -c -r .vip[0].ipam_network_subnet.network_ref)
+    if [ -z "${network_ref}" ]; then
       echo "retrying..."
     else
-      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "fdqn": "'${fqdn}'"}')
-      break
+      alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "admin" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/network/$(basename ${network_ref})"
+      segment_name=$(echo ${response_body} | jq -c -r .name)
     fi
+    for item in $(echo ${se_list_ref}| jq -c -r .[])
+    do
+      alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "admin" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/serviceengine/$(basename ${item})"
+      se_ip=$(echo ${response_body}  | jq -c -r --arg arg "${segment_name}" '.data_vnics[] | select(.network_name == $arg).vnic_networks[0].ip.ip_addr.addr')
+      se_name=$(echo ${response_body}  | jq -c -r '.name')
+      results_json=$(echo $results_json | jq '.se_list += [{"name": "'${se_name}'", "ip": "'${se_ip}'"}]')
+      echo $results_json | tee ${output_json_file} | jq .
+    done
+    break
   else
     echo "retrying..."
   fi
 done
-#
-echo $results_json | tee ${output_json_file} | jq .
 #
 rm -f ${jsonFile}
 rm -f ${jsonFile1}
