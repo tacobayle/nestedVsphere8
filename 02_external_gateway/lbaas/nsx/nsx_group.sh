@@ -2,39 +2,14 @@
 #
 source /home/ubuntu/lbaas/nsx/nsx_api.sh
 #
-date_index=$(date '+%Y%m%d%H%M%S')
-jsonFile="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
-jsonFile1="${1}"
-if [ -s "${jsonFile1}" ]; then
-  jq . $jsonFile1 > /dev/null
-else
-  echo "ERROR: jsonFile1 file is not present"
-  exit 255
-fi
-#
-jsonFile2="/home/ubuntu/lbaas/lbaas.json"
-if [ -s "${jsonFile2}" ]; then
-  jq . $jsonFile2 > /dev/null
-else
-  echo "ERROR: jsonFile2 file is not present"
-  exit 255
-fi
-#
-jq -s '.[0] * .[1]' ${jsonFile1} ${jsonFile2} | tee ${jsonFile}
+jsonFile="${1}"
 #
 operation=$(jq -c -r .operation $jsonFile)
-if $(jq -e '. | has("vs_name")' $jsonFile) ; then
-  vs_name=$(jq -c -r .vs_name $jsonFile)
-else
-  "ERROR: vs_name should be defined"
-  exit 255
-fi
-#
-if [[ ${operation} != "apply" && ${operation} != "destroy" ]] ; then echo "ERROR: Unsupported operation" ; exit 255 ; fi
+vs_name=$(jq -c -r .vs_name $jsonFile)
 #
 cookies_file="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}_cookies.txt"
 headers_file="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}_headers.txt"
-rm -f $cookies_file $headers_file
+sudo rm -f $cookies_file $headers_file
 #
 /bin/bash /home/ubuntu/lbaas/nsx/create_nsx_api_session.sh $(jq -c -r .nsx_username $jsonFile) $(jq -c -r .nsx_password $jsonFile) $(jq -c -r .nsx_nested_ip $jsonFile) $cookies_file $headers_file
 #
@@ -67,6 +42,3 @@ if [[ ${operation} == "destroy" ]] ; then
     echo "NSX group ${vs_name} does not exist"
   fi
 fi
-#
-rm -f ${jsonFile}
-rm -f ${jsonFile1}

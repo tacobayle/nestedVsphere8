@@ -188,6 +188,12 @@ if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_a
   if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 08_app deployed"}' ${slack_webhook_url} >/dev/null 2>&1; fi
 fi
 #
+# 081_lbaas
+#
+if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
+  /bin/bash /nestedVsphere8/081_lbaas/apply.sh
+fi
+#
 # 09_unmanaged_k8s_clusters
 #
 if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
@@ -278,12 +284,6 @@ if [[ ${deployment} == "vsphere_nsx_alb_telco" ]]; then
   echo "  > get route" | tee -a ${output_file} >/dev/null 2>&1
   #
   if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 12_tkgm deployed"}' ${slack_webhook_url} >/dev/null 2>&1; fi
-fi
-#
-# 15_lbaas
-#
-if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
-  /bin/bash /nestedVsphere8/15_lbaas/apply.sh
 fi
 #
 #if [[ $(jq -c -r .avi $jsonFile) != "null" &&  $(jq -c -r .nsx $jsonFile) != "null" &&  $(jq -c -r .vcd $jsonFile) != "null" && $(jq -c -r .avi.config.cloud.type $jsonFile) == "CLOUD_NSXT" ]]; then

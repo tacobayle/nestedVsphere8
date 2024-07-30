@@ -18,9 +18,9 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
             -e "s/\${vsphere_cluster}/$(jq -r .vsphere_nested.cluster_list[0] $jsonFile)/" \
             -e "s/\${vsphere_datastore}/$(jq -r .vsphere_nested.datastore_list[0] $jsonFile)/" /nestedVsphere8/02_external_gateway/templates/load_govc_nested.sh.template | tee /root/load_govc_nested.sh > /dev/null
     # create content library for backend
-    cp /nestedVsphere8/02_external_gateway/govc/govc_init.sh /root/govc_init.sh
+    cp /nestedVsphere8/02_external_gateway/lbaas/govc/govc_init.sh /root/govc_init.sh
     source /root/load_govc_nested.sh
-    echo "" | tee ${log_file}
+    echo "" | tee ${log_file} > /dev/null
     govc library.create lbaas
     govc library.import lbaas /root/focal-server-cloudimg-amd64.ova
     echo "Ending timestamp: $(date)" | tee -a ${log_file}
