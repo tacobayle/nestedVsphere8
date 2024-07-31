@@ -147,7 +147,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
     avi_json=$(echo $avi_json | jq '.avi.config.actiongroupconfig += [{"control_script_name": "'$(jq -c -r .avi_slack_delete.name $localJsonFile)'",
                                                                        "name": "alert_slack_delete"}]')
     #
-    avi_json=$(echo $avi_json | jq '.avi.config += {"alertconfig: [{"name": "alert_config_slack_create",
+    avi_json=$(echo $avi_json | jq '.avi.config += {"alertconfig": [{"name": "alert_config_slack_create",
                                                                     "actiongroupconfig_name": "alert_slack_create"}]}')
     #
     avi_json=$(echo $avi_json | jq '.avi.config.alertconfig += [{"name": "alert_config_slack_delete",
