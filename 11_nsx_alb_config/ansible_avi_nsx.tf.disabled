@@ -16,6 +16,8 @@ data "template_file" "values" {
     alertscriptconfig = jsonencode(var.avi.config.alertscriptconfig)
     certificatemanagementprofile = jsonencode(var.avi.config.certificatemanagementprofile)
     import_sslkeyandcertificate_ca = jsonencode(var.avi.config.import_sslkeyandcertificate_ca)
+    actiongroupconfig = jsonencode(var.avi.config.actiongroupconfig)
+    alertconfig = jsonencode(var.avi.config.alertconfig)
     tenants = jsonencode(var.avi.config.tenants)
     users = jsonencode(var.avi.config.users)
     domain = var.avi.config.domain

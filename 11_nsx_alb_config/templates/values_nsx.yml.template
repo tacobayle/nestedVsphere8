@@ -27,6 +27,10 @@ certificatemanagementprofile: |
   ${certificatemanagementprofile}
 alertscriptconfig: |
   ${alertscriptconfig}
+actiongroupconfig: |
+  ${actiongroupconfig}
+alertconfig: |
+  ${alertconfig}
 tenants: |
   ${tenants}
 users: |
