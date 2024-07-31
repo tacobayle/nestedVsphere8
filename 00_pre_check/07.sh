@@ -141,7 +141,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
                                                                            "name": "alert_slack"}]}')
     #
     avi_json=$(echo $avi_json | jq '.avi.config += {"alertconfig": [{"name": "alert_config_slack",
-                                                                    "actiongroupconfig_name": "alert_slack"}]}')
+                                                                     "actiongroupconfig_name": "alert_slack"}]}')
     #
   fi
   #
