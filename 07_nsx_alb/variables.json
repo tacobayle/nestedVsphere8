@@ -3,7 +3,7 @@
   "nsx_alb_se_cl": "nsx_alb_se_cl",
   "nsx_alb_controller_if_name": "eth0",
   "avi_config_repo": "https://github.com/tacobayle/ansibleAviConfig",
-  "avi_config_tag_nsx_cloud": "v2.22",
+  "avi_config_tag_nsx_cloud": "v2.23",
   "playbook_env_nsx_cloud": "nsx.yml",
   "avi_config_tag_vcenter_cloud": "v2.01",
   "playbook_env_vcenter_cloud": "vcenter.yml",
@@ -51,12 +51,8 @@
       "name": "vault_cert_profile"
     }
   },
-  "avi_slack_create": {
-    "name": "avi-slack-create",
-    "path": "/root/control-script-avi-slack-create.py"
-  },
-  "avi_slack_delete": {
-    "name": "avi-slack-delete",
-    "path": "/root/control-script-avi-slack-delete.py"
+  "avi_slack": {
+    "name": "avi-slack",
+    "path": "/root/control-script-avi-slack.py"
   }
 }

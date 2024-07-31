@@ -133,25 +133,15 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
     echo "   +++ \${VAR_avi_slack_webhook} is not defined"
   else
     echo "   +++ \${VAR_avi_slack_webhook} is defined"
-    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/11_nsx_alb_config/templates/avi_slack_cs_create.py.template | tee $(jq -c -r .avi_slack_create.path $localJsonFile) > /dev/null
-    avi_json=$(echo $avi_json | jq '.avi.config.alertscriptconfig += [{"action_script": {"path": "'$(jq -c -r .avi_slack_create.path $localJsonFile)'"},
-                                                                       "name": "'$(jq -c -r .avi_slack_create.name $localJsonFile)'"}]')
+    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/11_nsx_alb_config/templates/avi_slack_cs.py.template | tee $(jq -c -r .avi_slack.path $localJsonFile) > /dev/null
+    avi_json=$(echo $avi_json | jq '.avi.config.alertscriptconfig += [{"action_script": {"path": "'$(jq -c -r .avi_slack.path $localJsonFile)'"},
+                                                                       "name": "'$(jq -c -r .avi_slack.name $localJsonFile)'"}]')
     #
-    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/11_nsx_alb_config/templates/avi_slack_cs_delete.py.template | tee $(jq -c -r .avi_slack_delete.path $localJsonFile) > /dev/null
-    avi_json=$(echo $avi_json | jq '.avi.config.alertscriptconfig += [{"action_script": {"path": "'$(jq -c -r .avi_slack_delete.path $localJsonFile)'"},
-                                                                       "name": "'$(jq -c -r .avi_slack_delete.name $localJsonFile)'"}]')
+    avi_json=$(echo $avi_json | jq '.avi.config += {"actiongroupconfig": [{"control_script_name": "'$(jq -c -r .avi_slack.name $localJsonFile)'",
+                                                                           "name": "alert_slack"}]}')
     #
-    avi_json=$(echo $avi_json | jq '.avi.config += {"actiongroupconfig": [{"control_script_name": "'$(jq -c -r .avi_slack_create.name $localJsonFile)'",
-                                                                           "name": "alert_slack_create"}]}')
-    #
-    avi_json=$(echo $avi_json | jq '.avi.config.actiongroupconfig += [{"control_script_name": "'$(jq -c -r .avi_slack_delete.name $localJsonFile)'",
-                                                                       "name": "alert_slack_delete"}]')
-    #
-    avi_json=$(echo $avi_json | jq '.avi.config += {"alertconfig": [{"name": "alert_config_slack_create",
-                                                                    "actiongroupconfig_name": "alert_slack_create"}]}')
-    #
-    avi_json=$(echo $avi_json | jq '.avi.config.alertconfig += [{"name": "alert_config_slack_delete",
-                                                                 "actiongroupconfig_name": "alert_slack_delete"}]')
+    avi_json=$(echo $avi_json | jq '.avi.config += {"alertconfig": [{"name": "alert_config_slack",
+                                                                    "actiongroupconfig_name": "alert_slack"}]}')
     #
   fi
   #
