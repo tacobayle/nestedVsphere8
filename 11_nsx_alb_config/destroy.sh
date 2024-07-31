@@ -1,7 +1,7 @@
 #!/bin/bash
-echo "Destroying NSX ALB config (10_nsx_alb_config) and ALB controller (07_nsx_alb_config)"
+echo "Destroying NSX ALB config (11_nsx_alb_config) and ALB controller (07_nsx_alb_config)"
 jsonFile="/root/avi.json"
-cd /nestedVsphere8/10_nsx_alb_config
+cd /nestedVsphere8/11_nsx_alb_config
 terraform init
 terraform destroy -auto-approve -var-file=$jsonFile
 rm -fr terraform.tfstate .terraform.lock.hcl .terraform

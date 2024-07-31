@@ -214,7 +214,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
     # TKC creation
     #
     # templating vsphere plugin install
-    sed -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/vsphere_plugin_install.sh.template | tee /root/vsphere_plugin_install.sh > /dev/null
+    sed -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/vsphere_plugin_install.sh.template | tee /root/vsphere_plugin_install.sh > /dev/null
     # transfer vsphere plugin install
     scp -o StrictHostKeyChecking=no /root/vsphere_plugin_install.sh ubuntu@${external_gw_ip}:/home/ubuntu/tanzu/vsphere_plugin_install.sh
     # exec vsphere plugin install
@@ -222,7 +222,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
     # templating tanzu auth supervisor script
     sed -e "s/\${kubectl_password}/${TF_VAR_vsphere_nested_password}/" \
         -e "s/\${sso_domain_name}/${vcsa_sso_domain}/" \
-        -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tanzu_auth_supervisor.sh.template | tee /root/tanzu_auth_supervisor.sh > /dev/null
+        -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/tanzu_auth_supervisor.sh.template | tee /root/tanzu_auth_supervisor.sh > /dev/null
     # transfer tanzu auth supervisor script
     scp -o StrictHostKeyChecking=no /root/tanzu_auth_supervisor.sh ubuntu@${external_gw_ip}:/home/ubuntu/tanzu/auth_supervisor.sh
     #
@@ -239,13 +239,13 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       tkc_name=$(echo $tkc | jq -c -r .name)
       # yaml antrea config templating
       sed -e "s/\${name}/${tkc_name}/" \
-          -e "s/\${namespace_ref}/${namespace}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/antreaconfig.yml.template | tee /root/antreaconfig-${cluster_count}.yml > /dev/null
+          -e "s/\${namespace_ref}/${namespace}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/antreaconfig.yml.template | tee /root/antreaconfig-${cluster_count}.yml > /dev/null
       # yaml antrea config transfer
       scp -o StrictHostKeyChecking=no /root/antreaconfig-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_antrea_create}-${cluster_count}.yml
       # yaml ClusterBootstrap templating
       sed -e "s/\${name}/${tkc_name}/" \
           -e "s/\${k8s_version}/$(echo $tkc | jq -c -r .k8s_version)/" \
-          -e "s/\${antrea_config_name}/${tkc_name}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/clusterbootstrap.yml.template | tee /root/clusterbootstrap-${cluster_count}.yml > /dev/null
+          -e "s/\${antrea_config_name}/${tkc_name}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/clusterbootstrap.yml.template | tee /root/clusterbootstrap-${cluster_count}.yml > /dev/null
       # yaml ClusterBootstrap transfer
       scp -o StrictHostKeyChecking=no /root/clusterbootstrap-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_clusterbootstrap_create}-${cluster_count}.yml
       # yaml cluster templating
@@ -258,7 +258,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s/\${control_plane_count}/$(echo $tkc | jq -c -r .control_plane_count)/" \
           -e "s/\${cluster_count}/${cluster_count}/" \
           -e "s/\${workers_count}/$(echo $tkc | jq -c -r .workers_count)/" \
-          -e "s/\${vm_class}/$(echo $tkc | jq -c -r .vm_class)/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tkc.yml.template | tee /root/tkc-${cluster_count}.yml > /dev/null
+          -e "s/\${vm_class}/$(echo $tkc | jq -c -r .vm_class)/" /nestedVsphere8/12_vsphere_with_tanzu/templates/tkc.yml.template | tee /root/tkc-${cluster_count}.yml > /dev/null
       # yaml cluster transfer
       scp -o StrictHostKeyChecking=no /root/tkc-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path}-${cluster_count}.yml
       # bash create templating
@@ -270,7 +270,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s@\${remote_path_antrea_create}@${remote_path_antrea_create}@" \
           -e "s@\${remote_path_clusterbootstrap_create}@${remote_path_clusterbootstrap_create}@" \
           -e "s/\${cluster_name}/${tkc_name}/" \
-          -e "s/\${cluster_count}/${cluster_count}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tkc.sh.template | tee /root/create-tkc-${cluster_count}.sh > /dev/null
+          -e "s/\${cluster_count}/${cluster_count}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/tkc.sh.template | tee /root/create-tkc-${cluster_count}.sh > /dev/null
       # bash create transfer
       scp -o StrictHostKeyChecking=no /root/create-tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path}-${cluster_count}.sh
       # bash destroy templating
@@ -280,7 +280,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s/\${namespace_ref}/${namespace}/" \
           -e "s/\${cluster_bootstrap_name}/${tkc_name}/" \
           -e "s/\${antrea_config_name}/${tkc_name}/" \
-          -e "s/\${name}/${tkc_name}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tkc_destroy.sh.template | tee /root/destroy-tkc-${cluster_count}.sh > /dev/null
+          -e "s/\${name}/${tkc_name}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/tkc_destroy.sh.template | tee /root/destroy-tkc-${cluster_count}.sh > /dev/null
       # bash destroy transfer
       scp -o StrictHostKeyChecking=no /root/destroy-tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path_destroy}-${cluster_count}.sh
       # bash auth tkc templating
@@ -288,7 +288,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s/\${sso_domain_name}/${vcsa_sso_domain}/" \
           -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" \
           -e "s/\${namespace_ref}/${namespace}/" \
-          -e "s/\${name}/${tkc_name}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/tanzu_auth_tkc.sh.template | tee /root/tanzu_auth_tkc-${cluster_count}.sh > /dev/null
+          -e "s/\${name}/${tkc_name}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/tanzu_auth_tkc.sh.template | tee /root/tanzu_auth_tkc-${cluster_count}.sh > /dev/null
       # bash auth tkc transfer
       scp -o StrictHostKeyChecking=no /root/tanzu_auth_tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path_auth}-${cluster_count}.sh
       # bash create exec
@@ -350,7 +350,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s/\${cloudName}/${avi_cloud_name}/" \
           -e "s/\${controllerHost}/${avi_controller_ip}/" \
           -e "s/\${tenant}/${tenant}/" \
-          -e "s/\${password}/${TF_VAR_avi_password}/" /nestedVsphere8/11_vsphere_with_tanzu/templates/values.yml.1.11.1.template | tee /root/values-${cluster_count}.yml > /dev/null
+          -e "s/\${password}/${TF_VAR_avi_password}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/values.yml.1.11.1.template | tee /root/values-${cluster_count}.yml > /dev/null
       # ako values transfer
       scp -o StrictHostKeyChecking=no /root/values-${cluster_count}.yml ubuntu@${external_gw_ip}:/home/ubuntu/tkc/ako-values-${cluster_count}.yml
       ((cluster_count++))

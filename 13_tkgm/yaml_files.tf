@@ -37,7 +37,7 @@ resource "null_resource" "transfer_ako_values_files" {
 
 resource "null_resource" "yaml_build_and_transfer" {
   provisioner "local-exec" {
-    command = "/bin/bash /nestedVsphere8/12_tkgm/yaml_files.sh"
+    command = "/bin/bash /nestedVsphere8/13_tkgm/yaml_files.sh"
   }
 }
 

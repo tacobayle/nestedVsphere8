@@ -126,19 +126,19 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   avi_json=$(echo $avi_json | jq '.avi.config.import_sslkeyandcertificate_ca += [{"name": "'$(jq -c -r '.vault.pki_intermediate.name' "/nestedVsphere8/02_external_gateway/variables.json")'",
                                                                                   "cert": {"path": "/root/'$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))'"}}]')
   #
-  avi_json=$(echo $avi_json | jq '.avi.config += {"alertscriptconfig": [{"action_script": "'$(awk '{printf "%s\\n", $0}' $(jq -c -r .vault.control_script.path $localJsonFile))'",
+  avi_json=$(echo $avi_json | jq '.avi.config += {"alertscriptconfig": [{"action_script": {"path": "'$(jq -c -r .vault.control_script.path $localJsonFile)'"},
                                                                          "name": "'$(jq -c -r .vault.control_script.name $localJsonFile)'"}]}')
   #
   if [[ -z ${VAR_avi_slack_webhook} ]] ; then
     echo "   +++ \${VAR_avi_slack_webhook} is not defined"
   else
     echo "   +++ \${VAR_avi_slack_webhook} is defined"
-    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/10_nsx_alb_config/templates/avi_slack_cs_create.py.template | tee $(jq -c -r .avi_slack_create.path $localJsonFile) > /dev/null
-    avi_json=$(echo $avi_json | jq '.avi.config.alertscriptconfig += [{"action_script": "'$(awk '{printf "%s\\n", $0}' $(jq -c -r .avi_slack_create.path $localJsonFile))'",
+    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/11_nsx_alb_config/templates/avi_slack_cs_create.py.template | tee $(jq -c -r .avi_slack_create.path $localJsonFile) > /dev/null
+    avi_json=$(echo $avi_json | jq '.avi.config.alertscriptconfig += [{"action_script": {"path": "'$(jq -c -r .avi_slack_create.path $localJsonFile)'"},
                                                                        "name": "'$(jq -c -r .avi_slack_create.name $localJsonFile)'"}]')
     #
-    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/10_nsx_alb_config/templates/avi_slack_cs_delete.py.template | tee $(jq -c -r .avi_slack_delete.path $localJsonFile) > /dev/null
-    avi_json=$(echo $avi_json | jq '.avi.config.alertscriptconfig += [{"action_script": "'$(awk '{printf "%s\\n", $0}' $(jq -c -r .avi_slack_delete.path $localJsonFile))'",
+    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/11_nsx_alb_config/templates/avi_slack_cs_delete.py.template | tee $(jq -c -r .avi_slack_delete.path $localJsonFile) > /dev/null
+    avi_json=$(echo $avi_json | jq '.avi.config.alertscriptconfig += [{"action_script": {"path": "'$(jq -c -r .avi_slack_delete.path $localJsonFile)'"},
                                                                        "name": "'$(jq -c -r .avi_slack_delete.name $localJsonFile)'"}]')
   fi
   #
@@ -164,22 +164,22 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
                                                                                          "value": "placeholder"
                                                                                        }
                                                                                      ]}]}')
-  if grep -q "nsx_password" /nestedVsphere8/10_nsx_alb_config/variables.tf ; then
-    echo "   +++ variable nsx_password is already in /nestedVsphere8/10_nsx_alb_config/variables.tf"
+  if grep -q "nsx_password" /nestedVsphere8/11_nsx_alb_config/variables.tf ; then
+    echo "   +++ variable nsx_password is already in /nestedVsphere8/11_nsx_alb_config/variables.tf"
   else
-    echo "   +++ Adding variable nsx_password in /nestedVsphere8/10_nsx_alb_config/variables.tf"
-    echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/10_nsx_alb_config/variables.tf > /dev/null
+    echo "   +++ Adding variable nsx_password in /nestedVsphere8/11_nsx_alb_config/variables.tf"
+    echo 'variable "nsx_password" {}' | tee -a /nestedVsphere8/11_nsx_alb_config/variables.tf > /dev/null
   fi
   #
-  if grep -q "transport_zone" /nestedVsphere8/10_nsx_alb_config/variables.tf ; then
-    echo "   +++ variable transport_zone is already in /nestedVsphere8/10_nsx_alb_config/variables.tf"
+  if grep -q "transport_zone" /nestedVsphere8/11_nsx_alb_config/variables.tf ; then
+    echo "   +++ variable transport_zone is already in /nestedVsphere8/11_nsx_alb_config/variables.tf"
   else
-    echo "   +++ Adding variable transport_zone in /nestedVsphere8/10_nsx_alb_config/variables.tf"
-    echo 'variable "transport_zone" {}' | tee -a /nestedVsphere8/10_nsx_alb_config/variables.tf > /dev/null
+    echo "   +++ Adding variable transport_zone in /nestedVsphere8/11_nsx_alb_config/variables.tf"
+    echo 'variable "transport_zone" {}' | tee -a /nestedVsphere8/11_nsx_alb_config/variables.tf > /dev/null
   fi
   #
-  mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf.disabled /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf
-  mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf /nestedVsphere8/10_nsx_alb_config/ansible_avi_vcenter.tf..disabled
+  mv /nestedVsphere8/11_nsx_alb_config/ansible_avi_nsx.tf.disabled /nestedVsphere8/11_nsx_alb_config/ansible_avi_nsx.tf
+  mv /nestedVsphere8/11_nsx_alb_config/ansible_avi_vcenter.tf /nestedVsphere8/11_nsx_alb_config/ansible_avi_vcenter.tf..disabled
   #
   echo "   +++ Adding avi.config.cloud.name..."
   avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"name": "'$(jq -c -r '.nsx_default_cloud_name' $localJsonFile)'"}')
@@ -369,7 +369,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
             avi_json=$(echo $avi_json | jq '. | del (.avi.config.cloud.vpc_mode)')
             avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"vpc_mode": true}')
             avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"dhcp_enabled": true}')
-            mv /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx_vpc.tf.disabled /nestedVsphere8/10_nsx_alb_config/ansible_avi_nsx.tf
+            mv /nestedVsphere8/11_nsx_alb_config/ansible_avi_nsx_vpc.tf.disabled /nestedVsphere8/11_nsx_alb_config/ansible_avi_nsx.tf
           fi
         fi
       fi

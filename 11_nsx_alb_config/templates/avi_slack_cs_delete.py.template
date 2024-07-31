@@ -11,9 +11,9 @@ def parse_avi_params(argv):
 
 script_parms = parse_avi_params(sys.argv)
 webhook_url = '${webhook_url}'
-slack_data = ({'text': 'Date: {date}, Virtual Service {vs_name} has been created'.format(vs_name=script_parms['obj_name'], date=date.today())})
-print('Environment Vars: %s \\n' % os.environ)
-print('Alert Arguments: %s \\n' % sys.argv)
+slack_data = ({'text': 'Date: {date}, Virtual Service {vs_name} has been deleted'.format(vs_name=script_parms['obj_name'], date=date.today())})
+print('Environment Vars: %s \n' % os.environ)
+print('Alert Arguments: %s \n' % sys.argv)
 
 
 response = requests.post(
@@ -22,6 +22,6 @@ response = requests.post(
         )
 if response.status_code != 200:
        raise ValueError(
-               'Request to slack returned an error %s, the response is:\\n%s'
+               'Request to slack returned an error %s, the response is:\n%s'
                % (response.status_code, response.text)
                )

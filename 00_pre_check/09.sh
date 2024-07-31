@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 jsonFile="/root/variables.json"
-localJsonFile="/nestedVsphere8/09_unmanaged_k8s_clusters/variables.json"
+localJsonFile="/nestedVsphere8/10_unmanaged_k8s_clusters/variables.json"
 #
 IFS=$'\n'
 #
