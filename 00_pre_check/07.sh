@@ -57,6 +57,57 @@ avi_json=$(echo $avi_json | jq '. += {"nsx_alb_se_cl": "'$(echo $nsx_alb_se_cl)'
 echo "   +++ Adding avi_port_group..."
 avi_port_group=$(jq -c -r '.networks.vsphere.management.port_group_name' /nestedVsphere8/03_nested_vsphere/variables.json)
 avi_json=$(echo $avi_json | jq '. += {"avi_port_group": "'$(echo $avi_port_group)'"}')
+# adding ca cert for lbaas demo
+avi_json=$(echo $avi_json | jq '.avi.config += {"import_sslkeyandcertificate_ca": [{"name": "'$(jq -c -r '.vault.pki_intermediate.name' "/nestedVsphere8/02_external_gateway/variables.json")'",
+                                                                                    "cert": {"path": "/root/'$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))'"}}]}')
+avi_json=$(echo $avi_json | jq '.avi.config.import_sslkeyandcertificate_ca += [{"name": "'$(jq -c -r '.vault.pki_intermediate.name' "/nestedVsphere8/02_external_gateway/variables.json")'",
+                                                                                "cert": {"path": "/root/'$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))'"}}]')
+# adding vaultcontrol script for lbaas demo
+avi_json=$(echo $avi_json | jq '.avi.config += {"alertscriptconfig": [{"action_script": {"path": "'$(jq -c -r .vault.control_script.path $localJsonFile)'"},
+                                                                       "name": "'$(jq -c -r .vault.control_script.name $localJsonFile)'"}]}')
+# adding vault certificatemanagementprofile for lbaas demo
+avi_json=$(echo $avi_json | jq '.avi.config += {"certificatemanagementprofile": [{"name": "'$(jq -c -r .vault.certificate_mgmt_profile.name $localJsonFile)'",
+                                                                                  "run_script_ref": "/api/alertscriptconfig/?name='$(jq -c -r .vault.control_script.name $localJsonFile)'",
+                                                                                   "script_params": [
+                                                                                     {
+                                                                                       "is_dynamic": false,
+                                                                                       "is_sensitive": false,
+                                                                                       "name": "vault_addr",
+                                                                                       "value": "https://'$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)':8200"
+                                                                                     },
+                                                                                     {
+                                                                                       "is_dynamic": false,
+                                                                                       "is_sensitive": false,
+                                                                                       "name": "vault_path",
+                                                                                       "value": "/v1/'$(jq -c -r .vault.pki_intermediate.name /nestedVsphere8/02_external_gateway/variables.json)'/sign/'$(jq -r .vault.pki_intermediate.role.name /nestedVsphere8/02_external_gateway/variables.json)'"
+                                                                                     },
+                                                                                     {
+                                                                                       "is_dynamic": false,
+                                                                                       "is_sensitive": true,
+                                                                                       "name": "vault_token",
+                                                                                       "value": "placeholder"
+                                                                                     }
+                                                                                   ]}]}')
+# adding private and public SEG for lbaas demo
+seg_list=$(echo $seg_list | jq '. += [{"name": "public", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-public", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+seg_list=$(echo $seg_list | jq '. += [{"name": "private", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-private", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+# adding slack integration
+if [[ -z ${VAR_avi_slack_webhook} ]] ; then
+  echo "   +++ \${VAR_avi_slack_webhook} is not defined"
+  avi_json=$(echo $avi_json | jq '.avi.config += {"actiongroupconfig": []}')
+  avi_json=$(echo $avi_json | jq '.avi.config += {"alertconfig": []}')
+else
+  echo "   +++ \${VAR_avi_slack_webhook} is defined"
+  sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/11_nsx_alb_config/templates/avi_slack_cs.py.template | tee $(jq -c -r .avi_slack.path $localJsonFile) > /dev/null
+  avi_json=$(echo $avi_json | jq '.avi.config.alertscriptconfig += [{"action_script": {"path": "'$(jq -c -r .avi_slack.path $localJsonFile)'"},
+                                                                     "name": "'$(jq -c -r .avi_slack.name $localJsonFile)'"}]')
+  #
+  avi_json=$(echo $avi_json | jq '.avi.config += {"actiongroupconfig": [{"control_script_name": "'$(jq -c -r .avi_slack.name $localJsonFile)'",
+                                                                         "name": "alert_slack"}]}')
+  #
+  avi_json=$(echo $avi_json | jq '.avi.config += {"alertconfig": [{"name": "alert_config_slack",
+                                                                   "actiongroupconfig_name": "alert_slack"}]}')
+fi
 #
 # .avi.config.tenants
 #
@@ -116,57 +167,6 @@ avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"dhcp_enabled": "'$(echo $
 #
 if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" || $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb_vcd" ]]; then
   #
-  #
-  # adding private and public SEG for lbaas demo
-  seg_list=$(echo $seg_list | jq '. += [{"name": "public", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'- public", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
-  seg_list=$(echo $seg_list | jq '. += [{"name": "private", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'- private", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
-  # adding ca cert for lbaas demo
-  avi_json=$(echo $avi_json | jq '.avi.config += {"import_sslkeyandcertificate_ca": [{"name": "'$(jq -c -r '.vault.pki_intermediate.name' "/nestedVsphere8/02_external_gateway/variables.json")'",
-                                                                                      "cert": {"path": "/root/'$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))'"}}]}')
-  avi_json=$(echo $avi_json | jq '.avi.config.import_sslkeyandcertificate_ca += [{"name": "'$(jq -c -r '.vault.pki_intermediate.name' "/nestedVsphere8/02_external_gateway/variables.json")'",
-                                                                                  "cert": {"path": "/root/'$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))'"}}]')
-  #
-  avi_json=$(echo $avi_json | jq '.avi.config += {"alertscriptconfig": [{"action_script": {"path": "'$(jq -c -r .vault.control_script.path $localJsonFile)'"},
-                                                                         "name": "'$(jq -c -r .vault.control_script.name $localJsonFile)'"}]}')
-  #
-  if [[ -z ${VAR_avi_slack_webhook} ]] ; then
-    echo "   +++ \${VAR_avi_slack_webhook} is not defined"
-  else
-    echo "   +++ \${VAR_avi_slack_webhook} is defined"
-    sed -e "s@\${webhook_url}@${VAR_avi_slack_webhook}@" /nestedVsphere8/11_nsx_alb_config/templates/avi_slack_cs.py.template | tee $(jq -c -r .avi_slack.path $localJsonFile) > /dev/null
-    avi_json=$(echo $avi_json | jq '.avi.config.alertscriptconfig += [{"action_script": {"path": "'$(jq -c -r .avi_slack.path $localJsonFile)'"},
-                                                                       "name": "'$(jq -c -r .avi_slack.name $localJsonFile)'"}]')
-    #
-    avi_json=$(echo $avi_json | jq '.avi.config += {"actiongroupconfig": [{"control_script_name": "'$(jq -c -r .avi_slack.name $localJsonFile)'",
-                                                                           "name": "alert_slack"}]}')
-    #
-    avi_json=$(echo $avi_json | jq '.avi.config += {"alertconfig": [{"name": "alert_config_slack",
-                                                                     "actiongroupconfig_name": "alert_slack"}]}')
-    #
-  fi
-  #
-  avi_json=$(echo $avi_json | jq '.avi.config += {"certificatemanagementprofile": [{"name": "'$(jq -c -r .vault.certificate_mgmt_profile.name $localJsonFile)'",
-                                                                                    "run_script_ref": "/api/alertscriptconfig/?name='$(jq -c -r .vault.control_script.name $localJsonFile)'",
-                                                                                     "script_params": [
-                                                                                       {
-                                                                                         "is_dynamic": false,
-                                                                                         "is_sensitive": false,
-                                                                                         "name": "vault_addr",
-                                                                                         "value": "https://'$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)':8200"
-                                                                                       },
-                                                                                       {
-                                                                                         "is_dynamic": false,
-                                                                                         "is_sensitive": false,
-                                                                                         "name": "vault_path",
-                                                                                         "value": "/v1/'$(jq -c -r .vault.pki_intermediate.name /nestedVsphere8/02_external_gateway/variables.json)'/sign/'$(jq -r .vault.pki_intermediate.role.name /nestedVsphere8/02_external_gateway/variables.json)'"
-                                                                                       },
-                                                                                       {
-                                                                                         "is_dynamic": false,
-                                                                                         "is_sensitive": true,
-                                                                                         "name": "vault_token",
-                                                                                         "value": "placeholder"
-                                                                                       }
-                                                                                     ]}]}')
   if grep -q "nsx_password" /nestedVsphere8/11_nsx_alb_config/variables.tf ; then
     echo "   +++ variable nsx_password is already in /nestedVsphere8/11_nsx_alb_config/variables.tf"
   else
@@ -274,7 +274,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
             fi
           done
         done
-        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"private\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
         avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
         ((count++))
       fi
@@ -299,7 +299,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
           fi
         done
       done
-      avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+      avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"public\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
       avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
       ((count++))
       pool_name="pool$count-avi"
@@ -319,7 +319,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
           fi
         done
       done
-      avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+      avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"public\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
       avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
       ((count++))
       #
@@ -340,7 +340,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
           fi
         done
       done
-      avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+      avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"network_ref\": \"$(echo $segment_name)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"public\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
       avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
       ((count++))
     fi
@@ -635,7 +635,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
         avi_pool="{\"name\": \"$(echo $pool_name)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-hello-world"
-        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"private\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
         avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
         ((count++))
         #
@@ -644,7 +644,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
         avi_pool="{\"name\": \"$(echo $pool_name)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-alb"
-        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"public\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
         avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
         ((count++))
         #
@@ -653,7 +653,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_alb_wo_nsx" || $(jq -c -r .d
         avi_pool="{\"name\": \"$(echo $pool_name)\", \"default_server_port\": $(echo $default_server_port), \"type\": \"$(echo $type)\", \"avi_app_server_ips\": $(jq -c -r  '.vsphere_underlay.networks.alb.'$network'.app_ips' $jsonFile)}"
         avi_pools=$(echo $avi_pools | jq '. += ['$(echo $avi_pool)']')
         vs_name="app$count-waf"
-        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"Default-Group\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
+        avi_virtual_service_http="{\"name\": \"$(echo $vs_name)\", \"type\": \"$(echo $type)\", \"cidr\": \"$(jq -c -r '.vsphere_underlay.networks.alb.vip.cidr' $jsonFile)\", \"network_ref\": \"$(jq -c -r .networks.alb.vip.port_group_name /nestedVsphere8/02_external_gateway/variables.json)\", \"pool_ref\": \"$(echo $pool_name)\", \"se_group_ref\": \"private\", \"services\": [{\"port\": 80, \"enable_ssl\": false}, {\"port\": 443, \"enable_ssl\": true}]}"
         avi_virtual_services_http=$(echo $avi_virtual_services_http | jq '. += ['$(echo $avi_virtual_service_http)']')
         ((count++))
       fi

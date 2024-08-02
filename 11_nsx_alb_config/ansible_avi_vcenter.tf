@@ -17,6 +17,11 @@ data "template_file" "values" {
     external_gw_ip = var.vsphere_underlay.networks.vsphere.management.external_gw_ip
     sslkeyandcertificate = jsonencode(var.avi.config.sslkeyandcertificate)
     sslkeyandcertificate_ref = var.avi.config.portal_configuration.sslkeyandcertificate_ref
+    alertscriptconfig = jsonencode(var.avi.config.alertscriptconfig)
+    certificatemanagementprofile = jsonencode(var.avi.config.certificatemanagementprofile)
+    import_sslkeyandcertificate_ca = jsonencode(var.avi.config.import_sslkeyandcertificate_ca)
+    actiongroupconfig = jsonencode(var.avi.config.actiongroupconfig)
+    alertconfig = jsonencode(var.avi.config.alertconfig)
     external_gw_se_ip = var.vsphere_underlay.networks.alb.se.external_gw_ip
     domain = jsonencode(var.avi.config.domain)
     ipam = jsonencode(var.avi.config.cloud.ipam)

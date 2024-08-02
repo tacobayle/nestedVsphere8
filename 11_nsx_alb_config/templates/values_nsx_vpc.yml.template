@@ -19,6 +19,16 @@ nsx_password: ${nsx_password}
 nsx_server: ${nsx_server}
 sslkeyandcertificate: |
   ${sslkeyandcertificate}
+import_sslkeyandcertificate_ca: |
+  ${import_sslkeyandcertificate_ca}
+certificatemanagementprofile: |
+  ${certificatemanagementprofile}
+alertscriptconfig: |
+  ${alertscriptconfig}
+actiongroupconfig: |
+  ${actiongroupconfig}
+alertconfig: |
+  ${alertconfig}
 portal_configuration:
   sslkeyandcertificate_ref: ${sslkeyandcertificate_ref}
 tenants: |

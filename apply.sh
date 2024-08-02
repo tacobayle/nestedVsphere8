@@ -48,7 +48,7 @@ if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_a
 fi
 #
 if [[ $(jq -c -r .unmanaged_k8s_status $jsonFile) == true ]]; then
-  /bin/bash /nestedVsphere8/00_pre_check/09.sh
+  /bin/bash /nestedVsphere8/00_pre_check/10.sh
    if [ $? -ne 0 ] ; then exit 1 ; fi
 fi
 #
