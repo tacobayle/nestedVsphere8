@@ -15,8 +15,17 @@ csrftoken=$(cat ${avi_cookie_file} | grep csrftoken | awk '{print $7}')
 if [[ ${operation} == "apply" ]] ; then
   alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/virtualservice?page_size=-1"
   if [[ $(echo $response_body | jq -c -r --arg arg "${vs_name}" '[.results[] | select(.name == $arg).name] | length') -eq 1 ]]; then
-    echo "VS ${vs_name} already exist"
-  else
+    json_data='
+    {
+      "model_name": "VirtualService",
+      "data": {
+        "uuid": "'$(echo $response_body | jq -c -r --arg arg "${vs_name}" '.results[] | select(.name == $arg).uuid')'"
+      }
+    }'
+    alb_api 3 5 "DELETE" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "${json_data}" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/macro"
+  fi
+  alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/virtualservice?page_size=-1"
+  if [[ $(echo $response_body | jq -c -r --arg arg "${vs_name}" '[.results[] | select(.name == $arg).name] | length') -eq 0 ]]; then
     app_profile=$(jq -c -r .app_profile $jsonFile)
     if [[ ${app_profile} != "public" && ${app_profile} != "private" ]] ; then echo "ERROR: Unsupported app_profile" ; exit 255 ; fi
     if [[ ${app_profile} == "public" ]] ; then
