@@ -7,6 +7,8 @@ from flask_cors import CORS
 # curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"python-vs", "operation":"apply", "app_profile":"private","count":2, "cert": "self-signed"}' -H "Content-Type: application/json"
 # curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"python-vs", "operation":"apply", "app_profile":"public","count":1, "cert": "new-cert"}' -H "Content-Type: application/json"
 # curl -X DELETE http://127.0.0.1:5000/api/deletelbaas -d '{"vs_name":"python-vs"}' -H "Content-Type: application/json"
+# curl -X DELETE http://127.0.0.1:5000/api/cleanup -H "Content-Type: application/json"
+# curl -X GET http://127.0.0.1:5000/api/getapp -H "Content-Type: application/json"
 # curl -X GET http://127.0.0.1:5000/api/get_sesizing -d '{"vs_name":"private-vs"}' -H "Content-Type: application/json"
 # curl -X GET http://127.0.0.1:5000/api/getnsxgroup -d '{"vs_name":"test-create-vm"}' -H "Content-Type: application/json"
 # curl -X GET http://127.0.0.1:5000/api/getcert -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
@@ -62,6 +64,24 @@ def deletelbaas():
     output = {}
     output['vs_name'] = args_parser_get['vs_name']
     results = json.dumps(output)
+    return results, 201
+
+@app.route('/api/cleanup', methods=['DELETE'])
+def cleanup():
+    folder="/home/ubuntu/lbaas"
+    subprocess.Popen(['/bin/bash', 'cleanup.sh'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+    output = {}
+    output['cleanup'] = 'done'
+    results = json.dumps(output)
+    return results, 201
+
+@app.route('/api/getapp', methods=['GET'])
+def getapp():
+    folder="/home/ubuntu/lbaas/avi"
+    json_output_file='/tmp/getapp_output.json'
+    subprocess.run(['/bin/bash', 'get_app.sh', json_output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+    with open(json_output_file, 'r') as results_json:
+        results = json.load(results_json)
     return results, 201
 
 @app.route('/api/getvip', methods=['GET'])
