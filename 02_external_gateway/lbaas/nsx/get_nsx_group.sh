@@ -4,6 +4,7 @@ source /home/ubuntu/lbaas/nsx/nsx_api.sh
 #
 results_json="{}"
 output_json_file="${2}"
+rm -f ${output_json_file}
 IFS=$'\n'
 date_index=$(date '+%Y%m%d%H%M%S')
 jsonFile="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}.json"
@@ -41,6 +42,7 @@ rm -f $cookies_file $headers_file
 while true
 do
   if [ -z "$(ps -ef | grep ${vs_name} | grep backend.sh | grep -v grep)" ]; then
+    nsx_api 2 2 "GET" $cookies_file $headers_file "${json_data}" $(jq -c -r .nsx_nested_ip $jsonFile) "policy/api/v1/infra/domains/default/groups"
     if [[ $(echo $response_body | jq -c -r --arg arg "${vs_name}" '[.results[] | select(.display_name == $arg).display_name] | length') -eq 1 ]]; then
       echo "NSX group ${vs_name} already exist"
       sleep 5

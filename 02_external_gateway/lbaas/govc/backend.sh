@@ -24,62 +24,71 @@ if [[ ${operation} == "apply" ]] ; then
     if [[ ${app_profile} == "private" ]] ; then lbaas_segment=$(jq -r .private.lbaas_segment $jsonFile) ; fi
     for backend in $(seq 1 ${count})
     do
-      #
-      # Create cloud init file
-      #
-      sed -e "s/\${password}/$(jq -c -r .password $jsonFile)/" \
-          -e "s/\${hostname}/${vs_name}${backend}/" \
-          -e "s/\${docker_registry_username}/$(jq -r .docker_username $jsonFile)/" \
-          -e "s/\${docker_registry_password}/$(jq -r .docker_password $jsonFile)/" /home/ubuntu/lbaas/govc/backend_userdata.yaml.template | tee /home/ubuntu/lbaas/govc/backend_userdata_${date_index}_${backend}.yaml > /dev/null
-      #
-      json_data='
-      {
-        "DiskProvisioning": "thin",
-        "IPAllocationPolicy": "dhcpPolicy",
-        "IPProtocol": "IPv4",
-        "PropertyMapping": [
-          {
-            "Key": "instance-id",
-            "Value": "id-ovf"
-          },
-          {
-            "Key": "hostname",
-            "Value": "'${vs_name}''${backend}'"
-          },
-          {
-            "Key": "seedfrom",
-            "Value": ""
-          },
-          {
-            "Key": "public-keys",
-            "Value": ""
-          },
-          {
-            "Key": "user-data",
-            "Value": "'$(base64 /home/ubuntu/lbaas/govc/backend_userdata_${date_index}_${backend}.yaml -w 0)'"
-          },
-          {
-            "Key": "password",
-            "Value": "'$(jq -c -r .password $jsonFile)'"
-          }
-        ],
-        "NetworkMapping": [
-          {
-            "Name": "VM Network",
-            "Network": "'${lbaas_segment}'"
-          }
-        ],
-        "MarkAsTemplate": false,
-        "PowerOn": false,
-        "InjectOvfEnv": false,
-        "WaitForIP": false,
-        "Name": "'${vs_name}''${backend}'"
-      }'
-      echo ${json_data} | jq . | tee /home/ubuntu/lbaas/govc/${vs_name}${backend}.json
-      govc library.deploy -options /home/ubuntu/lbaas/govc/${vs_name}${backend}.json /lbaas/focal-server-cloudimg-amd64
-      govc vm.change -vm "${vs_name}${backend}" -c 4 -m 4096 -e="disk.enableUUID=1"
-      govc vm.disk.change -vm "${vs_name}${backend}" -disk.label "Hard disk 1" -size 10G
-      govc vm.power -on=true "${vs_name}${backend}"
+      list=$(govc find -json vm -name "unassigned*")
+      if [[ ${list} != "null" && $(echo ${list} | jq -c -r '. | length') -gt 0 ]] ; then
+        govc vm.change -vm $(echo ${list} | jq -c -r .[0]) -c 4 -m 4096 -e="disk.enableUUID=1"
+        govc vm.disk.change -vm $(echo ${list} | jq -c -r .[0]) -disk.label "Hard disk 1" -size 10G
+        govc object.rename $(echo ${list} | jq -c -r .[0]) "${vs_name}-${backend}"
+        govc vm.power -on=true "${vs_name}-${backend}"
+        govc vm.network.change -vm "${vs_name}-${backend}" -net ${lbaas_segment} ethernet-0
+      else
+        #
+        # Create cloud init file
+        #
+        sed -e "s/\${password}/$(jq -c -r .password $jsonFile)/" \
+            -e "s/\${hostname}/${vs_name}${backend}/" \
+            -e "s/\${docker_registry_username}/$(jq -r .docker_username $jsonFile)/" \
+            -e "s/\${docker_registry_password}/$(jq -r .docker_password $jsonFile)/" /home/ubuntu/lbaas/govc/backend_userdata.yaml.template | tee /tmp/backend_userdata_${vs_name}_${backend}.yaml > /dev/null
+        #
+        json_data='
+        {
+          "DiskProvisioning": "thin",
+          "IPAllocationPolicy": "dhcpPolicy",
+          "IPProtocol": "IPv4",
+          "PropertyMapping": [
+            {
+              "Key": "instance-id",
+              "Value": "id-ovf"
+            },
+            {
+              "Key": "hostname",
+              "Value": "'${vs_name}''${backend}'"
+            },
+            {
+              "Key": "seedfrom",
+              "Value": ""
+            },
+            {
+              "Key": "public-keys",
+              "Value": ""
+            },
+            {
+              "Key": "user-data",
+              "Value": "'$(base64 /tmp/backend_userdata_${vs_name}_${backend}.yaml -w 0)'"
+            },
+            {
+              "Key": "password",
+              "Value": "'$(jq -c -r .password $jsonFile)'"
+            }
+          ],
+          "NetworkMapping": [
+            {
+              "Name": "VM Network",
+              "Network": "'${lbaas_segment}'"
+            }
+          ],
+          "MarkAsTemplate": false,
+          "PowerOn": false,
+          "InjectOvfEnv": false,
+          "WaitForIP": false,
+          "Name": "'${vs_name}'-'${backend}'"
+        }'
+        echo ${json_data} | jq . | tee /tmp/${vs_name}_${backend}.json
+        govc library.deploy -options /tmp/${vs_name}_${backend}.json /lbaas/focal-server-cloudimg-amd64
+        govc vm.change -vm "${vs_name}-${backend}" -c 4 -m 4096 -e="disk.enableUUID=1"
+        govc vm.disk.change -vm "${vs_name}-${backend}" -disk.label "Hard disk 1" -size 10G
+        govc vm.power -on=true "${vs_name}-${backend}"
+      fi
     done
   else
     echo "backend VM ${vs_name}* already exist"

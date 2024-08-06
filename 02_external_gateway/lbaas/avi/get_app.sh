@@ -12,11 +12,12 @@ else
 fi
 #
 IFS=$'\n'
+date_index=$(date '+%Y%m%d%H%M%S')
 #
 while true
 do
   if [[ -z "$(ps -ef | grep vs.sh | grep -v grep)" ]]; then
-    echo "VM is not creating"
+    echo "VS is not creating"
     avi_cookie_file="/tmp/avi_$(basename $0 | cut -d"." -f1)_${date_index}_cookie.txt"
     curl_login=$(curl -s -k -X POST -H "Content-Type: application/json" \
                                     -d "{\"username\": \"$(jq -c -r .avi_username $jsonFile)\", \"password\": \"$(jq -c -r .avi_password $jsonFile)\"}" \
@@ -27,7 +28,7 @@ do
     results_json='{"count": "'${vs_count}'", "results": []}'
     for vs in $(echo $response_body | jq -c -r '.results[]')
     do
-      results_json=$(echo ${results_json} | jq -c -r '.results += [{"app_name": "'$(echo ${vs} | jq -c -r '.name')'"}]')
+      results_json=$(echo ${results_json} | jq -c -r '.results += ["'$(echo ${vs} | jq -c -r '.name')'"]')
     done
     echo $results_json | tee ${output_json_file} | jq .
     break

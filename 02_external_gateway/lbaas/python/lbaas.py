@@ -8,15 +8,17 @@ from flask_cors import CORS
 # curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"python-vs", "operation":"apply", "app_profile":"public","count":1, "cert": "new-cert"}' -H "Content-Type: application/json"
 # curl -X DELETE http://127.0.0.1:5000/api/deletelbaas -d '{"vs_name":"python-vs"}' -H "Content-Type: application/json"
 # curl -X DELETE http://127.0.0.1:5000/api/cleanup -H "Content-Type: application/json"
-# curl -X GET http://127.0.0.1:5000/api/getapp -H "Content-Type: application/json"
-# curl -X GET http://127.0.0.1:5000/api/get_sesizing -d '{"vs_name":"private-vs"}' -H "Content-Type: application/json"
-# curl -X GET http://127.0.0.1:5000/api/getnsxgroup -d '{"vs_name":"test-create-vm"}' -H "Content-Type: application/json"
-# curl -X GET http://127.0.0.1:5000/api/getcert -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
-# curl -X GET http://127.0.0.1:5000/api/getse -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
-# curl -X GET http://127.0.0.1:5000/api/getvipsegment -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
-# curl -X GET http://127.0.0.1:5000/api/getseip -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
-# curl -X GET http://127.0.0.1:5000/api/getsehost -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
-# curl -X GET http://127.0.0.1:5000/api/getnsxroute -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getapp -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/get_sesizing -d '{"vs_name":"private-vs"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getnsxgroup -d '{"vs_name":"test-create-vm"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getcert -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getwaf -d '{"vs_name":"demo1"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getse -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getvipsegment -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getseip -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getfqdn -d '{"vs_name":"demo1"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getsehost -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getnsxroute -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
 
 
 
@@ -75,7 +77,7 @@ def cleanup():
     results = json.dumps(output)
     return results, 201
 
-@app.route('/api/getapp', methods=['GET'])
+@app.route('/api/getapp', methods=['POST'])
 def getapp():
     folder="/home/ubuntu/lbaas/avi"
     json_output_file='/tmp/getapp_output.json'
@@ -84,7 +86,7 @@ def getapp():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getvip', methods=['GET'])
+@app.route('/api/getvip', methods=['POST'])
 def getvip():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
@@ -101,7 +103,7 @@ def getvip():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getfqdn', methods=['GET'])
+@app.route('/api/getfqdn', methods=['POST'])
 def getfqdn():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
@@ -118,7 +120,7 @@ def getfqdn():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getse', methods=['GET'])
+@app.route('/api/getse', methods=['POST'])
 def getse():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
@@ -135,7 +137,7 @@ def getse():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getsesizing', methods=['GET'])
+@app.route('/api/getsesizing', methods=['POST'])
 def getsesizing():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
@@ -152,7 +154,7 @@ def getsesizing():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getcert', methods=['GET'])
+@app.route('/api/getcert', methods=['POST'])
 def getcert():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
@@ -169,7 +171,24 @@ def getcert():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getnsxgroup', methods=['GET'])
+@app.route('/api/getwaf', methods=['POST'])
+def getwaf():
+    args_parser_get= reqparse.RequestParser()
+    args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
+    args_parser_get = args_parser_get.parse_args()
+    a_dict = {}
+    a_dict['vs_name'] = args_parser_get['vs_name']
+    json_file='/tmp/getwaf_' + a_dict['vs_name'] + '.json'
+    json_output_file='/tmp/getwaf_output_' + a_dict['vs_name'] + '.json'
+    with open(json_file, 'w') as outfile:
+        json.dump(a_dict, outfile)
+    folder="/home/ubuntu/lbaas/avi"
+    subprocess.run(['/bin/bash', 'get_waf.sh', json_file, json_output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+    with open(json_output_file, 'r') as results_json:
+        results = json.load(results_json)
+    return results, 201
+
+@app.route('/api/getnsxgroup', methods=['POST'])
 def getnsxgroup():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
@@ -186,7 +205,7 @@ def getnsxgroup():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getvipsegment', methods=['GET'])
+@app.route('/api/getvipsegment', methods=['POST'])
 def getvipsegment():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
@@ -203,7 +222,7 @@ def getvipsegment():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getseip', methods=['GET'])
+@app.route('/api/getseip', methods=['POST'])
 def getseip():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
@@ -220,7 +239,7 @@ def getseip():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getsehost', methods=['GET'])
+@app.route('/api/getsehost', methods=['POST'])
 def getsehost():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)
@@ -237,7 +256,7 @@ def getsehost():
         results = json.load(results_json)
     return results, 201
 
-@app.route('/api/getnsxroute', methods=['GET'])
+@app.route('/api/getnsxroute', methods=['POST'])
 def getnsxroute():
     args_parser_get= reqparse.RequestParser()
     args_parser_get.add_argument("vs_name", type=str, help="VS Name", required=True)

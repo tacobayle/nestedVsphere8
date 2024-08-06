@@ -42,19 +42,17 @@ while true
 do
   alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/virtualservice?page_size=-1"
   if [[ $(echo $response_body | jq -c -r '.results | length') -gt 0 && $(echo $response_body | jq -c -r --arg arg "${vs_name}" '[.results[] | select(.name == $arg).name] | length') -eq 1 ]]; then
-    vsvip_ref=$(echo $response_body | jq -c -r --arg arg "${vs_name}" '.results[] | select(.name == $arg).vsvip_ref')
-    alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "$(jq -c -r .avi_tenant $jsonFile)" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/vsvip/$(basename ${vsvip_ref})"
-    fqdn=$(echo ${response_body} | jq -c -r '.dns_info[0].fqdn')
-    if [ -z "${fqdn}" ]; then
-      echo "retrying..."
+    if $(echo $response_body | jq -c -r --arg arg "${vs_name}" '.results[] | select(.name == $arg)' | jq -e 'has("waf_policy_ref")') ; then
+      echo "waf is enabled"
+      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "waf": "enabled"}')
     else
-      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "fdqn": "https://'${fqdn}'"}')
-      break
+      echo "waf is disabled"
+      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "waf": "disabled"}')
     fi
-  else
-    echo "retrying..."
+    break
   fi
 done
+
 #
 echo $results_json | tee ${output_json_file} | jq .
 #

@@ -54,8 +54,64 @@ do
         done
       fi
     done
-    echo "clean-up done"
-    break
+    list=$(govc find -json vm -name "unassigned*")
+    if [[ ${list} != "null" && $(echo ${list} | jq -c -r '. | length') -eq 6 ]] ; then
+      echo "clean-up done"
+      break
+    else
+      backend=$(uuidgen)
+      lbaas_segment=$(jq -r .public.lbaas_segment $jsonFile)
+      sed -e "s/\${password}/$(jq -c -r .password $jsonFile)/" \
+          -e "s/\${hostname}/${vs_name}${backend}/" \
+          -e "s/\${docker_registry_username}/$(jq -r .docker_username $jsonFile)/" \
+          -e "s/\${docker_registry_password}/$(jq -r .docker_password $jsonFile)/" /home/ubuntu/lbaas/govc/backend_userdata.yaml.template | tee /tmp/backend_userdata_${backend}.yaml > /dev/null
+      #
+      json_data='
+      {
+        "DiskProvisioning": "thin",
+        "IPAllocationPolicy": "dhcpPolicy",
+        "IPProtocol": "IPv4",
+        "PropertyMapping": [
+          {
+            "Key": "instance-id",
+            "Value": "id-ovf"
+          },
+          {
+            "Key": "hostname",
+            "Value": "'${vs_name}''${backend}'"
+          },
+          {
+            "Key": "seedfrom",
+            "Value": ""
+          },
+          {
+            "Key": "public-keys",
+            "Value": ""
+          },
+          {
+            "Key": "user-data",
+            "Value": "'$(base64 /tmp/backend_userdata_${backend}.yaml -w 0)'"
+          },
+          {
+            "Key": "password",
+            "Value": "'$(jq -c -r .password $jsonFile)'"
+          }
+        ],
+        "NetworkMapping": [
+          {
+            "Name": "VM Network",
+            "Network": "'${lbaas_segment}'"
+          }
+        ],
+        "MarkAsTemplate": false,
+        "PowerOn": false,
+        "InjectOvfEnv": false,
+        "WaitForIP": false,
+        "Name": "unassigned-'${backend}'"
+      }'
+      echo ${json_data} | jq . | tee /tmp/${vs_name}${backend}.json
+      govc library.deploy -options /tmp/${vs_name}${backend}.json /lbaas/focal-server-cloudimg-amd64
+    fi
   else
     echo "waiting for on-going stuff"
     sleep 10
