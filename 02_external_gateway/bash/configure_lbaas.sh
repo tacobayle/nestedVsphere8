@@ -122,14 +122,36 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
                                                                  sudo chown root /var/www/html/script.js
                                                                  sudo chgrp root /var/www/html/script.js"
     #
-    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/bc-vmw-illustration-cloud-3.jpg /var/www/html/
-                                                                 sudo chown root /var/www/html/bc-vmw-illustration-cloud-3.jpg
-                                                                 sudo chgrp root /var/www/html/bc-vmw-illustration-cloud-3.jpg"
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/api.js /var/www/html/
+                                                                 sudo chown root /var/www/html/api.js
+                                                                 sudo chgrp root /var/www/html/api.js"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/api.css /var/www/html/
+                                                                 sudo chown root /var/www/html/api.css
+                                                                 sudo chgrp root /var/www/html/api.css"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/api.html /var/www/html/
+                                                                 sudo chown root /var/www/html/api.html
+                                                                 sudo chgrp root /var/www/html/api.html"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/diagram-demo.jpg /var/www/html/
+                                                                 sudo chown root /var/www/html/diagram-demo.jpg
+                                                                 sudo chgrp root /var/www/html/diagram-demo.jpg"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/index.html /var/www/html/
+                                                                 sudo chown root /var/www/html/index.html
+                                                                 sudo chgrp root /var/www/html/index.html"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/styles.css /var/www/html/
+                                                                 sudo chown root /var/www/html/styles.css
+                                                                 sudo chgrp root /var/www/html/styles.css"
     #
     scp -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:$(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json) /root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json))
     #
     scp -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:$(jq -c -r .vault.pki_intermediate.cert.path_signed /nestedVsphere8/02_external_gateway/variables.json) /root/$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))
     #
     scp -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:$(jq -c -r .vault.pki.cert.path /nestedVsphere8/02_external_gateway/variables.json) /root/$(basename $(jq -c -r '.vault.pki.cert.path' "/nestedVsphere8/02_external_gateway/variables.json"))
+    #
+
   fi
 fi
