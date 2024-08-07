@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => response.json())
         .then(data => {
-            const list = data.results; 
+            const list = data.results;
             list.forEach(item => {
                 addColumn(item);
             });
@@ -32,13 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const table = document.querySelector('table');
         const headerRow = table.querySelector('thead tr');
         const rows = Array.from(table.querySelectorAll('tbody tr'));
-    
-    
+
+
         const headerCell = document.createElement('th');
         headerCell.textContent = item;
         headerRow.appendChild(headerCell);
-    
-    
+
+
         rows.forEach((row, rowIndex) => {
             const cell = row.insertCell(-1);
             cell.innerHTML = 'Loading...';
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                cell.innerHTML = `${data.vsvip}`;
+                cell.innerHTML = `<span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.vsvip}</span>`;
             });
         } else if (rowIndex === 1) {
             apiUrl = 'http://${external_gw_ip}:5000/api/getfqdn';
@@ -72,35 +72,35 @@ document.addEventListener('DOMContentLoaded', () => {
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                cell.innerHTML = `Number of Pool Member: ${data.vm_count} <br> Pool Member IP(s): ${data.vm_ips.join(', ')}`;
+                cell.innerHTML = `Number of Pool Member: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.vm_count}</span> <br> Pool Member IP(s): <br> <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">-${data.vm_ips.join('<br>-')}</span>`;
             });
         } else if (rowIndex === 3) {
             apiUrl = 'http://${external_gw_ip}:5000/api/getcert';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                cell.innerHTML = `Certificate Name: ${data.cert_name} <br> Certificate Type: ${data.cert_type} <br> Issuer Name: ${data.issuer_name}`;
-            });		
+                cell.innerHTML = `Certificate Name: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.cert_name}</span> <br> Certificate Type: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.cert_type} </span><br> Issuer Name: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.issuer_name}</span>`;
+            });
         } else if (rowIndex === 4) {
             apiUrl = 'http://${external_gw_ip}:5000/api/getwaf';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                cell.innerHTML = `${data.waf}`;
+                cell.innerHTML = `<span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.waf}</span>`;
             });
         } else if (rowIndex === 5) {
             apiUrl = 'http://${external_gw_ip}:5000/api/getsesizing';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                cell.innerHTML = `vCPU per SE: ${data.vcpu_per_se} <br> Memory per SE: ${data.memory_per_se} <br> Disk per SE: ${data.disk_per_se}`;
+                cell.innerHTML = `vCPU per SE: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.vcpu_per_se}</span> <br> Memory per SE: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.memory_per_se} </span> <br> Disk per SE: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.disk_per_se}</span>`;
             });
         } else if (rowIndex === 6) {
             apiUrl = 'http://${external_gw_ip}:5000/api/getsehost';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                const seList = data.se_list.map(se => `SE: ${se.name} <br> deployed on ESXi host: ${se.esxi_host}`).join('<br><br>');
+                const seList = data.se_list.map(se => `SE: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${se.name} </span><br> deployed on ESXi host: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${se.esxi_host}</span>`).join('<br><br>');
                 cell.innerHTML = seList;
             });
         } else if (rowIndex === 7) {
@@ -108,14 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                cell.innerHTML = `SE(s) deployed on: ${data.segment_name}`;
+                cell.innerHTML = `SE(s) deployed on: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.segment_name}</span>`;
             });
         } else if (rowIndex === 8) {
             apiUrl = 'http://${external_gw_ip}:5000/api/getseip';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                const seList = data.se_list.map(se => `SE: ${se.name} <br> IP: ${se.ip}`).join('<br><br>');
+                const seList = data.se_list.map(se => `SE: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${se.name} </span><br> IP: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${se.ip}</span>`).join('<br><br>');
                 cell.innerHTML = seList;
             });
         } else if (rowIndex === 9) {
@@ -123,10 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                cell.innerHTML = `prefix: ${data.vsvip} <br> next_hops: <br>  -${data.next_hops.join('<br>-')}`;
+                cell.innerHTML = `prefix: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.vsvip} </span><br> next_hops: <br>  <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">-${data.next_hops.join('<br>-')}</span>`;
             });
         } else if (rowIndex === 10) {
-	    cell.innerHTML = `Enabled`;
+	    cell.innerHTML = `<span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Enabled</span>`;
         }
     }
 
