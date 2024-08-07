@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
-                cell.innerHTML = `Number of Pool Member: ${data.vm_count} <br> Pool Member IP(s): ${data.vm_ips.join(', ')}`;
+                cell.innerHTML = `Number of Pool Member: ${data.vm_count} <br> Pool Member IP(s): <br> -${data.vm_ips.join('<br>-')}`;
             });
         } else if (rowIndex === 3) {
             apiUrl = 'http://${external_gw_ip}:5000/api/getcert';
