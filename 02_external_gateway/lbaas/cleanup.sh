@@ -13,6 +13,7 @@ else
 fi
 #
 IFS=$'\n'
+date_index=$(date '+%Y%m%d%H%M%S')
 #
 while true
 do

@@ -73,7 +73,7 @@ def cleanup():
     folder="/home/ubuntu/lbaas"
     subprocess.Popen(['/bin/bash', 'cleanup.sh'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
     output = {}
-    output['cleanup'] = 'done'
+    output['cleanup'] = 'on-going'
     results = json.dumps(output)
     return results, 201
 
