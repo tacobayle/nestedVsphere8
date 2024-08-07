@@ -146,6 +146,34 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
                                                                  sudo chown root /var/www/html/styles.css
                                                                  sudo chgrp root /var/www/html/styles.css"
     #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/builtin.png /var/www/html/
+                                                                 sudo chown root /var/www/html/builtin.png
+                                                                 sudo chgrp root /var/www/html/builtin.png"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/dns.png /var/www/html/
+                                                                 sudo chown root /var/www/html/dns.png
+                                                                 sudo chgrp root /var/www/html/dns.png"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/ipam.png /var/www/html/
+                                                                 sudo chown root /var/www/html/ipam.png
+                                                                 sudo chgrp root /var/www/html/ipam.png"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/nsx.png /var/www/html/
+                                                                 sudo chown root /var/www/html/nsx.png
+                                                                 sudo chgrp root /var/www/html/nsx.png"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/slack.png /var/www/html/
+                                                                 sudo chown root /var/www/html/slack.png
+                                                                 sudo chgrp root /var/www/html/slack.png"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/vault.png /var/www/html/
+                                                                 sudo chown root /var/www/html/vault.png
+                                                                 sudo chgrp root /var/www/html/vault.png"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/vsphere.png /var/www/html/
+                                                                 sudo chown root /var/www/html/vsphere.png
+                                                                 sudo chgrp root /var/www/html/vsphere.png"                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+    #
     scp -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:$(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json) /root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json))
     #
     scp -o StrictHostKeyChecking=no ubuntu@${external_gw_ip}:$(jq -c -r .vault.pki_intermediate.cert.path_signed /nestedVsphere8/02_external_gateway/variables.json) /root/$(basename $(jq -c -r '.vault.pki_intermediate.cert.path_signed' "/nestedVsphere8/02_external_gateway/variables.json"))
