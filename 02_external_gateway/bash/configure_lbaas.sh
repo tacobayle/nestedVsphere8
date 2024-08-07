@@ -115,6 +115,9 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     sed -e "s@\${external_gw_ip}@${external_gw_ip}@" /nestedVsphere8/02_external_gateway/templates/script.js.template | tee /root/script.js > /dev/null
     scp -o StrictHostKeyChecking=no /root/script.js ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/html/script.js
     #
+    sed -e "s@\${external_gw_ip}@${external_gw_ip}@" /nestedVsphere8/02_external_gateway/templates/api.js.template | tee /root/api.js > /dev/null
+    scp -o StrictHostKeyChecking=no /root/api.js ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/html/api.js
+    #
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/script.js /var/www/html/
                                                                  sudo chown root /var/www/html/script.js
                                                                  sudo chgrp root /var/www/html/script.js"

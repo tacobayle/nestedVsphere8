@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
             count: vmCount
         };
 
+        console.log(requestBody);
+
         fetch('http://${external_gw_ip}:5000/api/createlbaas', {
             method: 'POST',
             headers: {
@@ -32,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            return response.json();
+            // return response.json();
         })
         .then(data => {
             console.log('Success:', data);
@@ -40,9 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch((error) => {
             console.log('Error:', error);
-            showModal('Load Balancer Created Successfully!');
+            alert('Load Balancer Creation Failed');
         });
     });
+
+
 
     const deleteButton = document.querySelector('#button-box button[type="button"]');
     deleteButton.addEventListener('click', () => {
@@ -63,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            return response.json();
+            // return response.json();
         })
         .then(data => {
             console.log('Success:', data);
@@ -71,36 +75,36 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch((error) => {
             console.log('Error:', error);
-            showModal('Load Balancer Deleted Successfully!');
+            alert('Load Balancer Deletion Failed.');
         });
     });
 
     //function validateAppName(name) {
-    //    const regex = new RegExp("(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)$)");
+    //    const regex = new RegExp("(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)");
     //    return regex.test(name);
     //}
 
 
-    function showModal(errorMessage) {
-        const modal = document.getElementById('errorModal');
-        const span = document.getElementsByClassName('close')[0];
-        const errorMessageElement = document.getElementById('errorMessage');
+    // function showModal(errorMessage) {
+    //     const modal = document.getElementById('errorModal');
+    //     const span = document.getElementsByClassName('close')[0];
+    //     const errorMessageElement = document.getElementById('errorMessage');
 
-        errorMessageElement.textContent = errorMessage;
-        modal.style.display = 'block';
-
-
-        span.onclick = function() {
-            modal.style.display = 'none';
-        };
+    //     errorMessageElement.textContent = errorMessage;
+    //     modal.style.display = 'block';
 
 
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        };
-    }
+    //     span.onclick = function() {
+    //         modal.style.display = 'none';
+    //     };
+
+
+    //     window.onclick = function(event) {
+    //         if (event.target == modal) {
+    //             modal.style.display = 'none';
+    //         }
+    //     };
+    // }
 
 
 });

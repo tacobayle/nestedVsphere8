@@ -1,0 +1,145 @@
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    fetchInitialList();
+
+
+    function fetchInitialList() {
+
+        const apiUrl = 'http://${external_gw_ip}:5000/api/getapp';
+
+
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ payload: 'example' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const list = data.results; 
+            list.forEach(item => {
+                addColumn(item);
+            });
+        })
+        .catch(error => console.error('Error fetching initial list:', error));
+    }
+
+
+    function addColumn(item) {
+        const table = document.querySelector('table');
+        const headerRow = table.querySelector('thead tr');
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+    
+    
+        const headerCell = document.createElement('th');
+        headerCell.textContent = item;
+        headerRow.appendChild(headerCell);
+    
+    
+        rows.forEach((row, rowIndex) => {
+            const cell = row.insertCell(-1);
+            cell.innerHTML = 'Loading...';
+            fetchDetails(item, cell, rowIndex);
+        });
+    }
+
+
+    function fetchDetails(item, cell, rowIndex) {
+        let apiUrl;
+        let payload;
+
+        if (rowIndex === 0) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getvip';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+                cell.innerHTML = `${data.vsvip}`;
+            });
+        } else if (rowIndex === 1) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getfqdn';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+	        console.log(data.fqdn);
+                cell.innerHTML = `<a href=${data.fqdn}>${data.fqdn}</a>`;
+	    console.log(data.fqdn);
+            });
+        } else if (rowIndex === 2) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getnsxgroup';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+                cell.innerHTML = `Number of Pool Member: ${data.vm_count} <br> Pool Member IP(s): ${data.vm_ips.join(', ')}`;
+            });
+        } else if (rowIndex === 3) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getcert';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+                cell.innerHTML = `Certificate Name: ${data.cert_name} <br> Certificate Type: ${data.cert_type} <br> Issuer Name: ${data.issuer_name}`;
+            });		
+        } else if (rowIndex === 4) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getwaf';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+                cell.innerHTML = `${data.waf}`;
+            });
+        } else if (rowIndex === 5) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getsesizing';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+                cell.innerHTML = `vCPU per SE: ${data.vcpu_per_se} <br> Memory per SE: ${data.memory_per_se} <br> Disk per SE: ${data.disk_per_se}`;
+            });
+        } else if (rowIndex === 6) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getsehost';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+                const seList = data.se_list.map(se => `SE: ${se.name} <br> deployed on ESXi host: ${se.esxi_host}`).join('<br><br>');
+                cell.innerHTML = seList;
+            });
+        } else if (rowIndex === 7) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getvipsegment';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+                cell.innerHTML = `SE(s) deployed on: ${data.segment_name}`;
+            });
+        } else if (rowIndex === 8) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getseip';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+                const seList = data.se_list.map(se => `SE: ${se.name} <br> IP: ${se.ip}`).join('<br><br>');
+                cell.innerHTML = seList;
+            });
+        } else if (rowIndex === 9) {
+            apiUrl = 'http://${external_gw_ip}:5000/api/getnsxroute';
+            payload = { vs_name: item };
+            fetchData(apiUrl, payload)
+            .then(data => {
+                cell.innerHTML = `prefix: ${data.vsvip} <br> next_hops: <br>  -${data.next_hops.join('<br>-')}`;
+            });
+        } else if (rowIndex === 10) {
+	    cell.innerHTML = `Enabled`;
+        }
+    }
+
+
+    function fetchData(url, payload) {
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .catch(error => console.error('Error fetching data:', error));
+    }
+});

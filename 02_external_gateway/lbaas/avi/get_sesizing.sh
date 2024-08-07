@@ -47,7 +47,7 @@ do
     vcpus_per_se=$(echo ${response_body} | jq -c -r '.vcpus_per_se')
     memory_per_se=$(echo ${response_body} | jq -c -r '.memory_per_se')
     disk_per_se=$(echo ${response_body} | jq -c -r '.disk_per_se')
-    results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "Number of vCPU per Service Engine": "'${vcpus_per_se}'", "Amount of memory per Service Engine": "'${memory_per_se}G'", "Disk size per Service Engine": "'${disk_per_se}'G"}')
+    results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "vcpu_per_se": "'${vcpus_per_se}'", "memory_per_se": "'${memory_per_se}G'", "disk_per_se": "'${disk_per_se}'G"}')
     break
   fi
 done

@@ -9,16 +9,16 @@ from flask_cors import CORS
 # curl -X DELETE http://127.0.0.1:5000/api/deletelbaas -d '{"vs_name":"python-vs"}' -H "Content-Type: application/json"
 # curl -X DELETE http://127.0.0.1:5000/api/cleanup -H "Content-Type: application/json"
 # curl -X POST http://127.0.0.1:5000/api/getapp -H "Content-Type: application/json"
-# curl -X POST http://127.0.0.1:5000/api/get_sesizing -d '{"vs_name":"private-vs"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getsesizing -d '{"vs_name":"private-vs"}' -H "Content-Type: application/json"
 # curl -X POST http://127.0.0.1:5000/api/getnsxgroup -d '{"vs_name":"test-create-vm"}' -H "Content-Type: application/json"
-# curl -X POST http://127.0.0.1:5000/api/getcert -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getcert -d '{"vs_name":"demo1"}' -H "Content-Type: application/json"
 # curl -X POST http://127.0.0.1:5000/api/getwaf -d '{"vs_name":"demo1"}' -H "Content-Type: application/json"
 # curl -X POST http://127.0.0.1:5000/api/getse -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
-# curl -X POST http://127.0.0.1:5000/api/getvipsegment -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
-# curl -X POST http://127.0.0.1:5000/api/getseip -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getvipsegment -d '{"vs_name":"demo1"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getseip -d '{"vs_name":"demo1"}' -H "Content-Type: application/json"
 # curl -X POST http://127.0.0.1:5000/api/getfqdn -d '{"vs_name":"demo1"}' -H "Content-Type: application/json"
-# curl -X POST http://127.0.0.1:5000/api/getsehost -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
-# curl -X POST http://127.0.0.1:5000/api/getnsxroute -d '{"vs_name":"signed-pub"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getsehost -d '{"vs_name":"demo1"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/getnsxroute -d '{"vs_name":"demo1"}' -H "Content-Type: application/json"
 
 
 

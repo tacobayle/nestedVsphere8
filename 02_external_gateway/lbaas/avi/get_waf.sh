@@ -44,10 +44,10 @@ do
   if [[ $(echo $response_body | jq -c -r '.results | length') -gt 0 && $(echo $response_body | jq -c -r --arg arg "${vs_name}" '[.results[] | select(.name == $arg).name] | length') -eq 1 ]]; then
     if $(echo $response_body | jq -c -r --arg arg "${vs_name}" '.results[] | select(.name == $arg)' | jq -e 'has("waf_policy_ref")') ; then
       echo "waf is enabled"
-      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "waf": "enabled"}')
+      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "waf": "Enabled"}')
     else
       echo "waf is disabled"
-      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "waf": "disabled"}')
+      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "waf": "Disabled"}')
     fi
     break
   fi

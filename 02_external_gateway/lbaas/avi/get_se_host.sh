@@ -55,7 +55,7 @@ do
         se_uuid=$(echo ${response_body}  | jq -c -r '.uuid' | sed -e "s/se-/sevm-/")
         alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "admin" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/vimgrsevmruntime/${se_uuid}"
         se_host=$(echo ${response_body}  | jq -c -r '.host')
-        results_json=$(echo $results_json | jq '.se_list += [{"name": "'${se_name}'", "ESXi host": "'${se_host}'"}]')
+        results_json=$(echo $results_json | jq '.se_list += [{"name": "'${se_name}'", "esxi_host": "'${se_host}'"}]')
         echo $results_json | tee ${output_json_file} | jq .
       done
     fi

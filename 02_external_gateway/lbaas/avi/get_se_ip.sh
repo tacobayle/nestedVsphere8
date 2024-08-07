@@ -57,7 +57,7 @@ do
     for item in $(echo ${se_list_ref}| jq -c -r .[])
     do
       alb_api 3 5 "GET" "${avi_cookie_file}" "${csrftoken}" "admin" "$(jq -c -r .avi_version $jsonFile)" "" "$(jq -c -r .avi_nested_ip $jsonFile)" "api/serviceengine/$(basename ${item})"
-      se_ip=$(echo ${response_body}  | jq -c -r --arg arg "${segment_name}" '.data_vnics[] | select(.network_name == $arg).vnic_networks[0].ip.ip_addr.addr')
+      se_ip=$(echo ${response_body}  | jq -c -r --arg arg "${segment_name}" '.data_vnics[] | select(.network_name == $arg).vnic_networks[1].ip.ip_addr.addr')
       se_name=$(echo ${response_body}  | jq -c -r '.name')
       results_json=$(echo $results_json | jq '.se_list += [{"name": "'${se_name}'", "ip": "'${se_ip}'"}]')
       echo $results_json | tee ${output_json_file} | jq .

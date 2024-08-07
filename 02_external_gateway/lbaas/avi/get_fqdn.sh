@@ -48,7 +48,7 @@ do
     if [ -z "${fqdn}" ]; then
       echo "retrying..."
     else
-      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "fdqn": "https://'${fqdn}'"}')
+      results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "fqdn": "https://'${fqdn}'"}')
       break
     fi
   else

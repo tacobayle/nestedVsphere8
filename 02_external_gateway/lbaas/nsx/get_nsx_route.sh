@@ -75,7 +75,7 @@ do
   if [ -z "${next_hops}" ]; then
     echo "retrying..."
   else
-    results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "vsvip": "'${ip_vip}'", "next_hops": '${next_hops}'}')
+    results_json=$(echo $results_json | jq '. += {"date": "'$(date)'", "vs_name": "'${vs_name}'", "vsvip": "'${ip_vip}'/32", "next_hops": '${next_hops}'}')
     echo $results_json | tee ${output_json_file} | jq .
     break
   fi
