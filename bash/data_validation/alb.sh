@@ -7,7 +7,6 @@ test_nsx_alb_variables () {
   test_if_json_variable_is_defined .avi.memory "$1" "   "
   test_if_json_variable_is_defined .avi.disk "$1" "   "
   test_if_json_variable_is_defined .avi.version "$1" "   "
-  test_if_json_variable_is_defined .avi.config.domain "$1" "   "
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip "$1") "   "
   echo "   +++ testing if environment variable TF_VAR_docker_registry_username is not empty" ; if [ -z "$TF_VAR_docker_registry_username" ] ; then exit 255 ; fi
   echo "   +++ testing if environment variable TF_VAR_docker_registry_password is not empty" ; if [ -z "$TF_VAR_docker_registry_password" ] ; then exit 255 ; fi

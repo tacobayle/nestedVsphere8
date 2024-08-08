@@ -28,6 +28,10 @@ else
   tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters.management += {"datastore_ref": "'$(jq -c -r '.vsphere_nested.datastore_list[0]' $jsonFile)'"}')
 fi
 #
+echo "   +++ Adding avi_domain_prefix..."
+avi_domain_prefix=$(jq -c -r '.avi_domain_prefix' /nestedVsphere8/07_nsx_alb/variables.json)
+tkgm_json=$(echo $tkgm_json | jq '. += {"avi_domain_prefix": "'$(echo $avi_domain_prefix)'"}')
+#
 echo "   +++ Adding public_key_path on tkg.clusters.management"
 tkgm_json=$(echo $tkgm_json | jq '.tkg.clusters += {"public_key_path": "/root/.ssh/id_rsa_external.pub"}')
 #

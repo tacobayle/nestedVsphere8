@@ -92,7 +92,7 @@ metadata:
 spec:
   ingressClassName: avi-ingress-class
   rules:
-    - host: ingress.$(jq -c -r .avi.config.domain $jsonFile)
+    - host: ingress.$(jq -c -r '.avi_domain_prefix' $jsonFile).$(jq -c -r '.external_gw.bind.domain' $jsonFile)
       http:
         paths:
           - pathType: Prefix
@@ -110,7 +110,7 @@ metadata:
   namespace: default
 spec:
   virtualhost:
-    fqdn: ingress.$(jq -c -r .avi.config.domain $jsonFile)
+    fqdn: ingress.$(jq -c -r '.avi_domain_prefix' $jsonFile).$(jq -c -r '.external_gw.bind.domain' $jsonFile)
     enableVirtualHost: true
     wafPolicy: System-WAF-Policy
     analyticsPolicy:
@@ -156,7 +156,7 @@ metadata:
 spec:
   ingressClassName: avi-ingress-class
   rules:
-    - host: ingress.$(jq -c -r .avi.config.domain $jsonFile)
+    - host: ingress.$(jq -c -r '.avi_domain_prefix' $jsonFile).$(jq -c -r '.external_gw.bind.domain' $jsonFile)
       http:
         paths:
           - pathType: Prefix
@@ -174,7 +174,7 @@ metadata:
   namespace: default
 spec:
   virtualhost:
-    fqdn: ingress.$(jq -c -r .avi.config.domain $jsonFile)
+    fqdn: ingress.$(jq -c -r '.avi_domain_prefix' $jsonFile).$(jq -c -r '.external_gw.bind.domain' $jsonFile)
     enableVirtualHost: true
     wafPolicy: System-WAF-Policy
     analyticsPolicy:

@@ -23,7 +23,7 @@ data "template_file" "values" {
     actiongroupconfig = jsonencode(var.avi.config.actiongroupconfig)
     alertconfig = jsonencode(var.avi.config.alertconfig)
     external_gw_se_ip = var.vsphere_underlay.networks.alb.se.external_gw_ip
-    domain = jsonencode(var.avi.config.domain)
+    domain = "${var.avi_domain_prefix}.${var.external_gw.bind.domain}"
     ipam = jsonencode(var.avi.config.cloud.ipam)
     cloud_name = var.avi.config.cloud.name
     additional_subnets = jsonencode(var.avi.config.cloud.additional_subnets)
