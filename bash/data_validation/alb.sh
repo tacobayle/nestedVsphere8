@@ -7,7 +7,6 @@ test_nsx_alb_variables () {
   test_if_json_variable_is_defined .avi.memory "$1" "   "
   test_if_json_variable_is_defined .avi.disk "$1" "   "
   test_if_json_variable_is_defined .avi.version "$1" "   "
-  test_if_json_variable_is_defined .avi.config.cloud.service_engine_groups "$1" "   "
   test_if_json_variable_is_defined .avi.config.domain "$1" "   "
   test_if_variable_is_valid_ip $(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip "$1") "   "
   echo "   +++ testing if environment variable TF_VAR_docker_registry_username is not empty" ; if [ -z "$TF_VAR_docker_registry_username" ] ; then exit 255 ; fi
@@ -142,14 +141,6 @@ test_alb_variables_if_vsphere_nsx_alb_telco () {
       done
   done
   #
-  # .avi.config.cloud.service_engine_groups
-  #
-  test_if_json_variable_is_defined .avi.config.cloud.service_engine_groups "$1" "   "
-  for item in $(jq -c -r .avi.config.cloud.service_engine_groups[] "$1")
-  do
-    test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.service_engine_groups[] have a name defined"
-  done
-  #
   #
   # .avi.config.cloud.virtual_services
   #
@@ -160,11 +151,6 @@ test_alb_variables_if_vsphere_nsx_alb_telco () {
     test_if_variable_is_defined $(echo $item | jq -c .network_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a network_ref defined"
     if [[ $(jq -c -r --arg network_name "$(echo $item | jq -r .network_ref)" '.avi.config.cloud.networks[] | select(.name == $network_name).name' "$1") == "" ]] ; then
       echo "      ++++++ ERROR $(echo $item | jq -r .network_ref) was not found in .avi.config.cloud.networks[].name"
-      exit 255
-    fi
-    test_if_variable_is_defined $(echo $item | jq -c .se_group_ref) "   " "testing if each .avi.config.cloud.virtual_services.dns[] have a se_group_ref defined"
-    if [[ $(jq -c -r --arg arg_name "$(echo $item | jq -r .se_group_ref)" '.avi.config.cloud.service_engine_groups[] | select(.name == $arg_name).name' "$1") == "" ]] ; then
-      echo "      ++++++ ERROR $(echo $item | jq -r .se_group_ref) was not found in .avi.config.cloud.service_engine_groups[].name"
       exit 255
     fi
   done
@@ -233,11 +219,6 @@ test_alb_variables_if_nsx_cloud () {
       fi
     done
     if [[ $tier1_app_ips_segment_data -eq 0 ]] ; then echo "   ++++++ERROR++++++ no Avi network_data found for $(echo $segment | jq -c .display_name)" ; exit 255 ; fi
-    # .avi.config.cloud.service_engine_groups[]
-    for item in $(jq -c -r .avi.config.cloud.service_engine_groups[] "$1")
-    do
-      test_if_variable_is_defined $(echo $item | jq -c .name) "   " "testing if each .avi.config.cloud.service_engine_groups[] have a name defined"
-    done
     #
     if [[ $(jq -c -r .avi.config.cloud.virtual_services.dns "$1") != "null" ]]; then
       for item in $(jq -c -r .avi.config.cloud.virtual_services.dns[] "$1")
@@ -251,12 +232,6 @@ test_alb_variables_if_nsx_cloud () {
           test_if_variable_is_defined $(echo $service | jq -c .port) "   " "testing if each .avi.config.cloud.virtual_services.dns[].services have a port defined"
         done
       done
-      test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].se_group_ref" \
-                                                   ".avi.config.cloud.service_engine_groups[].name" \
-                                                   "$1" \
-                                                   "   +++ Checking se_group_ref in .avi.config.cloud.virtual_services.dns" \
-                                                   "   ++++++ Service Engine Group " \
-                                                   "   ++++++ERROR++++++ ervice Engine Group not found: "
       #
       test_if_ref_from_list_exists_in_another_list ".avi.config.cloud.virtual_services.dns[].network_ref" \
                                                    ".nsx.config.segments_overlay[].display_name" \
