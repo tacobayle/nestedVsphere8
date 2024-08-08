@@ -289,6 +289,7 @@ write_files:
       sudo tee /etc/bind/named.conf.local > /dev/null <<EOT
       zone "${domain}" {
         type master;
+        forwarders {};
         allow-transfer { any; };
         update-policy {
           grant myKeyName zonesub any;
@@ -318,7 +319,11 @@ write_files:
                               NS      dns.${domain}.
       \$ORIGIN ${domain}.
       dns                     A       ${ip}
+      app-dns                 A       ${avi_dns_ip}
       \$TTL 3600       ; 1 hour
+      $ORIGIN ${avi_domain_prefix}.${domain}.
+      $TTL 1D
+      @ IN NS app-dns.${domain}.
       EOT
       #
       sudo tee /var/lib/bind/db.${reverse} > /dev/null <<EOT

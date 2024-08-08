@@ -12,6 +12,13 @@ echo "==> Creating /root/avi.json file..."
 rm -f /root/avi.json
 avi_json=$(jq -c -r . $jsonFile | jq .)
 #
+if $(jq -e '.avi.config.cloud | has("service_engine_groups")' ${jsonFile}) ; then
+  echo "   +++ .avi.config.cloud.service_engine_groups already defined"
+else
+  echo "   +++ defines .avi.config.cloud.service_engine_groups"
+  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"service_engine_groups": []}')
+fi
+#
 seg_list="[]"
 for seg in $(jq -c -r .avi.config.cloud.service_engine_groups[] $jsonFile)
 do
@@ -89,7 +96,7 @@ avi_json=$(echo $avi_json | jq '.avi.config += {"certificatemanagementprofile": 
                                                                                      }
                                                                                    ]}]}')
 # adding private and public SEG for lbaas demo
-seg_list=$(echo $seg_list | jq '. += [{"name": "public", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-public", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
+seg_list=$(echo $seg_list | jq '. += [{"name": "public", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-public", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 4096, "disk_per_se": 50, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
 seg_list=$(echo $seg_list | jq '. += [{"name": "private", "vcenter_folder": "'$(jq -c -r .seg_folder_basename /nestedVsphere8/07_nsx_alb/variables.json)'-private", "ha_mode": "HA_MODE_SHARED_PAIR", "algo": "PLACEMENT_ALGO_PACKED", "min_scaleout_per_vs": 2, "buffer_se": 0, "extra_shared_config_memory": 0, "vcpus_per_se": 2, "memory_per_se": 2048, "disk_per_se": 25, "realtime_se_metrics": {"enabled": true,"duration": 0}}]')
 # adding slack integration
 if [[ -z ${VAR_avi_slack_webhook} ]] ; then
@@ -250,6 +257,13 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   echo "   +++ Creating Avi pools and VS"
   avi_pools="[]"
   avi_virtual_services_http="[]"
+  network_ref_dns=$(jq -c -r '.avi.config.cloud.networks_data[0].name' $jsonFile)
+  avi_virtual_services_dns='[{"name": "app-dns",
+                              "network_ref": "'${network_ref_dns}'",
+                              "se_group_ref": "Default-Group",
+                              "services": [{"port": 53}]}]'
+  avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"virtual_services": {}}')
+  avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"dns": '${avi_virtual_services_dns}'}')
   count=1
   for item in $(jq -c -r .nsx.config.segments_overlay[] $jsonFile)
   do
@@ -347,7 +361,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
   done
   if [[ $(echo $avi_pools | jq '. | length') -gt 0 ]] ; then
     avi_json=$(echo $avi_json | jq '.avi.config.cloud += {"pools": '$(echo $avi_pools)'}')
-    avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '$(echo $avi_virtual_services_http)'}')
+    avi_json=$(echo $avi_json | jq '.avi.config.cloud.virtual_services += {"http": '${avi_virtual_services_http}'}')
   fi
   #
   if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]] ; then

@@ -69,6 +69,20 @@ echo "   +++ Adding avi_sdk_version..."
 avi_sdk_version=$(jq -c -r '.avi_sdk_version' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"avi_sdk_version": "'$(echo $avi_sdk_version)'"}')
 #
+echo "   +++ Adding avi_domain_prefix..."
+avi_domain_prefix=$(jq -c -r '.avi_domain_prefix' /nestedVsphere8/07_nsx_alb/variables.json)
+external_gw_json=$(echo $external_gw_json | jq '. += {"avi_domain_prefix": "'$(echo $avi_domain_prefix)'"}')
+#
+echo "   +++ Adding avi_dns_ip..."
+deployment=$(jq -c -r .deployment $jsonFile)
+if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
+  avi_dns_ip=$(jq -c -r '.avi.config.cloud.networks_data[0].avi_ipam_vip.pool' ${jsonFile} | cut -d"-" -f1)
+else
+  echo "      +++ defining fake avi_dns_ip..."
+  avi_dns_ip="1.1.1.1"
+fi
+external_gw_json=$(echo $external_gw_json | jq '. += {"avi_dns_ip": "'${avi_dns_ip}'"}')
+#
 nfs_path=$(jq -c -r '.nfs_path' $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '.external_gw  += {"nfs_path": "'$(echo $nfs_path)'"}')
 #

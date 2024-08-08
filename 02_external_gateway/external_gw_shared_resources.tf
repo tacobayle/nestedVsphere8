@@ -72,6 +72,8 @@ data "template_file" "external_gw_userdata" {
     vault_pki_intermediate_role_name = var.vault.pki_intermediate.role.name
     vault_pki_intermediate_role_allow_subdomains = var.vault.pki_intermediate.role.allow_subdomains
     vault_pki_intermediate_role_max_ttl = var.vault.pki_intermediate.role.max_ttl
+    avi_domain_prefix = var.avi_domain_prefix
+    avi_dns_ip = var.avi_dns_ip
   }
 }
 
@@ -92,7 +94,7 @@ resource "null_resource" "yaml_replace_avi_domain" {
   }
 
   provisioner "file" {
-    source      = "/nestedVsphere8/02_external_gateway/yaml_replace_avi_domain.sh"
+    source      = "/nestedVsphere8/02_external_gateway/bash/yaml_replace_avi_domain.sh"
     destination = "/home/ubuntu/${var.yaml_directory}/yaml_replace_avi_domain.sh"
   }
 

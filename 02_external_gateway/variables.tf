@@ -17,4 +17,8 @@ variable "deployment" {}
 variable "default_kubectl_version" {}
 variable "yaml_directory" {}
 variable "vault" {}
+variable "avi_domain_prefix" {}
+variable "avi_dns_ip" {}
+
+
 

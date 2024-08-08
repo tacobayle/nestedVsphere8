@@ -23,7 +23,7 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     "avi_version": "'$(jq -r .avi.version $jsonFile)'",
     "avi_tenant": "automation",
     "avi_cloud": "'$(jq -c -r '.avi.config.cloud.name' $jsonFile)'",
-    "avi_domain": "'$(jq -c -r '.avi.config.domain' $jsonFile)'",
+    "avi_domain": "'$(jq -c -r '.avi_domain_prefix' $jsonFile)'.'$(jq -c -r '.external_gw.bind.domain' $jsonFile)'",
     "avi_nested_ip": "'$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)'",
     "avi_application_profile_ref": "System-Secure-HTTP",
     "avi_ssl_profile_ref": "System-Standard",
@@ -68,10 +68,11 @@ if [[ $(jq -c -r .vsphere_underlay.networks.alb $jsonFile) == "null" && $(jq -c 
     #
     scp -o StrictHostKeyChecking=no /nestedVsphere8/bash/avi/alb_api.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/avi/alb_api.sh
     #
-    scp -o StrictHostKeyChecking=no  /nestedVsphere8/02_external_gateway/lbaas/http_destroy.json  ubuntu@external-gw:/home/ubuntu/lbaas
-    scp -o StrictHostKeyChecking=no  /nestedVsphere8/02_external_gateway/lbaas/http_apply_private.json  ubuntu@external-gw:/home/ubuntu/lbaas
-    scp -o StrictHostKeyChecking=no  /nestedVsphere8/02_external_gateway/lbaas/http_apply_public.json  ubuntu@external-gw:/home/ubuntu/lbaas
-    scp -o StrictHostKeyChecking=no  /nestedVsphere8/02_external_gateway/lbaas/lbaas.sh  ubuntu@external-gw:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/lbaas/http_destroy.json  ubuntu@external-gw:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/lbaas/http_apply_private.json  ubuntu@external-gw:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/lbaas/http_apply_public.json  ubuntu@external-gw:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/lbaas/lbaas.sh  ubuntu@external-gw:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/lbaas/cleanup.sh  ubuntu@external-gw:/home/ubuntu/lbaas
     #
     echo '
     #!/bin/bash

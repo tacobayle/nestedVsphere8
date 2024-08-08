@@ -20,7 +20,7 @@ data "template_file" "values" {
     alertconfig = jsonencode(var.avi.config.alertconfig)
     tenants = jsonencode(var.avi.config.tenants)
     users = jsonencode(var.avi.config.users)
-    domain = var.avi.config.domain
+    domain = "${var.avi_domain_prefix}.${var.external_gw.bind.domain}"
     cloud_name = var.avi.config.cloud.name
     dhcp_enabled = var.avi.config.cloud.dhcp_enabled
     cloud_obj_name_prefix = var.avi.config.cloud.obj_name_prefix
