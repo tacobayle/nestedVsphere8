@@ -123,3 +123,12 @@ resource "null_resource" "configure_traffic_gen" {
   }
 
 }
+
+resource "null_resource" "configure_dns" {
+  depends_on = [null_resource.configure_traffic_gen]
+
+  provisioner "local-exec" {
+    command = "/bin/bash bash/configure_dns.sh"
+  }
+
+}

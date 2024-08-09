@@ -41,7 +41,7 @@ write_files:
       echo "${ip} external-gw" | sudo tee -a /etc/hosts
       echo "${ip_vcenter} ${vcenter_name}.${dns_domain}" | sudo tee -a /etc/hosts
       echo "${ip_vcenter} vcsa" | sudo tee -a /etc/hosts
-      cp ${netplanFile} ${netplanFile}.old
+      cp ${netplanFile} ${netplanFile}.ori
       echo "network:" | sudo tee ${netplanFile}
       echo "    ethernets:" | sudo tee -a ${netplanFile}
       echo "        $iface:" | sudo tee -a ${netplanFile}

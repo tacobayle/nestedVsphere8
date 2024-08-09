@@ -7,7 +7,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background: url('diagram-demo.pptx.jpg') no-repeat center center fixed;
+    background: url('diagram-demo.jpg') no-repeat center center fixed;
     background-size: 85% auto, cover; 
     background-position: left 75% top 60%, center; 
 }
