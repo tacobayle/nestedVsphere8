@@ -436,5 +436,12 @@ source /root/.profile
 #echo "  +++ No conflict found, OK"
 #
 #
-download_file_from_url_to_location "$(jq -c -r .ubuntu_ova_url $localJsonFile)" "$(jq -c -r .ubuntu_ova_path $localJsonFile)" "Ubuntu OVA"
+if $(jq -e '.external_gw | has("ova_url")' ${jsonFile}) ; then
+  echo "   +++ .external_gw.ova_url already defined"
+  download_url=$(jq -c -r .external_gw.ova_url $jsonFile)
+else
+  echo "   +++ .external_gw.ova_url not defined"
+  download_url=$(jq -c -r .ubuntu_ova_url $localJsonFile)
+fi
+download_file_from_url_to_location "${download_url}" "$(jq -c -r .ubuntu_ova_path $localJsonFile)" "Ubuntu OVA"
 #

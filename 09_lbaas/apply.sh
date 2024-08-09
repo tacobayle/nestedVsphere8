@@ -1,7 +1,7 @@
 #!/bin/bash
-jsonFile="/root/avi.json"
-log_file="/nestedVsphere8/log/15_lbaas.stdout"
 if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
+  log_file="/nestedVsphere8/log/09_lbaas.stdout"
+  jsonFile="/root/avi.json"
   if [[ $(jq '[.nsx.config.segments_overlay[] | select(has("lbaas_public")).display_name] | length' ${jsonFile}) -eq 1 && \
         $(jq '[.nsx.config.segments_overlay[] | select(has("lbaas_private")).display_name] | length' ${jsonFile}) -eq 1 && \
         $(jq '[.avi.config.cloud.networks_data[] | select(has("lbaas_public")).display_name] | length' ${jsonFile}) -eq 1 && \
