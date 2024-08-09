@@ -1,4 +1,6 @@
 #!/bin/bash
+jsonFile="/root/external_gw.json"
+deployment=$(jq -c -r .deployment $jsonFile)
 if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
   log_file="/nestedVsphere8/log/09_lbaas.stdout"
   jsonFile="/root/avi.json"
