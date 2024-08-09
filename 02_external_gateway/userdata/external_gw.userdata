@@ -321,9 +321,9 @@ write_files:
       dns                     A       ${ip}
       app-dns                 A       ${avi_dns_ip}
       \$TTL 3600       ; 1 hour
-      $ORIGIN ${avi_domain_prefix}.${domain}.
-      $TTL 1D
-      @ IN NS app-dns.${domain}.
+      \$ORIGIN ${avi_domain_prefix}.${domain}.
+      \$TTL 1D
+      \@ IN NS app-dns.${domain}.
       EOT
       #
       sudo tee /var/lib/bind/db.${reverse} > /dev/null <<EOT
