@@ -2,6 +2,8 @@
 jsonFile="/root/external_gw.json"
 deployment=$(jq -c -r .deployment $jsonFile)
 if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
+  echo "-----------------------------------------------------"
+  echo "Starting timestamp: $(date)"
   log_file="/nestedVsphere8/log/09_lbaas.stdout"
   jsonFile="/root/avi.json"
   if [[ $(jq '[.nsx.config.segments_overlay[] | select(has("lbaas_public")).display_name] | length' ${jsonFile}) -eq 1 && \
@@ -26,6 +28,6 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
     govc library.create lbaas
     govc library.import lbaas /root/focal-server-cloudimg-amd64.ova
     echo "Ending timestamp: $(date)" | tee -a ${log_file}
-    echo '------------------------------------------------------------' | tee -a ${log_file}
+    echo "-----------------------------------------------------" | tee -a ${log_file}
   fi
 fi

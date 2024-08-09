@@ -31,6 +31,10 @@ echo "   +++ alb_controller_name"
 alb_controller_name=$(jq -c -r .alb_controller_name /nestedVsphere8/02_external_gateway/variables.json)
 avi_json=$(echo $avi_json | jq '.external_gw += {"alb_controller_name": "'$(echo $alb_controller_name)'"}')
 #
+echo "   +++ Adding avi_domain_prefix..."
+avi_domain_prefix=$(jq -c -r '.avi_domain_prefix' ${localJsonFile})
+avi_json=$(echo $avi_json | jq '. += {"avi_domain_prefix": "'$(echo $avi_domain_prefix)'"}')
+#
 if $(jq -e '.avi | has("cluster_ref")' $jsonFile) ; then
   echo "   +++ Avi will be installed on the top of cluster $(jq -c -r '.avi.cluster_ref' $jsonFile)"
   vsan_datastore_index=$(jq -c -r --arg arg "$(jq -c -r '.avi.cluster_ref' $jsonFile)" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
