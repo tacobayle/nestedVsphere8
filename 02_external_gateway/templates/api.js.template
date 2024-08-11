@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         rows.forEach((row, rowIndex) => {
             const cell = row.insertCell(-1);
-            cell.innerHTML = 'Loading...';
+            cell.innerHTML = '<div class="loader"></div>';
             fetchDetails(item, cell, rowIndex);
         });
     }
