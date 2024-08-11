@@ -318,12 +318,11 @@ write_files:
                                       )
                               NS      dns.${domain}.
       \$ORIGIN ${domain}.
-      dns                     A       ${ip}
-      app-dns                 A       ${avi_dns_ip}
-      \$TTL 3600       ; 1 hour
+      dns       IN            A       ${ip}
+      app-dns   IN            A       ${avi_dns_ip}
       \$ORIGIN ${avi_domain_prefix}.${domain}.
       \$TTL 1D
-      \@ IN NS app-dns.${domain}.
+      @         IN            NS      app-dns.${domain}.
       EOT
       #
       sudo tee /var/lib/bind/db.${reverse} > /dev/null <<EOT
