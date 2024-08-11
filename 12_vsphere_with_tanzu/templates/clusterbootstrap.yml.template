@@ -2,7 +2,7 @@ apiVersion: run.tanzu.vmware.com/v1alpha3
 kind: ClusterBootstrap
 metadata:
   annotations:
-    tkg.tanzu.vmware.com/add-missing-fields-from-tkr: ${k8s_version}---vmware.1-tkg.4
+    tkg.tanzu.vmware.com/add-missing-fields-from-tkr: ${k8s_version}
   name: ${name}
 spec:
   cni:

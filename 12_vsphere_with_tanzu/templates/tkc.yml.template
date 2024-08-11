@@ -12,7 +12,7 @@ spec:
     serviceDomain: ${serviceDomain}
   topology:
     class: tanzukubernetescluster
-    version: ${k8s_version}---vmware.1-tkg.4
+    version: ${k8s_version}
     controlPlane:
       replicas: ${control_plane_count}
     workers:
