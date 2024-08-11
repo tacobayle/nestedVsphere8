@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchData(apiUrl, payload)
             .then(data => {
 	        console.log(data.fqdn);
-                cell.innerHTML = `<a href=${data.fqdn}>${data.fqdn}</a>`;
+                cell.innerHTML = `<a href=${data.fqdn} target="_blank">${data.fqdn}</a>`;
 	    console.log(data.fqdn);
             });
         } else if (rowIndex === 2) {
