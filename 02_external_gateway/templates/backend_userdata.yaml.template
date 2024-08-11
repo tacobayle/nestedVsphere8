@@ -19,14 +19,14 @@ write_files:
       hostname=${hostname}
       echo "${ip} $hostname" | sudo tee -a /etc/hosts
       apt update
-      apt install -y apache2
-      mv /var/www/html/index.html /var/www/html/index.html.old
-      echo -e "Hello World - My IP is ${ip}" | tee /var/www/html/index.html
+      # apt install -y apache2
+      # mv /var/www/html/index.html /var/www/html/index.html.old
+      # echo -e "Hello World - My IP is ${ip}" | tee /var/www/html/index.html
       apt install -y docker.io
       sudo usermod -a -G docker ubuntu
       docker login --username ${docker_registry_username} --password ${docker_registry_password}
-      docker run -d -p 8080:80 tacobayle/avi_app
-      docker run --name hackazon -d -p 8081:80 mutzel/all-in-one-hackazon:postinstall supervisord -n
+      docker run -d -p 80:80 tacobayle/avi_app
+      # docker run --name hackazon -d -p 8081:80 mutzel/all-in-one-hackazon:postinstall supervisord -n
       echo "cloud init done" | tee /tmp/cloudInitDone.log
     path: /opt/bootstrap.sh
     permissions: 0755
