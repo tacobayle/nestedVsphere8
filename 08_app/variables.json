@@ -1,6 +1,6 @@
 {
   "app": {
-    "folder": "apps-servers",
+    "folder": "app-servers",
     "basename": "app-0",
     "cpu": 2,
     "memory": 4096,

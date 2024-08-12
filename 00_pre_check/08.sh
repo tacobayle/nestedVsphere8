@@ -35,7 +35,7 @@ if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_alb" || $(jq -c -r .depl
         do
           app_segments_vpc=$(echo $app_segments_vpc | jq '. += ["'$(echo $vpc | jq -c -r .name)'-subnet"]')
           app_segments_vpc=$(echo $app_segments_vpc | jq '. += ["'$(echo $vpc | jq -c -r .name)'-subnet"]')
-          folders_vpc=$(echo $folders_vpc | jq '. += ["'$(echo $vpc | jq -c -r .project_ref)'-'$(echo $vpc | jq -c -r .name)'-apps-servers"]')
+          folders_vpc=$(echo $folders_vpc | jq '. += ["'$(echo $vpc | jq -c -r .project_ref)'-'$(echo $vpc | jq -c -r .name)'-'$(jq -c -r '.app.folder' $localJsonFile)'"]')
         done
       fi
     fi
