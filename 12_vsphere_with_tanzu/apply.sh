@@ -337,6 +337,12 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
         nsxtT1LR="''"
         cidr=$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr ${jsonFile})
       fi
+      if [[ $(jq -c -r .avi.ako_version $jsonFile) == "1.11.1" ]]; then
+        ako_template_file_name="values.yml.1.11.1.template"
+      fi
+      if [[ $(jq -c -r .avi.ako_version $jsonFile) == "1.11.4" ]]; then
+        ako_template_file_name="values.yml.1.11.4.template"
+      fi
       sed -e "s/\${disableStaticRouteSync}/${disableStaticRouteSync}/" \
           -e "s/\${clusterName}/${tkc_name}/" \
           -e "s/\${cniPlugin}/${cniPlugin}/" \
@@ -350,7 +356,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
           -e "s/\${cloudName}/${avi_cloud_name}/" \
           -e "s/\${controllerHost}/${avi_controller_ip}/" \
           -e "s/\${tenant}/${tenant}/" \
-          -e "s/\${password}/${TF_VAR_avi_password}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/values.yml.1.11.1.template | tee /root/values-${cluster_count}.yml > /dev/null
+          -e "s/\${password}/${TF_VAR_avi_password}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/${ako_template_file_name} | tee /root/values-${cluster_count}.yml > /dev/null
       # ako values transfer
       scp -o StrictHostKeyChecking=no /root/values-${cluster_count}.yml ubuntu@${external_gw_ip}:/home/ubuntu/tkc/ako-values-${cluster_count}.yml
       ((cluster_count++))
