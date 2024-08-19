@@ -15,11 +15,17 @@ spec:
     version: ${k8s_version}
     controlPlane:
       replicas: ${control_plane_count}
+      metadata:
+        annotations:
+          run.tanzu.vmware.com/resolve-os-image: os-name=ubuntu
     workers:
       machineDeployments:
         - class: node-pool
           name: node-pool-${cluster_count}
           replicas: ${workers_count}
+          metadata:
+            annotations:
+              run.tanzu.vmware.com/resolve-os-image: os-name=ubuntu
     variables:
       - name: vmClass
         value: ${vm_class}
