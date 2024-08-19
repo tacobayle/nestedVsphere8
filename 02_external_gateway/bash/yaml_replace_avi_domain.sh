@@ -4,7 +4,7 @@ jsonFile="/home/ubuntu/external_gw.json"
 #
 IFS=$'\n'
 #
-domain="'$(jq -c -r '.avi_domain_prefix' $jsonFile)'.'$(jq -c -r '.external_gw.bind.domain' $jsonFile)'"
+domain="$(jq -c -r '.avi_domain_prefix' $jsonFile).$(jq -c -r '.external_gw.bind.domain' $jsonFile)"
 # ingress - update host
 ingress=$(yq . /home/ubuntu/$(jq -c -r .yaml_directory $jsonFile)/demo-http-ingress.yml)
 ingress=$(echo $ingress | jq '. | del (.spec.rules[0].host)')
