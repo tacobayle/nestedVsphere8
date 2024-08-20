@@ -237,17 +237,19 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       # variables
       namespace=$(echo $tkc | jq -c -r .namespace_ref)
       tkc_name=$(echo $tkc | jq -c -r .name)
-      # yaml antrea config templating
-      sed -e "s/\${name}/${tkc_name}/" \
-          -e "s/\${namespace_ref}/${namespace}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/antreaconfig.yml.template | tee /root/antreaconfig-${cluster_count}.yml > /dev/null
-      # yaml antrea config transfer
-      scp -o StrictHostKeyChecking=no /root/antreaconfig-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_antrea_create}-${cluster_count}.yml
-      # yaml ClusterBootstrap templating
-      sed -e "s/\${name}/${tkc_name}/" \
-          -e "s/\${k8s_version}/$(echo $tkc | jq -c -r .k8s_version)/" \
-          -e "s/\${antrea_config_name}/${tkc_name}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/clusterbootstrap.yml.template | tee /root/clusterbootstrap-${cluster_count}.yml > /dev/null
-      # yaml ClusterBootstrap transfer
-      scp -o StrictHostKeyChecking=no /root/clusterbootstrap-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_clusterbootstrap_create}-${cluster_count}.yml
+      if [[ $(echo $tkc | jq -c -r .k8s_version) == "v1.24.9---vmware.1-tkg.4" ]]; then
+        # yaml antrea config templating
+        sed -e "s/\${name}/${tkc_name}/" \
+            -e "s/\${namespace_ref}/${namespace}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/antreaconfig.yml.template | tee /root/antreaconfig-${cluster_count}.yml > /dev/null
+        # yaml antrea config transfer
+        scp -o StrictHostKeyChecking=no /root/antreaconfig-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_antrea_create}-${cluster_count}.yml
+        # yaml ClusterBootstrap templating
+        sed -e "s/\${name}/${tkc_name}/" \
+            -e "s/\${k8s_version}/$(echo $tkc | jq -c -r .k8s_version)/" \
+            -e "s/\${antrea_config_name}/${tkc_name}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/clusterbootstrap.yml.template | tee /root/clusterbootstrap-${cluster_count}.yml > /dev/null
+        # yaml ClusterBootstrap transfer
+        scp -o StrictHostKeyChecking=no /root/clusterbootstrap-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path_clusterbootstrap_create}-${cluster_count}.yml
+      fi
       # yaml cluster templating
       sed -e "s/\${name}/${tkc_name}/" \
           -e "s/\${namespace_ref}/${namespace}/" \
@@ -262,15 +264,26 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       # yaml cluster transfer
       scp -o StrictHostKeyChecking=no /root/tkc-${cluster_count}.yml ubuntu@${external_gw_ip}:${remote_path}-${cluster_count}.yml
       # bash create templating
-      sed -e "s/\${kubectl_password}/${TF_VAR_vsphere_nested_password}/" \
-          -e "s/\${sso_domain_name}/${vcsa_sso_domain}/" \
-          -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" \
-          -e "s/\${namespace_ref}/${namespace}/" \
-          -e "s@\${remote_path}@${remote_path}@" \
-          -e "s@\${remote_path_antrea_create}@${remote_path_antrea_create}@" \
-          -e "s@\${remote_path_clusterbootstrap_create}@${remote_path_clusterbootstrap_create}@" \
-          -e "s/\${cluster_name}/${tkc_name}/" \
-          -e "s/\${cluster_count}/${cluster_count}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/tkc.sh.template | tee /root/create-tkc-${cluster_count}.sh > /dev/null
+      if [[ $(echo $tkc | jq -c -r .k8s_version) == "v1.24.9---vmware.1-tkg.4" ]]; then
+        sed -e "s/\${kubectl_password}/${TF_VAR_vsphere_nested_password}/" \
+            -e "s/\${sso_domain_name}/${vcsa_sso_domain}/" \
+            -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" \
+            -e "s/\${namespace_ref}/${namespace}/" \
+            -e "s@\${remote_path}@${remote_path}@" \
+            -e "s@\${remote_path_antrea_create}@${remote_path_antrea_create}@" \
+            -e "s@\${remote_path_clusterbootstrap_create}@${remote_path_clusterbootstrap_create}@" \
+            -e "s/\${cluster_name}/${tkc_name}/" \
+            -e "s/\${cluster_count}/${cluster_count}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/tkc.sh.template | tee /root/create-tkc-${cluster_count}.sh > /dev/null
+      fi
+      if [[ $(echo $tkc | jq -c -r .k8s_version) == "v1.28.8---vmware.1-fips.1-tkg.2" ]]; then
+        sed -e "s/\${kubectl_password}/${TF_VAR_vsphere_nested_password}/" \
+            -e "s/\${sso_domain_name}/${vcsa_sso_domain}/" \
+            -e "s/\${api_server_cluster_endpoint}/${api_server_cluster_endpoint}/" \
+            -e "s/\${namespace_ref}/${namespace}/" \
+            -e "s@\${remote_path}@${remote_path}@" \
+            -e "s/\${cluster_name}/${tkc_name}/" \
+            -e "s/\${cluster_count}/${cluster_count}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/tkc_wo_antrea_wo_clusterbootstrap.sh.template | tee /root/create-tkc-${cluster_count}.sh > /dev/null
+      fi
       # bash create transfer
       scp -o StrictHostKeyChecking=no /root/create-tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path}-${cluster_count}.sh
       # bash destroy templating
