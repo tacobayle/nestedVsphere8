@@ -353,8 +353,19 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       if [[ $(jq -c -r .avi.ako_version $jsonFile) == "1.11.1" ]]; then
         ako_template_file_name="values.yml.1.11.1.template"
       fi
-      if [[ $(jq -c -r .avi.ako_version $jsonFile) == "1.11.4" ]]; then
-        ako_template_file_name="values.yml.1.11.4.template"
+      if [[ $(jq -c -r .avi.ako_version $jsonFile) == "1.12.1" ]]; then
+        if $(echo $tkc | jq -e '.avi_api_gateway' > /dev/null) ; then
+          if [[ $(echo $tkc | jq -c -r .avi.avi_api_gateway) == "true" ]]; then
+            echo "enabling gatewayApi with NodePort because AKO 1.12.1 does not support NodePortLocal..."
+            serviceType="NodePort"
+            ako_template_file_name="values_api_gw.yml.1.12.1.template"
+          fi
+        else
+          ako_template_file_name="values.yml.1.12.1.template"
+        fi
+      fi
+      if [[ $(jq -c -r .avi.ako_version $jsonFile) == "1.12.2" ]]; then
+        ako_template_file_name="values.yml.1.12.2.template"
       fi
       sed -e "s/\${disableStaticRouteSync}/${disableStaticRouteSync}/" \
           -e "s/\${clusterName}/${tkc_name}/" \

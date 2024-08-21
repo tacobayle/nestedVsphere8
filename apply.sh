@@ -250,6 +250,8 @@ if [[ ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_n
   echo '  > /home/ubuntu/bin/kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a ${output_file} >/dev/null 2>&1
   echo "Enable deployment creation:" | tee -a ${output_file} >/dev/null 2>&1
   echo "  > /home/ubuntu/bin/kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > /home/ubuntu/bin/kubectl label --overwrite ns avi-system pod-security.kubernetes.io/enforce=privileged"
+  echo "  > /home/ubuntu/bin/kubectl label --overwrite ns default pod-security.kubernetes.io/enforce=privileged"
   echo "+++++++++++++ Deploy AKO" | tee -a ${output_file} >/dev/null 2>&1
   echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
   #
