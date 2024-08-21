@@ -1,0 +1,25 @@
+document.addEventListener('DOMContentLoaded', () => {
+        addEventListener('click', () => {
+
+
+        fetch('http://${external_gw_ip}:5000/api/cleanup', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+        })
+        .then(data => {
+            console.log('Success:', data);
+            alert('clean-up on-going');
+        })
+        .catch((error) => {
+            console.log('Error:', error);
+            alert('clean-up error');
+        });
+    });
+});

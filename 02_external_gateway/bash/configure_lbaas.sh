@@ -118,8 +118,15 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
     sed -e "s@\${external_gw_ip}@${external_gw_ip}@" /nestedVsphere8/02_external_gateway/templates/script.js.template | tee /root/script.js > /dev/null
     scp -o StrictHostKeyChecking=no /root/script.js ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/html/script.js
     #
+    sed -e "s@\${external_gw_ip}@${external_gw_ip}@" /nestedVsphere8/02_external_gateway/templates/clean-up.js.template | tee /root/clean-up.js > /dev/null
+    scp -o StrictHostKeyChecking=no /root/clean-up.js ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/html/clean-up.js
+    #
     sed -e "s@\${external_gw_ip}@${external_gw_ip}@" /nestedVsphere8/02_external_gateway/templates/api.js.template | tee /root/api.js > /dev/null
     scp -o StrictHostKeyChecking=no /root/api.js ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/html/api.js
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/clean-up.js /var/www/html/
+                                                                 sudo chown root /var/www/html/clean-up.js
+                                                                 sudo chgrp root /var/www/html/clean-up.js"
     #
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/script.js /var/www/html/
                                                                  sudo chown root /var/www/html/script.js
@@ -132,6 +139,10 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/api.css /var/www/html/
                                                                  sudo chown root /var/www/html/api.css
                                                                  sudo chgrp root /var/www/html/api.css"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/clean-up.html /var/www/html/
+                                                                 sudo chown root /var/www/html/clean-up.html
+                                                                 sudo chgrp root /var/www/html/clean-up.html"
     #
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/api.html /var/www/html/
                                                                  sudo chown root /var/www/html/api.html
