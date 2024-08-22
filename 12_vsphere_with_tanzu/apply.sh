@@ -176,7 +176,8 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
   #
   /bin/bash /nestedVsphere8/bash/vcenter/wait_for_supervisor_cluster.sh "${vcsa_fqdn}" "${vcsa_sso_domain}" "${TF_VAR_vsphere_nested_password}"
   #
-  #
+  echo "waiting 5 minutes after supervisor cluster creation..."
+  sleep 300
   #
   if $(jq -e '.tanzu | has("namespaces")' $jsonFile) ; then
     #
