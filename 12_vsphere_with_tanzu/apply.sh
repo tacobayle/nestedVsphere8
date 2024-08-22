@@ -350,40 +350,65 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
         nsxtT1LR="''"
         cidr=$(jq -c -r .vsphere_underlay.networks.alb.vip.cidr ${jsonFile})
       fi
-      if [[ $(jq -c -r .avi.ako_version $jsonFile) == "1.11.1" ]]; then
+      ako_template_file_name=""
+      if $(echo $tkc | jq -e '.ako_version' > /dev/null) ; then
+        echo "defaulting to AKO version 1.11.1"
+        ako_template_file_name="values.yml.1.11.1.template"
+        if [[ $(echo $tkc | jq -c -r .ako_version) == "1.12.1" ]]; then
+          if $(echo $tkc | jq -e '.ako_api_gateway' > /dev/null) ; then
+            if [[ $(echo $tkc | jq -c -r .ako_api_gateway) == "true" ]]; then
+              echo "enabling gatewayApi with NodePort because AKO 1.12.1 does not support NodePortLocal..."
+              serviceType="NodePort"
+              ako_template_file_name="values_api_gw.yml.1.12.1.template"
+            else
+              echo "defaulting to AKO version 1.12.1 without gatewayApi"
+              ako_template_file_name="values.yml.1.12.1.template"
+            fi
+          else
+            echo "defaulting to AKO version 1.12.1 without gatewayApi"
+            ako_template_file_name="values.yml.1.12.1.template"
+          fi
+        fi
+        if [[ $(echo $tkc | jq -c -r .ako_version) == "1.12.2" ]]; then
+          if $(echo $tkc | jq -e '.ako_api_gateway' > /dev/null) ; then
+            if [[ $(echo $tkc | jq -c -r .ako_api_gateway) == "true" ]]; then
+              echo "enabling gatewayApi with AKO 1.12.2..."
+              ako_template_file_name="values_api_gw.yml.1.12.2.template"
+            else
+              echo "defaulting to AKO version 1.12.2 without gatewayApi"
+              ako_template_file_name="values.yml.1.12.2.template"
+            fi
+          else
+            echo "defaulting to AKO version 1.12.2 without gatewayApi"
+            ako_template_file_name="values.yml.1.12.2.template"
+          fi
+        fi
+      else
+        echo "defaulting to AKO version 1.11.1"
         ako_template_file_name="values.yml.1.11.1.template"
       fi
-      if [[ $(jq -c -r .avi.ako_version $jsonFile) == "1.12.1" ]]; then
-        if $(echo $tkc | jq -e '.avi_api_gateway' > /dev/null) ; then
-          if [[ $(echo $tkc | jq -c -r .avi.avi_api_gateway) == "true" ]]; then
-            echo "enabling gatewayApi with NodePort because AKO 1.12.1 does not support NodePortLocal..."
-            serviceType="NodePort"
-            ako_template_file_name="values_api_gw.yml.1.12.1.template"
-          fi
-        else
-          ako_template_file_name="values.yml.1.12.1.template"
-        fi
+      if [ -z "${ako_template_file_name}" ] ; then
+        echo "skipping AKO values template..."
+      else
+        echo "templating AKO values..."
+        sed -e "s/\${disableStaticRouteSync}/${disableStaticRouteSync}/" \
+            -e "s/\${clusterName}/${tkc_name}/" \
+            -e "s/\${cniPlugin}/${cniPlugin}/" \
+            -e "s@\${nsxtT1LR}@${nsxtT1LR}@" \
+            -e "s/\${networkName}/${networkName}/" \
+            -e "s@\${cidr}@${cidr}@" \
+            -e "s/\${serviceType}/${serviceType}/" \
+            -e "s/\${shardVSSize}/${shardVSSize}/" \
+            -e "s/\${serviceEngineGroupName}/${serviceEngineGroupName}/" \
+            -e "s/\${controllerVersion}/$(jq -c -r .avi.version $jsonFile)/" \
+            -e "s/\${cloudName}/${avi_cloud_name}/" \
+            -e "s/\${controllerHost}/${avi_controller_ip}/" \
+            -e "s/\${tenant}/${tenant}/" \
+            -e "s/\${password}/${TF_VAR_avi_password}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/${ako_template_file_name} | tee /root/values-${cluster_count}.yml > /dev/null
+        # ako values transfer
+        scp -o StrictHostKeyChecking=no /root/values-${cluster_count}.yml ubuntu@${external_gw_ip}:/home/ubuntu/tkc/ako-values-${cluster_count}.yml
+        ((cluster_count++))
       fi
-      if [[ $(jq -c -r .avi.ako_version $jsonFile) == "1.12.2" ]]; then
-        ako_template_file_name="values.yml.1.12.2.template"
-      fi
-      sed -e "s/\${disableStaticRouteSync}/${disableStaticRouteSync}/" \
-          -e "s/\${clusterName}/${tkc_name}/" \
-          -e "s/\${cniPlugin}/${cniPlugin}/" \
-          -e "s@\${nsxtT1LR}@${nsxtT1LR}@" \
-          -e "s/\${networkName}/${networkName}/" \
-          -e "s@\${cidr}@${cidr}@" \
-          -e "s/\${serviceType}/${serviceType}/" \
-          -e "s/\${shardVSSize}/${shardVSSize}/" \
-          -e "s/\${serviceEngineGroupName}/${serviceEngineGroupName}/" \
-          -e "s/\${controllerVersion}/$(jq -c -r .avi.version $jsonFile)/" \
-          -e "s/\${cloudName}/${avi_cloud_name}/" \
-          -e "s/\${controllerHost}/${avi_controller_ip}/" \
-          -e "s/\${tenant}/${tenant}/" \
-          -e "s/\${password}/${TF_VAR_avi_password}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/${ako_template_file_name} | tee /root/values-${cluster_count}.yml > /dev/null
-      # ako values transfer
-      scp -o StrictHostKeyChecking=no /root/values-${cluster_count}.yml ubuntu@${external_gw_ip}:/home/ubuntu/tkc/ako-values-${cluster_count}.yml
-      ((cluster_count++))
     done
   fi
 fi
