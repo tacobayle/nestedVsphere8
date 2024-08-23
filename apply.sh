@@ -76,8 +76,6 @@ echo ""
 /bin/bash /nestedVsphere8/01_underlay_vsphere_directory/folder.sh apply
 if [ $? -ne 0 ] ; then exit 1 ; fi
 #
-if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 01_underlay_vsphere_directory created"}' ${slack_webhook_url} >/dev/null 2>&1; fi
-#
 #
 #
 output_file="/root/output.txt"

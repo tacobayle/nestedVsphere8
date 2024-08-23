@@ -20,10 +20,12 @@ if $(echo ${list_folder} | jq -e '. | any(. == "./vm/'$(jq -c -r .vsphere_underl
   fi
   if [[ ${operation} == "destroy" ]] ; then
     govc object.destroy /${vsphere_dc}/vm/$(jq -r .vsphere_underlay.folder $jsonFile) | tee -a ${log_file}
+    if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 01_underlay_vsphere_directory destroyed"}' ${slack_webhook_url} >/dev/null 2>&1; fi
   fi
 else
   if [[ ${operation} == "apply" ]] ; then
     govc folder.create /${vsphere_dc}/vm/$(jq -r .vsphere_underlay.folder $jsonFile) | tee -a ${log_file}
+    if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 01_underlay_vsphere_directory created"}' ${slack_webhook_url} >/dev/null 2>&1; fi
   fi
   if [[ ${operation} == "destroy" ]] ; then
     echo "ERROR: unable to delete folder $(jq -r .vsphere_underlay.folder $jsonFile): it does not exist" | tee -a ${log_file}
