@@ -1,0 +1,101 @@
+{
+  "model_name": "VirtualService",
+  "data": {
+    "name": "${vs_name}",
+    "enabled": true,
+    "cloud_ref": "/api/cloud/?name=${cloud_name}",
+    "se_group_ref": "/api/serviceenginegroup/?name=public",
+    "waf_policy_ref": "/api/wafpolicy/?name=${waf_policy_name}",
+    "ssl_key_and_certificate_refs": ["/api/sslkeyandcertificate/?name=${cert_name}"],
+    "services": [
+      {
+        "enable_ssl": false,
+        "port": 80
+      },
+      {
+        "port": 443,
+        "enable_ssl": true
+      }
+    ],
+    "vsvip_ref_data": {
+      "name": "${vsvip_name}",
+      "cloud_ref": "/api/cloud/?name=${cloud_name}",
+      "tier1_lr": "${tier1_id}",
+      "vip":
+        [
+          {
+            "auto_allocate_ip": true,
+            "vip_id": "1",
+            "ipam_network_subnet":
+            {
+              "subnet":
+              {
+                "mask": "${mask}",
+                "ip_addr":
+                {
+                  "type": "V4",
+                  "addr": "${cidr}"
+                }
+              }
+            }
+          }
+        ],
+      "dns_info": [
+        {
+          "fqdn": "${fqdn}"
+        }
+      ]
+    },
+    "pool_ref_data": {
+      "name": "${pool_name}",
+      "enabled": true,
+      "tier1_lr": "'${tier1_id}'",
+      "cloud_ref": "/api/cloud/?name=${cloud_name}",
+      "lb_algorithm": "LB_ALGORITHM_LEAST_CONNECTIONS",
+      "nsx_securitygroup": ["'${group_id}'"],
+      "default_server_port": 80
+    },
+    "ssl_key_and_certificate_refs_data":
+    [
+      {
+        "certificate":
+          {
+            "expiry_status": "SSL_CERTIFICATE_GOOD",
+            "self_signed":false,
+            "issuer":{},
+            "subject":
+              {
+                "common_name":"${common_name}"
+              }
+          },
+        "key_params":
+          {
+            "algorithm":"SSL_KEY_ALGORITHM_RSA",
+            "rsa_params":
+              {
+                "key_size":"SSL_KEY_2048_BITS",
+                "exponent":65537
+              }
+          },
+        "status":"SSL_CERTIFICATE_FINISHED",
+        "format":"SSL_PEM",
+        "certificate_base64":true,
+        "key_base64":true,
+        "enable_ocsp_stapling":false,
+        "ocsp_config":
+          {
+            "ocsp_req_interval":86400,
+            "url_action":"OCSP_RESPONDER_URL_FAILOVER",
+            "failed_ocsp_jobs_retry_interval":3600,
+            "max_tries":10
+          },
+        "import_key_to_hsm":false,
+        "is_federated":false,
+        "type":"SSL_CERTIFICATE_TYPE_VIRTUALSERVICE",
+        "ocsp_response_info":{},
+        "name":"${cert_name}",
+        "certificate_management_profile_ref":"/api/certificatemanagementprofile/?name=${certificatemanagementprofile_name}"
+      }
+    ]
+  }
+}

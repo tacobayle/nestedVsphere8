@@ -140,6 +140,10 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
                                                                  sudo chown root /var/www/html/api.css
                                                                  sudo chgrp root /var/www/html/api.css"
     #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/vs.css /var/www/html/
+                                                                 sudo chown root /var/www/html/vs.css
+                                                                 sudo chgrp root /var/www/html/vs.css"
+    #
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/clean-up.html /var/www/html/
                                                                  sudo chown root /var/www/html/clean-up.html
                                                                  sudo chgrp root /var/www/html/clean-up.html"
@@ -147,6 +151,10 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/api.html /var/www/html/
                                                                  sudo chown root /var/www/html/api.html
                                                                  sudo chgrp root /var/www/html/api.html"
+    #
+    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/vs.html /var/www/html/
+                                                                 sudo chown root /var/www/html/vs.html
+                                                                 sudo chgrp root /var/www/html/vs.html"
     #
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/diagram-demo.jpg /var/www/html/
                                                                  sudo chown root /var/www/html/diagram-demo.jpg
