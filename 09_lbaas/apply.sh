@@ -29,5 +29,7 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
     govc library.import lbaas /root/focal-server-cloudimg-amd64.ova
     echo "Ending timestamp: $(date)" | tee -a ${log_file}
     echo "-----------------------------------------------------" | tee -a ${log_file}
+    #
+    if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 09_lbaas deployed"}' ${slack_webhook_url} >/dev/null 2>&1; fi
   fi
 fi
