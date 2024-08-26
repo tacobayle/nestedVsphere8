@@ -24,6 +24,7 @@ echo "  > ssh -o StrictHostKeyChecking=no ubuntu@external-gw" | tee -a ${output_
 echo "ssh your external gateway from an external node:" | tee -a ${output_file} >/dev/null 2>&1
 echo "  > ssh -o StrictHostKeyChecking=no ubuntu@$(jq -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile)" | tee -a ${output_file} >/dev/null 2>&1
 echo "ssh ubuntu password: ${TF_VAR_ubuntu_password}" | tee -a ${output_file} >/dev/null 2>&1
+deployment=$(jq -c -r .deployment $jsonFile)
 if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
   jsonFile="/root/avi.json"
   if [[ $(jq '[.nsx.config.segments_overlay[] | select(has("lbaas_public")).display_name] | length' ${jsonFile}) -eq 1 && \
