@@ -228,32 +228,8 @@ fi
 # 12_vsphere_with_tanzu
 #
 if [[ ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
-  echo "-----------------------------------------------------"
-  echo "Configuration of vSphere with Tanzu - This should take less than 90 minutes"
-  echo "Starting timestamp: $(date)"
   /bin/bash /nestedVsphere8/12_vsphere_with_tanzu/apply.sh 2> /nestedVsphere8/log/12_vsphere_with_tanzu.stderr 1> /nestedVsphere8/log/12_vsphere_with_tanzu.stdin
   if [ $? -ne 0 ] ; then exit 1 ; fi
-  echo "Ending timestamp: $(date)"
-  #
-  # output Tanzu
-  #
-  echo "" | tee -a ${output_file} >/dev/null 2>&1
-  echo "+++++ vSphere with Tanzu" | tee -a ${output_file} >/dev/null 2>&1
-  echo "Authenticate to the supervisor cluster from the external-gateway:" | tee -a ${output_file} >/dev/null 2>&1
-  echo "  > /bin/bash /home/ubuntu/tanzu/auth_supervisor.sh" | tee -a ${output_file} >/dev/null 2>&1
-  echo "Authenticate to a specific tkc cluster from the external-gateway:" | tee -a ${output_file} >/dev/null 2>&1
-  echo "  > /bin/bash /home/ubuntu/tkc/auth-tkc-*.sh" | tee -a ${output_file} >/dev/null 2>&1
-  echo "Add docker credential in your tkc cluster:" | tee -a ${output_file} >/dev/null 2>&1
-  echo "  > /home/ubuntu/bin/kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${TF_VAR_docker_registry_username} --docker-password=****** --docker-email=${TF_VAR_docker_registry_email}" | tee -a ${output_file} >/dev/null 2>&1
-  echo '  > /home/ubuntu/bin/kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a ${output_file} >/dev/null 2>&1
-  echo "Enable deployment creation:" | tee -a ${output_file} >/dev/null 2>&1
-  echo "  > /home/ubuntu/bin/kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated" | tee -a ${output_file} >/dev/null 2>&1
-  echo "  > /home/ubuntu/bin/kubectl label --overwrite ns avi-system pod-security.kubernetes.io/enforce=privileged"
-  echo "  > /home/ubuntu/bin/kubectl label --overwrite ns default pod-security.kubernetes.io/enforce=privileged"
-  echo "+++++++++++++ Deploy AKO" | tee -a ${output_file} >/dev/null 2>&1
-  echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(jq -c -r .avi.ako_version $jsonFile) -f path_values.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
-  #
-  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 12_vsphere_with_tanzu deployed"}' ${slack_webhook_url} >/dev/null 2>&1; fi
 fi
 #
 # 13_tkgm

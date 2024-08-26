@@ -4,6 +4,11 @@ source /nestedVsphere8/bash/tf_init_apply.sh
 source /nestedVsphere8/bash/vcenter_api.sh
 source /nestedVsphere8/bash/ip.sh
 source /nestedVsphere8/bash/nsx/nsx_api.sh
+output_file="/root/output.txt"
+#
+echo "-----------------------------------------------------"
+echo "Configuration of vSphere with Tanzu - This should take less than 90 minutes"
+echo "Starting timestamp: $(date)"
 #
 IFS=$'\n'
 #
@@ -175,6 +180,10 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
   # Wait for supervisor cluster to be running
   #
   /bin/bash /nestedVsphere8/bash/vcenter/wait_for_supervisor_cluster.sh "${vcsa_fqdn}" "${vcsa_sso_domain}" "${TF_VAR_vsphere_nested_password}"
+  echo "" | tee -a ${output_file} >/dev/null 2>&1
+  echo "+++++ vSphere with Tanzu" | tee -a ${output_file} >/dev/null 2>&1
+  echo "Authenticate to the supervisor cluster from the external-gateway:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "  > /bin/bash /home/ubuntu/tanzu/auth_supervisor.sh" | tee -a ${output_file} >/dev/null 2>&1
   #
   echo "waiting 5 minutes after supervisor cluster creation..."
   sleep 300
@@ -227,13 +236,28 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
     # transfer tanzu auth supervisor script
     scp -o StrictHostKeyChecking=no /root/tanzu_auth_supervisor.sh ubuntu@${external_gw_ip}:/home/ubuntu/tanzu/auth_supervisor.sh
     #
-    #
     cluster_count=1
     remote_path="/home/ubuntu/tkc/create-tkc"
     remote_path_destroy="/home/ubuntu/tkc/destroy-tkc"
     remote_path_antrea_create="/home/ubuntu/tkc/create-antrea"
     remote_path_clusterbootstrap_create="/home/ubuntu/tkc/create-clusterbootstrap"
     remote_path_auth="/home/ubuntu/tkc/auth-tkc"
+    # templating tkc-config.sh
+    sed -e "s/\${docker_registry_username}/${TF_VAR_docker_registry_username}/" \
+        -e "s/\${docker_registry_password}/${TF_VAR_docker_registry_password}/" \
+        -e "s@\${docker_registry_email}@${TF_VAR_docker_registry_email}@" /nestedVsphere8/12_vsphere_with_tanzu/templates/tkc-config.sh.template | tee /root/tkc-config.sh > /dev/null
+    # transfer of tkc-config.sh
+    scp -o StrictHostKeyChecking=no /root/tkc-config.sh ubuntu@${external_gw_ip}:/home/ubuntu/tkc/tkc-config.sh
+    #
+    echo "the following can be done by running: '/bin/bash /home/ubuntu/tkc/tkc-config.sh' - authentication required - this does not include AKO deployment"
+    echo "Add docker credential in your tkc cluster:" | tee -a ${output_file} >/dev/null 2>&1
+    echo "  > /home/ubuntu/bin/kubectl create secret docker-registry docker --docker-server=docker.io --docker-username=${TF_VAR_docker_registry_username} --docker-password=****** --docker-email=${TF_VAR_docker_registry_email}" | tee -a ${output_file} >/dev/null 2>&1
+    echo '  > /home/ubuntu/bin/kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"docker\"}]}"' | tee -a ${output_file} >/dev/null 2>&1
+    echo "Enable deployment creation:" | tee -a ${output_file} >/dev/null 2>&1
+    echo "  > /home/ubuntu/bin/kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated" | tee -a ${output_file} >/dev/null 2>&1
+    echo "  > /home/ubuntu/bin/kubectl label --overwrite ns avi-system pod-security.kubernetes.io/enforce=privileged"
+    echo "  > /home/ubuntu/bin/kubectl label --overwrite ns default pod-security.kubernetes.io/enforce=privileged"
+    #
     for tkc in $(jq -c -r .tanzu.tkc_clusters[] $jsonFile); do
       # variables
       namespace=$(echo $tkc | jq -c -r .namespace_ref)
@@ -307,6 +331,9 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       scp -o StrictHostKeyChecking=no /root/tanzu_auth_tkc-${cluster_count}.sh ubuntu@${external_gw_ip}:${remote_path_auth}-${cluster_count}.sh
       # bash create exec
       ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "/bin/bash ${remote_path}-${cluster_count}.sh"
+      #
+      echo "Authenticate to tkc cluster called ${name} from the external-gateway:" | tee -a ${output_file} >/dev/null 2>&1
+      echo "  > /bin/bash ${remote_path_auth}-${cluster_count}.sh" | tee -a ${output_file} >/dev/null 2>&1
       #
       # ako values templating, needs to be checked without nsx
       #
@@ -409,7 +436,11 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
         # ako values transfer
         scp -o StrictHostKeyChecking=no /root/values-${cluster_count}.yml ubuntu@${external_gw_ip}:/home/ubuntu/tkc/ako-values-${cluster_count}.yml
         ((cluster_count++))
+        echo "+++++++++++++ Deploy AKO for cluster called ${tkc_name}" | tee -a ${output_file} >/dev/null 2>&1
+        echo "  > helm install --generate-name $(jq -c -r .helm_url /nestedVsphere8/07_nsx_alb/variables.json) --version $(echo $tkc | jq -c -r .ako_version) -f /home/ubuntu/tkc/ako-values-${cluster_count}.yml --namespace=avi-system" | tee -a ${output_file} >/dev/null 2>&1
       fi
     done
   fi
 fi
+echo "Ending timestamp: $(date)"
+if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 12_vsphere_with_tanzu deployed"}' ${slack_webhook_url} >/dev/null 2>&1; fi
