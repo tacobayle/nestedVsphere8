@@ -43,7 +43,7 @@ if [ -s "/root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_
   avi_json=$(jq . /root/avi.json)
   avi_json=$(echo ${avi_json} | jq '.avi.config.certificatemanagementprofile[0].script_params[2] += {"value": "'$(jq -c -r .root_token /root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json)))'"}')
   echo ${avi_json} | jq . | tee /root/avi.json > /dev/null
-  echo "Vault details:" | tee -a ${output_file} >/dev/null 2>&1
+  echo "+++++++ Vault details:" | tee -a ${output_file} >/dev/null 2>&1
   echo "Vault root token: $(jq -c -r .root_token /root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json)))" | tee -a ${output_file} >/dev/null 2>&1
 fi
 #
