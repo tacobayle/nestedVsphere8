@@ -245,7 +245,7 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
     # templating tkc-config.sh
     sed -e "s/\${docker_registry_username}/${TF_VAR_docker_registry_username}/" \
         -e "s/\${docker_registry_password}/${TF_VAR_docker_registry_password}/" \
-        -e "s@\${docker_registry_email}@${TF_VAR_docker_registry_email}@" /nestedVsphere8/12_vsphere_with_tanzu/templates/tkc-config.sh.template | tee /root/tkc-config.sh > /dev/null
+        -e "s/\${docker_registry_email}/${TF_VAR_docker_registry_email}/" /nestedVsphere8/12_vsphere_with_tanzu/templates/tkc-config.sh.template | tee /root/tkc-config.sh > /dev/null
     # transfer of tkc-config.sh
     scp -o StrictHostKeyChecking=no /root/tkc-config.sh ubuntu@${external_gw_ip}:/home/ubuntu/tkc/tkc-config.sh
     #
