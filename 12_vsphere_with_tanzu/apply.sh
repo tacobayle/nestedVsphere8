@@ -347,7 +347,8 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       serviceType="NodePortLocal" # needs to be configured before cluster creation
       cniPlugin="antrea"
       disableStaticRouteSync="true" # needs to be true if NodePortLocal is enabled
-      if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb"  ]]; then
+      if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
+        serviceEngineGroupName="${cluster_id}:$(jq -c -r .About.InstanceUuid /root/vcenter_about.json)"
         if $(jq -e --arg arg ${namespace} '.tanzu.namespaces[] | select(.name == $arg) | .ingress_cidr' $jsonFile > /dev/null) ; then
           cidr=$(jq -c -r --arg arg ${namespace} '.tanzu.namespaces[] | select(.name == $arg) | .ingress_cidr' $jsonFile)
         else

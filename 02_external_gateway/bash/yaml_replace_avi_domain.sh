@@ -14,6 +14,15 @@ ingress=$(echo $ingress | jq '.spec.rules[1] += {"host": "v2.'${domain}'"}')
 ingress=$(echo $ingress | jq '. | del (.spec.rules[2].host)')
 ingress=$(echo $ingress | jq '.spec.rules[2] += {"host": "v3.'${domain}'"}')
 echo $ingress | yq -y . | tee /home/ubuntu/$(jq -c -r .yaml_directory $jsonFile)/demo-http-ingress.yml > /dev/null
+# ingress-np - update host
+ingress=$(yq . /home/ubuntu/$(jq -c -r .yaml_directory $jsonFile)/demo-http-ingress-np.yml)
+ingress=$(echo $ingress | jq '. | del (.spec.rules[0].host)')
+ingress=$(echo $ingress | jq '.spec.rules[0] += {"host": "v1.'${domain}'"}')
+ingress=$(echo $ingress | jq '. | del (.spec.rules[1].host)')
+ingress=$(echo $ingress | jq '.spec.rules[1] += {"host": "v2.'${domain}'"}')
+ingress=$(echo $ingress | jq '. | del (.spec.rules[2].host)')
+ingress=$(echo $ingress | jq '.spec.rules[2] += {"host": "v3.'${domain}'"}')
+echo $ingress | yq -y . | tee /home/ubuntu/$(jq -c -r .yaml_directory $jsonFile)/demo-http-ingress-np.yml > /dev/null
 #
 # crd - update fqdn
 #

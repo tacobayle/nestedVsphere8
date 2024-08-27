@@ -146,6 +146,7 @@ write_files:
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/sctp_cnf/sctp-client.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-apps.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-ingress.yml
+      sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-ingress-np.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-crd-1.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-crd-2.yml
       sudo -u ubuntu wget https://raw.githubusercontent.com/tacobayle/k8sYaml/master/demo-http-apps/demo-http-crd-3.yml
