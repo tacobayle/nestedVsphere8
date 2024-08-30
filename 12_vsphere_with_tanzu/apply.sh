@@ -348,7 +348,9 @@ if $(jq -e '.tanzu | has("supervisor_cluster")' $jsonFile) ; then
       cniPlugin="antrea"
       disableStaticRouteSync="true" # needs to be true if NodePortLocal is enabled
       if [[ $(jq -c -r .deployment $jsonFile) == "vsphere_nsx_tanzu_alb" ]]; then
-        serviceEngineGroupName="${cluster_id}:$(jq -c -r .About.InstanceUuid /root/vcenter_about.json)"
+        if [[ $(echo $tkc | jq -c -r .alb_tenant_type) == "provider-mode" ]]; then
+          serviceEngineGroupName="${cluster_id}:$(jq -c -r .About.InstanceUuid /root/vcenter_about.json)"
+        fi
         if $(jq -e --arg arg ${namespace} '.tanzu.namespaces[] | select(.name == $arg) | .ingress_cidr' $jsonFile > /dev/null) ; then
           cidr=$(jq -c -r --arg arg ${namespace} '.tanzu.namespaces[] | select(.name == $arg) | .ingress_cidr' $jsonFile)
         else
