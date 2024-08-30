@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addEventListener('click', () => {
 
 
-        fetch('http://${external_gw_ip}:5000/api/cleanup', {
+        fetch('https://demo.${domain}/api/cleanup', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'

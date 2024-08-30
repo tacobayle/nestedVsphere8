@@ -4,8 +4,8 @@ import json
 from flask_restful import Api, Resource, reqparse, abort
 from flask_cors import CORS
 
-# curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"python-vs", "operation":"apply", "app_profile":"private","count":2, "cert": "self-signed"}' -H "Content-Type: application/json"
-# curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"python-vs", "operation":"apply", "app_profile":"public","count":1, "cert": "new-cert"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"demo2", "operation":"apply", "app_profile":"private","count":2, "cert": "self-signed"}' -H "Content-Type: application/json"
+# curl -X POST http://127.0.0.1:5000/api/createlbaas -d '{"vs_name":"demo2", "operation":"apply", "app_profile":"public","count":1, "cert": "new-cert"}' -H "Content-Type: application/json"
 # curl -X DELETE http://127.0.0.1:5000/api/deletelbaas -d '{"vs_name":"python-vs"}' -H "Content-Type: application/json"
 # curl -X DELETE http://127.0.0.1:5000/api/cleanup -H "Content-Type: application/json"
 # curl -X POST http://127.0.0.1:5000/api/getapp -H "Content-Type: application/json"
@@ -275,4 +275,4 @@ def getnsxroute():
 
 # Start the server
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")  # Run the app in debug mode
+    app.run()

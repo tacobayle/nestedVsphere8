@@ -98,3 +98,6 @@ server {
 
 
 sudo service nginx restart
+
+
+sudo -u ubuntu pip3 install gunicorn

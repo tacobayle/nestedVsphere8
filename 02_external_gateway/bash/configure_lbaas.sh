@@ -50,6 +50,7 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
     scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/avi ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
     scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/python ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
     scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/html ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
+    scp -o StrictHostKeyChecking=no -r /nestedVsphere8/02_external_gateway/lbaas/service ubuntu@${external_gw_ip}:/home/ubuntu/lbaas
     #
     scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/templates/backend_userdata.yaml.template ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/govc/backend_userdata.yaml.template
     #
@@ -77,20 +78,13 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
     scp -o StrictHostKeyChecking=no /nestedVsphere8/02_external_gateway/lbaas/cleanup.sh  ubuntu@external-gw:/home/ubuntu/lbaas
     #
     echo '
-    #!/bin/bash
-    #
-    python3 /home/ubuntu/lbaas/python/lbaas.py
-    ' | tee /root/lbaas_service.sh
-    #
-    scp -o StrictHostKeyChecking=no /root/lbaas_service.sh ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/lbaas_service.sh
-    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/lbaas_service.sh /usr/bin/lbaas_service.sh ; sudo chown root /usr/bin/lbaas_service.sh ; sudo chgrp root /usr/bin/lbaas_service.sh"
-    echo '
     [Unit]
     Description=avi-lbaas
 
     [Service]
     Type=simple
-    ExecStart=/bin/bash /usr/bin/lbaas_service.sh
+    User=ubuntu
+    ExecStart=/bin/bash /home/ubuntu/lbaas/service/lbaas_service.sh
 
     [Install]
     WantedBy=multi-user.target
@@ -103,10 +97,6 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
                                                                  sudo systemctl start avi-lbaas
                                                                  sudo systemctl enable avi-lbaas"
     #
-    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo chmod 644 /etc/systemd/system/avi-lbaas.service"
-    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo systemctl start avi-lbaas"
-    ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo systemctl enable avi-lbaas"
-    #
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/index.html /var/www/html/
                                                                  sudo chown root /var/www/html/index.html
                                                                  sudo chgrp root /var/www/html/index.html"
@@ -115,13 +105,14 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
                                                                  sudo chown root /var/www/html/styles.css
                                                                  sudo chgrp root /var/www/html/styles.css"
     #
-    sed -e "s@\${external_gw_ip}@${external_gw_ip}@" /nestedVsphere8/02_external_gateway/templates/script.js.template | tee /root/script.js > /dev/null
+    domain=$(jq -c -r .external_gw.bind.domain $jsonFile)
+    sed -e "s@\${domain}@${domain}@" /nestedVsphere8/02_external_gateway/templates/script.js.template | tee /root/script.js > /dev/null
     scp -o StrictHostKeyChecking=no /root/script.js ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/html/script.js
     #
-    sed -e "s@\${external_gw_ip}@${external_gw_ip}@" /nestedVsphere8/02_external_gateway/templates/clean-up.js.template | tee /root/clean-up.js > /dev/null
+    sed -e "s@\${domain}@${domain}@" /nestedVsphere8/02_external_gateway/templates/clean-up.js.template | tee /root/clean-up.js > /dev/null
     scp -o StrictHostKeyChecking=no /root/clean-up.js ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/html/clean-up.js
     #
-    sed -e "s@\${external_gw_ip}@${external_gw_ip}@" /nestedVsphere8/02_external_gateway/templates/api.js.template | tee /root/api.js > /dev/null
+    sed -e "s@\${domain}@${domain}@" /nestedVsphere8/02_external_gateway/templates/api.js.template | tee /root/api.js > /dev/null
     scp -o StrictHostKeyChecking=no /root/api.js ubuntu@${external_gw_ip}:/home/ubuntu/lbaas/html/api.js
     #
     ssh -o StrictHostKeyChecking=no -t ubuntu@${external_gw_ip} "sudo mv /home/ubuntu/lbaas/html/clean-up.js /var/www/html/

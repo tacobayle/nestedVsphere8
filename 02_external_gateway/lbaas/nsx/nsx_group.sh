@@ -6,6 +6,7 @@ jsonFile="${1}"
 #
 operation=$(jq -c -r .operation $jsonFile)
 vs_name=$(jq -c -r .vs_name $jsonFile)
+date_index=$(date '+%Y%m%d%H%M%S')
 #
 cookies_file="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}_cookies.txt"
 headers_file="/tmp/$(basename "$0" | cut -f1 -d'.')_${date_index}_headers.txt"

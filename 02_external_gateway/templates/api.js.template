@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function fetchInitialList() {
 
-        const apiUrl = 'http://${external_gw_ip}:5000/api/getapp';
+        const apiUrl = 'https://demo.${domain}/api/getapp';
 
 
         fetch(apiUrl, {
@@ -52,14 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let payload;
 
         if (rowIndex === 0) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getvip';
+            apiUrl = 'https://demo.${domain}/api/getvip';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
                 cell.innerHTML = `<span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.vsvip}</span>`;
             });
         } else if (rowIndex === 1) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getfqdn';
+            apiUrl = 'https://demo.${domain}/api/getfqdn';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
@@ -68,35 +68,35 @@ document.addEventListener('DOMContentLoaded', () => {
 	    console.log(data.fqdn);
             });
         } else if (rowIndex === 2) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getnsxgroup';
+            apiUrl = 'https://demo.${domain}/api/getnsxgroup';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
                 cell.innerHTML = `Number of Pool Member: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.vm_count}</span> <br> Pool Member IP(s): <br> <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">-${data.vm_ips.join('<br>-')}</span>`;
             });
         } else if (rowIndex === 3) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getcert';
+            apiUrl = 'https://demo.${domain}/api/getcert';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
                 cell.innerHTML = `Certificate Name: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.cert_name}</span> <br> Certificate Type: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.cert_type} </span><br> Issuer Name: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.issuer_name}</span>`;
             });
         } else if (rowIndex === 4) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getwaf';
+            apiUrl = 'https://demo.${domain}/api/getwaf';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
                 cell.innerHTML = `<span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.waf}</span>`;
             });
         } else if (rowIndex === 5) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getsesizing';
+            apiUrl = 'https://demo.${domain}/api/getsesizing';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
                 cell.innerHTML = `vCPU per SE: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.vcpu_per_se}</span> <br> Memory per SE: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.memory_per_se} </span> <br> Disk per SE: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.disk_per_se}</span>`;
             });
         } else if (rowIndex === 6) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getsehost';
+            apiUrl = 'https://demo.${domain}/api/getsehost';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
@@ -104,14 +104,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.innerHTML = seList;
             });
         } else if (rowIndex === 7) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getvipsegment';
+            apiUrl = 'https://demo.${domain}/api/getvipsegment';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
                 cell.innerHTML = `SE(s) deployed on: <span style="font-style: italic; background: -webkit-linear-gradient(#23800a, #007da3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.segment_name}</span>`;
             });
         } else if (rowIndex === 8) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getseip';
+            apiUrl = 'https://demo.${domain}/api/getseip';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.innerHTML = seList;
             });
         } else if (rowIndex === 9) {
-            apiUrl = 'http://${external_gw_ip}:5000/api/getnsxroute';
+            apiUrl = 'https://demo.${domain}/api/getnsxroute';
             payload = { vs_name: item };
             fetchData(apiUrl, payload)
             .then(data => {

@@ -6,6 +6,7 @@ jsonFile="${1}"
 #
 operation=$(jq -c -r .operation $jsonFile)
 vs_name=$(jq -c -r .vs_name $jsonFile)
+date_index=$(date '+%Y%m%d%H%M%S')
 #
 avi_cookie_file="/tmp/avi_$(basename $0 | cut -d"." -f1)_${date_index}_cookie.txt"
 curl_login=$(curl -s -k -X POST -H "Content-Type: application/json" \

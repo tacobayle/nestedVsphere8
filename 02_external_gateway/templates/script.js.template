@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(requestBody);
 
-        fetch('http://${external_gw_ip}:5000/api/createlbaas', {
+        fetch('https://demo.${domain}/api/createlbaas', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             vs_name: vsName
         };
 
-        fetch('http://${external_gw_ip}:5000/api/deletelbaas', {
+        fetch('https://demo.${domain}/api/deletelbaas', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
