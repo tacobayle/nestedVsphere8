@@ -174,7 +174,7 @@ write_files:
       run_cmd 'pip3 install ansible==${ansible_version}; ls /usr/local/bin/ansible-playbook'
       run_cmd 'pip3 install avisdk==${avi_sdk_version}; pip3 list | grep avisdk'
       run_cmd 'sudo -u ubuntu ansible-galaxy collection install vmware.alb; sudo -u ubuntu ansible-galaxy collection list | grep vmware.alb'
-      run_cmd 'su - ubuntu pip3 install gunicorn; sudo -u ubuntu pip3 list | grep gunicorn'
+      run_cmd 'sudo -u ubuntu pip3 install gunicorn; sudo -u ubuntu pip3 list | grep gunicorn'
       run_cmd 'pip3 install dnspython; pip3 list | grep dnspython'
       run_cmd 'pip3 install netaddr; pip3 list | grep netaddr'
       run_cmd 'pip3 install yq==3.2.2; pip3 list | grep yq'
