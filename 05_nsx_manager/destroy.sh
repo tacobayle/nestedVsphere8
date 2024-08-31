@@ -4,3 +4,4 @@ cd /nestedVsphere8/05_nsx_manager
 terraform init
 terraform destroy -auto-approve -var-file=$jsonFile
 rm -fr terraform.tfstate .terraform.lock.hcl .terraform
+rm -f /root/05_nsx_manager

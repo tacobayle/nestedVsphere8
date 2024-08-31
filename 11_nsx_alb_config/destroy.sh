@@ -7,4 +7,6 @@ terraform destroy -auto-approve -var-file=$jsonFile
 rm -fr terraform.tfstate .terraform.lock.hcl .terraform
 rm -fr ansibleAviConfig
 rm -fr values.yml
+rm -f /root/11_nsx_alb_config
 /bin/bash /nestedVsphere8/07_nsx_alb/destroy.sh
+rm -f /root/07_nsx_alb
