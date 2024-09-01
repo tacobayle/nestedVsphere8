@@ -37,6 +37,10 @@ if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_a
   avi_domain_prefix=$(jq -c -r '.avi_domain_prefix' ${localJsonFile})
   avi_json=$(echo $avi_json | jq '. += {"avi_domain_prefix": "'$(echo $avi_domain_prefix)'"}')
   #
+  echo "   +++ Adding a date index"
+  date_index=$(jq -c -r .date_index /root/external_gw.json)
+  avi_json=$(echo $avi_json | jq '. += {"date_index": '$(echo $date_index)'}')
+  #
   if $(jq -e '.avi | has("cluster_ref")' $jsonFile) ; then
     echo "   +++ Avi will be installed on the top of cluster $(jq -c -r '.avi.cluster_ref' $jsonFile)"
     vsan_datastore_index=$(jq -c -r --arg arg "$(jq -c -r '.avi.cluster_ref' $jsonFile)" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)
