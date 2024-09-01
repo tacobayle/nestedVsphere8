@@ -11,9 +11,13 @@ if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_a
   echo ""
   echo "==> Creating /root/app.json file..."
   #
-  echo "   +++ Adding ubuntu_ova_path..."
-  ubuntu_ova_path=$(jq -c -r '.ubuntu_ova_path' /nestedVsphere8/02_external_gateway/variables.json)
-  app_json=$(echo $app_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
+  echo "   +++ Adding ubuntu_ova..."
+  ubuntu_ova=$(basename $(jq -c -r '.ubuntu_ova_path' /nestedVsphere8/02_external_gateway/variables.json) .ova)
+  app_json=$(echo $app_json | jq '. += {"ubuntu_ova": "'$(echo $ubuntu_ova)'"}')
+  #
+  echo "   +++ Adding ubuntu_cl..."
+  ubuntu_cl=$(jq -c -r '.ubuntu_cl' /nestedVsphere8/02_external_gateway/variables.json)
+  app_json=$(echo $app_json | jq '. += {"ubuntu_cl": "'$(echo $ubuntu_cl)'"}')
   #
   echo "   +++ Adding app..."
   app=$(jq -c -r '.app' $localJsonFile)

@@ -11,11 +11,6 @@ resource "null_resource" "tf_app" {
   }
 
   provisioner "file" {
-    source = var.ubuntu_ova_path
-    destination = "/home/ubuntu/${basename(var.ubuntu_ova_path)}"
-  }
-
-  provisioner "file" {
     source = "/root/app.json"
     destination = "/home/ubuntu/app.json"
   }

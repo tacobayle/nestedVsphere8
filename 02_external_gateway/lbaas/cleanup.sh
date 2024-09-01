@@ -111,7 +111,7 @@ do
         "Name": "unassigned-'${backend}'"
       }'
       echo ${json_data} | jq . | tee /tmp/${vs_name}${backend}.json
-      govc library.deploy -options /tmp/${vs_name}${backend}.json /lbaas/focal-server-cloudimg-amd64
+      govc library.deploy -options /tmp/${vs_name}${backend}.json /$(jq -c -r .ubuntu_cl $jsonFile)/$(basename $(jq -c -r .ubuntu_ova_path $jsonFile) .ova)
     fi
   else
     echo "waiting for on-going stuff"

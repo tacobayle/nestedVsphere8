@@ -1,6 +1,7 @@
 {
   "ubuntu_ova_url": "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.ova",
   "ubuntu_ova_path": "/root/focal-server-cloudimg-amd64.ova",
+  "ubuntu_cl": "ubuntu_cl",
   "ansible_version": "2.10.7",
   "avi_sdk_version": "22.1.6",
   "cpu": 4,

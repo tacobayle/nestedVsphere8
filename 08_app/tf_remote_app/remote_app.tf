@@ -11,15 +11,15 @@ resource "vsphere_folder" "apps_vpc" {
   datacenter_id = data.vsphere_datacenter.dc_nested.id
 }
 
-resource "vsphere_content_library" "nested_library_avi_app" {
-  name            = "avi_app"
+data "vsphere_content_library" "nested_library_avi_app" {
+  name            = var.ubuntu_cl
   storage_backing = [data.vsphere_datastore.datastore_nested.id]
 }
 
-resource "vsphere_content_library_item" "nested_library_item_avi_app" {
-  name        = "ubuntu.ova"
-  library_id  = vsphere_content_library.nested_library_avi_app.id
-  file_url = "/home/ubuntu/${basename(var.ubuntu_ova_path)}"
+data "vsphere_content_library_item" "nested_library_item_avi_app" {
+  name        = var.ubuntu_ova
+  type       = "vm-template"
+  library_id  = data.vsphere_content_library.nested_library_avi_app.id
 }
 
 data "template_file" "avi_app_userdata" {
@@ -82,7 +82,7 @@ resource "vsphere_virtual_machine" "avi_app" {
   }
 
   clone {
-    template_uuid = vsphere_content_library_item.nested_library_item_avi_app.id
+    template_uuid = data.vsphere_content_library_item.nested_library_item_avi_app.id
   }
 
   vapp {
@@ -135,7 +135,7 @@ resource "vsphere_virtual_machine" "avi_app_vpc" {
   }
 
   clone {
-    template_uuid = vsphere_content_library_item.nested_library_item_avi_app.id
+    template_uuid = data.vsphere_content_library_item.nested_library_item_avi_app.id
   }
 
   vapp {

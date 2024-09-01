@@ -41,6 +41,14 @@ if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_a
   date_index=$(jq -c -r .date_index /root/external_gw.json)
   avi_json=$(echo $avi_json | jq '. += {"date_index": '$(echo $date_index)'}')
   #
+  echo "   +++ Adding ubuntu_cl"
+  ubuntu_cl=$(jq -c -r .ubuntu_cl "/nestedVsphere8/02_external_gateway/variables.json")
+  avi_json=$(echo $avi_json | jq '. += {"ubuntu_cl": "'$(echo $ubuntu_cl)'"}')
+  #
+  echo "   +++ Adding ubuntu ubuntu_ova_path"
+  ubuntu_ova_path=$(jq -c -r .ubuntu_ova_path "/nestedVsphere8/02_external_gateway/variables.json")
+  avi_json=$(echo $avi_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
+  #
   if $(jq -e '.avi | has("cluster_ref")' $jsonFile) ; then
     echo "   +++ Avi will be installed on the top of cluster $(jq -c -r '.avi.cluster_ref' $jsonFile)"
     vsan_datastore_index=$(jq -c -r --arg arg "$(jq -c -r '.avi.cluster_ref' $jsonFile)" '.vsphere_nested.cluster_list | map( . == $arg ) | index(true)' $jsonFile)

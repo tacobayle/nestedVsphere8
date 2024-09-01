@@ -37,6 +37,10 @@ echo "   +++ Adding Ubuntu OVA path"
 ubuntu_ova_path=$(jq -c -r .ubuntu_ova_path $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"ubuntu_ova_path": "'$(echo $ubuntu_ova_path)'"}')
 #
+echo "   +++ Adding ubuntu cl"
+ubuntu_cl=$(jq -c -r .ubuntu_cl $localJsonFile)
+external_gw_json=$(echo $external_gw_json | jq '. += {"ubuntu_cl": "'$(echo $ubuntu_cl)'"}')
+#
 echo "   +++ Adding yaml_directory"
 yaml_directory=$(jq -c -r .yaml_directory $localJsonFile)
 external_gw_json=$(echo $external_gw_json | jq '. += {"yaml_directory": "'$(echo $yaml_directory)'"}')

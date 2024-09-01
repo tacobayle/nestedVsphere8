@@ -21,11 +21,6 @@ resource "null_resource" "tf_k8s" {
   }
 
   provisioner "file" {
-    source = var.ubuntu_ova_path
-    destination = "/home/ubuntu/${basename(var.ubuntu_ova_path)}"
-  }
-
-  provisioner "file" {
     source = "/root/unmanaged_k8s_clusters.json"
     destination = "/home/ubuntu/unmanaged_k8s_clusters/unmanaged_k8s_clusters.json"
   }

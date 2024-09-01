@@ -26,6 +26,8 @@ if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_
     "avi_tenant": "automation",
     "avi_cloud": "'$(jq -c -r '.avi.config.cloud.name' $jsonFile)'",
     "avi_domain": "'$(jq -c -r '.avi_domain_prefix' $jsonFile)'.'$(jq -c -r '.external_gw.bind.domain' $jsonFile)'",
+    "ubuntu_cl": "'$(jq -c -r '.ubuntu_cl' $jsonFile)'",
+    "ubuntu_ova_path": "'$(jq -c -r '.ubuntu_ova_path' $jsonFile)'",
     "avi_nested_ip": "'$(jq -c -r .vsphere_underlay.networks.vsphere.management.avi_nested_ip $jsonFile)'",
     "avi_application_profile_ref": "System-Secure-HTTP",
     "avi_ssl_profile_ref": "System-Standard",

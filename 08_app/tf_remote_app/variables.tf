@@ -2,7 +2,8 @@ variable "vsphere_nested" {}
 variable "external_gw" {}
 variable "vsphere_underlay" {}
 variable "vsphere_nested_password" {}
-variable "ubuntu_ova_path" {}
+variable "ubuntu_ova" {}
+variable "ubuntu_cl" {}
 variable "app" {}
 variable "ubuntu_password" {}
 variable "app_segments" {}

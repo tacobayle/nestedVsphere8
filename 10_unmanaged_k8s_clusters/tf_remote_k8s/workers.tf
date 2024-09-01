@@ -48,7 +48,7 @@ resource "vsphere_virtual_machine" "workers" {
   }
 
   clone {
-    template_uuid = vsphere_content_library_item.nested_library_k8s_unmanaged_item.id
+    template_uuid = data.vsphere_content_library_item.nested_library_k8s_unmanaged_item.id
   }
 
   vapp {
