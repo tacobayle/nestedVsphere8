@@ -1,18 +1,29 @@
-resource "vsphere_folder" "nsx" {
-  path          = "nsx"
+data "vsphere_folder" "nsx" {
+  path          = "/${var.vsphere_underlay.datacenter}/vm/${var.vsphere_underlay.folder}"
   type          = "vm"
-  datacenter_id = data.vsphere_datacenter.dc_nested.id
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+
+resource "vsphere_content_library" "nsx" {
+  name            = "cl_nsx-${var.date_index}"
+  storage_backing = [data.vsphere_datastore.datastore.id]
+}
+
+resource "vsphere_content_library_item" "nsx" {
+  name        = basename(var.nsx_ova_path)
+  library_id  = vsphere_content_library.nsx.id
+  file_url = var.nsx_ova_path
 }
 
 resource "vsphere_virtual_machine" "nsx_medium" {
-  name             = var.external_gw.nsx_manager_name
-  datastore_id     = data.vsphere_datastore.datastore_nested.id
-  resource_pool_id = data.vsphere_resource_pool.resource_pool_nested.id
-  folder           = vsphere_folder.nsx.path
+  name             = "${var.external_gw.nsx_manager_name}-${var.date_index}"
+  datastore_id     = data.vsphere_datastore.datastore.id
+  resource_pool_id = data.vsphere_resource_pool.pool.id
+  folder           = data.vsphere_folder.nsx.path
   wait_for_guest_net_timeout = 10
 
   network_interface {
-    network_id = data.vsphere_network.vcenter_network_mgmt_nested.id
+    network_id = data.vsphere_network.vsphere_underlay_network_mgmt.id
   }
 
   num_cpus = 6
@@ -20,12 +31,12 @@ resource "vsphere_virtual_machine" "nsx_medium" {
 
   disk {
     size             = 200
-    label            = "${var.external_gw.nsx_manager_name}.lab_vmdk"
+    label            = "${var.external_gw.nsx_manager_name}-${var.date_index}.lab_vmdk"
     thin_provisioned = true
   }
 
   clone {
-    template_uuid = vsphere_content_library_item.nested_library_nsx_item.id
+    template_uuid = vsphere_content_library_item.nsx.id
   }
 
   vapp {

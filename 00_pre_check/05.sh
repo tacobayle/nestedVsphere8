@@ -46,6 +46,10 @@ if [[ ${deployment} == "vsphere_nsx" || ${deployment} == "vsphere_nsx_alb" || ${
   groups=$(jq -c -r '.groups' $localJsonFile)
   nsx_json=$(echo $nsx_json | jq '.nsx.config += {"groups": '$(echo $groups)'}')
   #
+  echo "   +++ Adding a date index"
+  date_index=$(jq -c -r .date_index /root/external_gw.json)
+  nsx_json=$(echo $nsx_json | jq '. += {"date_index": '$(echo $date_index)'}')
+  #
   echo "   +++ Adding exclusion_list_api_endpoint..."
   exclusion_list_api_endpoint=$(jq -c -r '.exclusion_list_api_endpoint' $localJsonFile)
   nsx_json=$(echo $nsx_json | jq '.nsx.config += {"exclusion_list_api_endpoint": "'$(echo $exclusion_list_api_endpoint)'"}')
