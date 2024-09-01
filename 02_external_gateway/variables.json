@@ -8,8 +8,8 @@
   "memory": 8096,
   "disk": 20,
   "disk_if_vcd": 500,
-  "alb_controller_name": "alb",
-  "nsx_manager_name": "nsx",
+  "alb_controller_name": "avi-controller",
+  "nsx_manager_name": "nsx-manager",
   "vcd_appliance_name": "vcd",
   "nfs_path": "/nfs/vCDspace",
   "networks": {

@@ -90,7 +90,7 @@ networks=$(jq -c -r '.networks' $localJsonFile)
 nested_vsphere_json=$(echo $nested_vsphere_json | jq '. += {"networks": '$(echo $networks)'}')
 #
 echo "   +++ Adding a date_index"
-date_index=$(date '+%Y%m%d%H%M%S')
+date_index=$(jq -c -r .date_index /root/external_gw.json)
 nested_vsphere_json=$(echo $nested_vsphere_json | jq '. += {"date_index": '$(echo $date_index)'}')
 #
 echo "   +++ Adding disk label and disk unit number..."
