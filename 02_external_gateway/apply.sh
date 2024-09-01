@@ -47,6 +47,7 @@ if [ -s "/root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_
   echo "Vault root token: $(jq -c -r .root_token /root/$(basename $(jq -c -r .vault.secret_file_path /nestedVsphere8/02_external_gateway/variables.json)))" | tee -a ${output_file} >/dev/null 2>&1
 fi
 #
+touch "/root/02_external_gateway"
 if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 02_external_gateway created"}' ${slack_webhook_url} >/dev/null 2>&1; fi
 #
 scp -o StrictHostKeyChecking=no ubuntu@$(jq -c -r .vsphere_underlay.networks.vsphere.management.external_gw_ip $jsonFile):/home/ubuntu/.ssh/id_rsa /root/.ssh/id_rsa_external >/dev/null 2>&1

@@ -1,7 +1,5 @@
 data "vsphere_folder" "nsx" {
   path          = "/${var.vsphere_underlay.datacenter}/vm/${var.vsphere_underlay.folder}"
-  type          = "vm"
-  datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 resource "vsphere_content_library" "nsx" {

@@ -21,4 +21,5 @@ echo "vSphere password: ${TF_VAR_vsphere_nested_password}" | tee -a ${output_fil
 echo "waiting for 20 minutes to finish the vCenter config..."
 sleep 1200
 #
+touch "/root/03_nested_vsphere"
 if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 03_nested_vsphere created"}' ${slack_webhook_url} >/dev/null 2>&1; fi

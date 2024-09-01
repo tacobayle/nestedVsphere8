@@ -43,4 +43,4 @@ vcenter_api 6 10 "DELETE" $token "" $api_host "api/content/subscribed-library/${
 #
 #
 rm -fr terraform.tfstate .terraform.lock.hcl .terraform
-rm -f 12_vsphere_with_tanzu
+rm -f /root/12_vsphere_with_tanzu

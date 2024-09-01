@@ -29,4 +29,5 @@ govc library.create $(jq -c -r .ubuntu_cl $jsonFile)
 govc library.import $(jq -c -r .ubuntu_cl $jsonFile) $(jq -c -r .ubuntu_ova_path $jsonFile)
 echo "Ending timestamp: $(date)" | tee -a ${log_file}
 echo "-----------------------------------------------------" | tee -a ${log_file}
+touch "/root/04_networks"
 if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': ubunutu content library created"}' ${slack_webhook_url} >/dev/null 2>&1; fi

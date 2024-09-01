@@ -448,5 +448,6 @@ if [[ ${deployment} == "vsphere_tanzu_alb_wo_nsx" || ${deployment} == "vsphere_n
     fi
   fi
   echo "Ending timestamp: $(date)"
+  touch "/root/12_vsphere_with_tanzu"
   if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 12_vsphere_with_tanzu deployed"}' ${slack_webhook_url} >/dev/null 2>&1; fi
 fi
