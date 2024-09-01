@@ -37,7 +37,7 @@ echo ""
 #
 output_file="/root/output.txt"
 #
-apply_scripts='["01_underlay_vsphere_directory", "02_external_gateway", "03_nested_vsphere", "04_networks", "05_nsx_manager", "06_nsx_config", "07_nsx_alb", "08_app", "09_lbaas", "10_unmanaged_k8s_clusters", "11_nsx_alb_config", "12_vsphere_with_tanzu", "13_tkgm"]'
+apply_scripts='["01_underlay_vsphere_directory", "02_external_gateway", "03_nested_vsphere", "04_networks", "05_nsx_manager", "06_nsx_config", "07_nsx_alb", "08_app", "10_unmanaged_k8s_clusters", "11_nsx_alb_config", "12_vsphere_with_tanzu", "13_tkgm"]'
 for folder in $(echo ${apply_scripts} | jq -c -r .[])
 do
   if [ -f "/root/${folder}" ]; then
