@@ -48,7 +48,6 @@ do
       if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': ERROR: '${folder}'"}' ${slack_webhook_url} >/dev/null 2>&1; fi
       exit 1
     fi
-    touch "/root/${folder}"
   fi
 done
 #
