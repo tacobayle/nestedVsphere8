@@ -9,7 +9,7 @@ body {
     margin: 0;
     background: url('diagram-demo.jpg') no-repeat center center fixed;
     background-size: 85% auto, cover; 
-    background-position: left 75% top 60%, center; 
+    background-position: left 90% top 60%, center;
 }
 
 h1 {

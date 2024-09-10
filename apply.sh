@@ -41,9 +41,10 @@ apply_scripts='["01_underlay_vsphere_directory", "02_external_gateway", "03_nest
 for folder in $(echo ${apply_scripts} | jq -c -r .[])
 do
   if [ -f "/root/${folder}" ]; then
+    echo "-----------------------------------------------------"
     echo "Skipping creation of ${folder}"
   else
-    /bin/bash /nestedVsphere8/${folder}/apply.sh
+    /bin/bash /nestedVsphere8/${folder}/apply.sh &
     if [ $? -ne 0 ] ; then
       if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': ERROR: '${folder}'"}' ${slack_webhook_url} >/dev/null 2>&1; fi
       exit 1

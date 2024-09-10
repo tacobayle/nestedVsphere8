@@ -6,6 +6,7 @@ if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_a
   source /nestedVsphere8/bash/tf_init_apply.sh
   #
   tf_init_apply "Configuration of ALB controller - This should take less than 60 minutes" /nestedVsphere8/11_nsx_alb_config /nestedVsphere8/log/11.stdout /nestedVsphere8/log/11.stderr $jsonFile
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 11_nsx_alb_config done"}' ${slack_webhook_url} >/dev/null 2>&1; fi
   #
   deployment=$(jq -c -r .deployment $jsonFile)
   if [[ ${deployment} == "vsphere_nsx_alb" || ${deployment} == "vsphere_nsx_tanzu_alb" ]]; then
@@ -25,5 +26,5 @@ if [[ ${deployment} == "vsphere_alb_wo_nsx" || ${deployment} == "vsphere_tanzu_a
   echo "Avi admin password: ${TF_VAR_avi_password}" | tee -a ${output_file} >/dev/null 2>&1
   #
   touch "/root/11_nsx_alb_config"
-  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': 11_nsx_alb_config done"}' ${slack_webhook_url} >/dev/null 2>&1; fi
+  if [ -z "${slack_webhook_url}" ] ; then echo "ignoring slack update" ; else curl -X POST -H 'Content-type: application/json' --data '{"text":"'$(date "+%Y-%m-%d,%H:%M:%S")', '${deployment}': LBaaS initialized"}' ${slack_webhook_url} >/dev/null 2>&1; fi
 fi
